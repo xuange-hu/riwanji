@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="日理万机 —— 数码产品百科全书：手机、平板、耳机、相机、笔记本、智能手表、游戏机、音箱的详细参数、主客观评测、用户评价与性能评分。" />
+  <meta name="theme-color" content="#5b8cff" />
+  <!-- 分享卡片（微信/微博/Twitter/X） -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="日理万机" />
+  <meta property="og:title" content="日理万机 · 数码产品百科全书" />
+  <meta property="og:description" content="收录 200 万+ 数码型号：参数、评测、口碑、对比一站查齐。" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="日理万机 · 数码产品百科全书" />
+  <meta name="twitter:description" content="收录 200 万+ 数码型号：参数、评测、口碑、对比一站查齐。" />
+  <title>日理万机 · 数码产品百科</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235b8cff'/%3E%3Ctext x='32' y='43' font-size='34' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E日%3C/text%3E%3C/svg%3E" />
+  <script>
+    // 主题预加载，避免闪烁
+    try {
+      var t = JSON.parse(localStorage.getItem('rlwj:theme') || '"dark"');
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) { /* noop */ }
+  </script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="#/">
+        <span class="logo-mark">日</span>
+        <span class="logo-text">日理万机<em>数码产品百科</em></span>
+      </a>
+
+      <nav class="main-nav" id="main-nav">
+        <a href="#/" data-nav="home">首页</a>
+        <a href="#/products" data-nav="products">全部产品</a>
+        <a href="#/categories" data-nav="categories">品类大全</a>
+        <a href="#/brands" data-nav="brands">品牌</a>
+        <a href="#/ranking" data-nav="ranking">排行榜</a>
+        <a href="#/compare" data-nav="compare">对比</a>
+        <a href="#/timeline" data-nav="timeline">时间线</a>
+        <a href="#/favorites" data-nav="favorites">收藏</a>
+        <a href="#/about" data-nav="about">关于</a>
+      </nav>
+
+      <div class="search-box" id="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="global-search" type="search" autocomplete="off"
+               placeholder="搜索产品、品牌、参数……" aria-label="全站搜索" />
+        <div class="suggest" id="search-suggest" hidden></div>
+      </div>
+
+      <button class="theme-toggle" id="theme-toggle" title="切换深浅色主题" aria-label="切换主题">🌙</button>
+      <button class="menu-toggle" id="menu-toggle" title="菜单" aria-label="菜单">☰</button>
+    </div>
+  </header>
+
+  <main id="app" class="container">
+    <div class="loading">正在载入产品库……</div>
+  </main>
+
+  <div class="compare-tray" id="compare-tray" hidden>
+    <div class="container compare-tray-inner">
+      <span class="compare-tray-label">对比清单</span>
+      <div class="compare-tray-items" id="compare-tray-items"></div>
+      <a class="btn btn-primary" href="#/compare">开始对比 →</a>
+      <button class="btn btn-ghost" id="compare-clear">清空</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>日理万机</strong> · 数码产品百科<br />
+        <span class="muted">参数、评测、口碑、评分 —— 关于数码产品的一切</span>
+      </div>
+      <div class="muted">
+        数据为编辑整理，仅供参考<br />
+        产品数据以纯数据文件维护，可持续扩展品类与机型
+      </div>
+    </div>
+  </footer>
+
+  <!-- 数据清单（data/manifest.js 由 tools/build-manifest.js 自动生成，
+       登记全部数据分片；app.js 按清单加载，新增品类/分片无需改本文件） -->
+  <script src="data/manifest.js"></script>
+
+  <!-- 品牌别名（中英互通检索） -->
+  <script src="data/brand-alias.js"></script>
+
+  <!-- 品类注册表（数千细分品类树） -->
+  <script src="data/categories.js"></script>
+
+  <!-- 应用逻辑 -->
+  <script src="js/app.js"></script>
+</body>
+</html>
