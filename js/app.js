@@ -194,10 +194,21 @@
       app.innerHTML = '<div class="empty"><span class="big">⚠️</span>未找到数据清单（data/manifest.js）。</div>';
       return;
     }
-    app.innerHTML = '<div class="loading">正在载入产品库…… 0 / ' + manifest.shards.length + ' 个数据分片</div>';
-    await Promise.all(manifest.shards.map((s) => loadShard(s.file || s)));
-    /* 媒体/图片补充数据 */
-    await Promise.all([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => loadShard('data/enrich/media-' + i + '.js')));
+    const enrichFiles = (manifest.enrich && manifest.enrich.length)
+      ? manifest.enrich
+      : [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => 'data/enrich/media-' + i + '.js');
+    const totalShards = manifest.shards.length + enrichFiles.length;
+    app.innerHTML = '<div class="loading">正在载入产品库…… <span id="load-progress">0 / ' + totalShards + '</span> 个数据分片</div>';
+    /* 进度随分片装载实时更新（原实现只写一次文案，用户无法区分加载中与卡死） */
+    let loadedCount = 0;
+    const tickProgress = () => {
+      loadedCount += 1;
+      const el = document.getElementById('load-progress');
+      if (el) el.textContent = loadedCount + ' / ' + totalShards;
+    };
+    await Promise.all(manifest.shards.map((s) => loadShard(s.file || s).then(tickProgress)));
+    /* 媒体/图片补充数据：清单由 build-manifest 写入 manifest.enrich（原硬编码 1..12，越界产生 404） */
+    await Promise.all(enrichFiles.map((f) => loadShard(f).then(tickProgress)));
     buildStaticDB();
   }
 
@@ -209,7 +220,7 @@
     },
 
     async home() {
-      if (DATA.online) return api.get('/api/home');
+      if (DATA.online) return api.get('api/home');
       // 静态模式本地构造
       const curated = DATA.products;
       const byScore = (a, b) => (b.score || 0) - (a.score || 0);
@@ -244,7 +255,7 @@
         ['q', 'cat', 'leaf', 'brand', 'era', 'source', 'sort', 'page', 'pageSize'].forEach((k) => {
           if (params[k] != null && params[k] !== '') q.set(k, params[k]);
         });
-        return api.get('/api/search?' + q.toString());
+        return api.get('api/search?' + q.toString());
       }
       // 静态模式
       let list = DATA.products;
@@ -368,7 +379,7 @@
       const text = String(q || '').trim();
       if (!text) return [];
       if (DATA.online) {
-        const r = await api.get('/api/suggest?q=' + encodeURIComponent(text));
+        const r = await api.get('api/suggest?q=' + encodeURIComponent(text));
         return r.items || [];
       }
       const t = text.toLowerCase();
@@ -384,14 +395,14 @@
     },
 
     async product(id) {
-      if (DATA.online) return api.get('/api/product/' + encodeURIComponent(id));
+      if (DATA.online) return api.get('api/product/' + encodeURIComponent(id));
       return DATA.byId[id] || null;
     },
 
     async byIds(ids) {
       if (!ids.length) return [];
       if (DATA.online) {
-        const r = await api.get('/api/products?ids=' + ids.map(encodeURIComponent).join(','));
+        const r = await api.get('api/products?ids=' + ids.map(encodeURIComponent).join(','));
         return r.items || [];
       }
       return ids.map((id) => DATA.byId[id]).filter(Boolean);
@@ -403,7 +414,7 @@
         ['cat', 'sort', 'dir', 'page', 'pageSize'].forEach((k) => {
           if (params[k] != null && params[k] !== '') q.set(k, params[k]);
         });
-        return api.get('/api/ranking?' + q.toString());
+        return api.get('api/ranking?' + q.toString());
       }
       let list = DATA.products.slice();
       if (params.cat) list = list.filter((p) => p.category === params.cat);
@@ -422,7 +433,7 @@
     },
 
     async timeline() {
-      if (DATA.online) return api.get('/api/timeline');
+      if (DATA.online) return api.get('api/timeline');
       const ymap = new Map();
       DATA.products.forEach((p) => {
         const y = p.year || 0;
@@ -438,7 +449,7 @@
     },
 
     async related(id) {
-      if (DATA.online) return (await api.get('/api/related?id=' + encodeURIComponent(id))).items || [];
+      if (DATA.online) return (await api.get('api/related?id=' + encodeURIComponent(id))).items || [];
       const base = DATA.byId[id];
       if (!base) return [];
       return DATA.products.filter((p) => p.category === base.category && p.id !== id)
@@ -447,7 +458,7 @@
     },
 
     async categories() {
-      if (DATA.online) return api.get('/api/categories');
+      if (DATA.online) return api.get('api/categories');
       const tree = window.DB_CATEGORY_TREE;
       if (!tree) return { stats: null, leafCounts: {}, groups: [] };
       const leafCounts = {};
@@ -476,7 +487,7 @@
     },
 
     async brands() {
-      if (DATA.online) return api.get('/api/brands');
+      if (DATA.online) return api.get('api/brands');
       /* 静态模式：本地聚合品牌目录 */
       const map = new Map();
       DATA.products.forEach((x) => {
@@ -502,7 +513,7 @@
       if (DATA.online) {
         const q = new URLSearchParams();
         ['sort', 'page', 'pageSize'].forEach((k) => { if (params && params[k] != null) q.set(k, params[k]); });
-        return api.get('/api/brand/' + encodeURIComponent(name) + (q.toString() ? '?' + q.toString() : ''));
+        return api.get('api/brand/' + encodeURIComponent(name) + (q.toString() ? '?' + q.toString() : ''));
       }
       const list = DATA.products.filter((x) => x.brand === name);
       const catMap = {};
@@ -556,7 +567,7 @@
     const i = state.compare.indexOf(id);
     if (i !== -1) { state.compare.splice(i, 1); }
     else {
-      if (state.compare.length >= 3) { alert('最多同时对比 3 款产品'); return; }
+      if (state.compare.length >= 3) { toast('最多同时对比 3 款产品'); return; }
       state.compare.push(id);
     }
     saveState(); refreshCmpButtons(); renderCompareTray();
@@ -682,7 +693,7 @@
   function productImg(p, alt) {
     let src;
     if (p.image) src = p.image;
-    else if (DATA.online) src = '/api/image/' + encodeURIComponent(p.id);
+    else if (DATA.online) src = 'api/image/' + encodeURIComponent(p.id);
     else src = posterURI(p);
     IMG_REGISTRY[String(p.id)] = p;
     return '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
@@ -1186,7 +1197,7 @@
     return '' +
       '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / 3 款产品（绿色为该项最优，淡黄底色为存在差异的参数项）</p></div>' +
       picker +
-      '<table class="compare-table"><thead>' + headerRow + '</thead><tbody>' + rows.join('') + '</tbody></table>';
+      '<div class="table-scroll"><table class="compare-table"><thead>' + headerRow + '</thead><tbody>' + rows.join('') + '</tbody></table></div>';
   }
 
   /* ================= 页面：排行榜 ================= */
@@ -1209,7 +1220,7 @@
     const medals = ['🥇', '🥈', '🥉'];
     const rows = (res.items || []).map((p, i) =>
       '<tr>' +
-        '<td class="num">' + (medals[i] || ((res.page - 1) * res.pageSize + i + 1)) + '</td>' +
+        '<td class="num">' + (medals[(res.page - 1) * res.pageSize + i] || ((res.page - 1) * res.pageSize + i + 1)) + '</td>' +
         '<td class="rank-name"><a href="#/product/' + esc(p.id) + '">' + esc(p.name) + '</a>' +
           '<span class="muted">' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></td>' +
         '<td class="num">' + esc(p.year) + '</td>' +
@@ -1226,6 +1237,7 @@
     return '' +
       '<div class="page-head"><h1>排行榜</h1><p>点击表头切换排序维度，共 ' + fmtNum(res.total) + ' 款产品</p></div>' +
       '<div class="filter-bar">' + catChips + '</div>' +
+      '<div class="table-scroll">' +
       '<table class="rank-table"><thead><tr>' +
         '<th style="width:56px">#</th>' +
         th('产品', 'name') +
@@ -1233,7 +1245,7 @@
         th('编辑评分', 'score') +
         th('用户评分', 'userScore') +
         th('上市价格', 'price') +
-      '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
       pagination(res.page, Math.max(1, Math.ceil(res.total / res.pageSize)));
   }
 
@@ -1459,7 +1471,7 @@
 
     /* 文档标题随路由更新（收藏夹/分享/SEO 友好） */
     const TITLES = {
-      '': '日理万机 —— 数码产品百科全书',
+      '': '数码产品百科全书',
       products: '全部产品', search: '搜索结果', compare: '产品对比', ranking: '排行榜',
       timeline: '产品时间线', favorites: '我的收藏', categories: '品类大全',
       brands: '品牌专区', about: '关于本站'
@@ -1795,13 +1807,16 @@
 
   async function boot() {
     // 1) 先探测在线 API
-    try {
-      const meta = await api.get('/api/meta');
-      if (meta && typeof meta.total === 'number') {
-        DATA.online = true;
-        DATA.meta = meta;
-      }
-    } catch (e) { /* 无服务端 → 静态降级 */ }
+    /* API 探测：静态托管包（build-dist 注入 RLWJ_API=false）直接跳过，避免每次启动一个必现 404 */
+    if (window.RLWJ_API !== false) {
+      try {
+        const meta = await api.get('api/meta');
+        if (meta && typeof meta.total === 'number') {
+          DATA.online = true;
+          DATA.meta = meta;
+        }
+      } catch (e) { /* 无服务端 → 静态降级 */ }
+    }
 
     // 2) 静态降级：加载精选分片
     if (!DATA.online) await loadStatic();

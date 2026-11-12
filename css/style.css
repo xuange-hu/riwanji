@@ -57,7 +57,8 @@ html[data-theme="light"] {
   --border-strong: rgba(30, 41, 59, 0.2);
   --text: #131c2f;
   --text-2: #3d4a63;
-  --muted: #69758c;
+  --muted: #55617a;
+  --accent: #345fd8;
   --shadow: 0 18px 44px rgba(37, 55, 105, 0.10);
   --shadow-sm: 0 6px 18px rgba(37, 55, 105, 0.07);
   --glow: 0 0 0 1px rgba(91, 140, 255, 0.2), 0 8px 32px rgba(91, 140, 255, 0.12);
@@ -848,6 +849,7 @@ button { font-family: inherit; }
 .icon-btn {
   width: 32px;
   height: 32px;
+  position: relative;
   display: grid;
   place-items: center;
   border-radius: 10px;
@@ -1020,9 +1022,7 @@ button { font-family: inherit; }
 .detail-photo {
   position: relative;
   width: min(360px, 72vw);
-  aspect-ratio: 1 / 1;
   border-radius: 22px;
-  overflow: hidden;
   border: 1px solid var(--border-strong);
   margin-bottom: 18px;
   box-shadow: 0 14px 38px rgba(91, 140, 255, 0.25);
@@ -1030,7 +1030,7 @@ button { font-family: inherit; }
   background: var(--card-2);
 }
 
-.detail-photo img {
+.detail-photo img:not(.gallery-thumb) {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1762,4 +1762,35 @@ button { font-family: inherit; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* ===== Phase 0 修复补丁 ===== */
+
+/* 触摸目标 44x44（WCAG 2.5.5）：视觉保持 32px，::before 外扩命中区 */
+.icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+/* 移动端表格横向滚动：body overflow-x:hidden 下对比/排行表原被裁切且不可滑 */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll .compare-table,
+.table-scroll .rank-table {
+  min-width: 480px;
+}
+
+/* 首列吸左：横向滚动时参数名/# 列不丢失 */
+.compare-table th:first-child,
+.compare-table td:first-child,
+.rank-table th:first-child,
+.rank-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--card-solid);
 }

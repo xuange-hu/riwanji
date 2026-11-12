@@ -657,5 +657,16 @@ window.DB_MANIFEST = {
       "category": "watch",
       "count": 5
     }
+  ],
+  "enrich": [
+    "data/enrich/media-1.js",
+    "data/enrich/media-2.js",
+    "data/enrich/media-3.js",
+    "data/enrich/media-4.js",
+    "data/enrich/media-5.js",
+    "data/enrich/media-6.js",
+    "data/enrich/media-7.js",
+    "data/enrich/media-8.js",
+    "data/enrich/media-9.js"
   ]
 };
