@@ -1794,3 +1794,25 @@ button { font-family: inherit; }
   z-index: 2;
   background: var(--card-solid);
 }
+
+
+/* ===== Phase 1 修复补丁 ===== */
+
+/* 演示数据开关条 / 零结果换词建议 */
+.demo-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+.empty-suggest {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.empty-suggest p { width: 100%; margin: 0; }

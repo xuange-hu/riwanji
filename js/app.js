@@ -166,10 +166,11 @@
     DATA.brands = Array.from(bm.entries()).sort((a, b) => b[1] - a[1]).map((e) => e[0]);
 
     const years = DATA.products.map((p) => p.year).filter((y) => typeof y === 'number');
+    const bulkCount = DATA.products.reduce((n, p) => n + (isDemo(p) ? 1 : 0), 0);
     DATA.meta = {
       total: DATA.products.length,
-      curated: DATA.products.length,
-      bulk: 0,
+      curated: DATA.products.length - bulkCount,
+      bulk: bulkCount,
       yearMin: years.length ? Math.min.apply(null, years) : null,
       yearMax: years.length ? Math.max.apply(null, years) : null,
       categories: DATA.cats,
@@ -221,8 +222,8 @@
 
     async home() {
       if (DATA.online) return api.get('api/home');
-      // 静态模式本地构造
-      const curated = DATA.products;
+      // 静态模式本地构造（默认不含演示数据，问题 4：榜单不被合成样本污染）
+      const curated = visibleProducts();
       const byScore = (a, b) => (b.score || 0) - (a.score || 0);
       const byUser = (a, b) => (b.userScore || 0) - (a.userScore || 0);
       const byYear = (a, b) => (b.year || 0) - (a.year || 0);
@@ -242,7 +243,8 @@
       }));
       return {
         stats: {
-          total: DATA.meta.total, categories: DATA.cats.length, brands: DATA.brands.length,
+          total: DATA.meta.total, curated: DATA.meta.curated, bulk: DATA.meta.bulk,
+          categories: DATA.cats.length, brands: DATA.brands.length,
           yearMin: DATA.meta.yearMin, yearMax: DATA.meta.yearMax
         },
         categories: DATA.cats, editors, popular, topPerCat, timeline
@@ -257,8 +259,10 @@
         });
         return api.get('api/search?' + q.toString());
       }
-      // 静态模式
-      let list = DATA.products;
+      // 静态模式：演示数据默认过滤；source=bulk/curated 可显式指定（问题 4）
+      let list = params.source === 'bulk' ? DATA.products.filter(isDemo)
+        : params.source === 'curated' ? DATA.products.filter((p) => !isDemo(p))
+          : visibleProducts();
       if (params.cat) list = list.filter((p) => p.category === params.cat);
       if (params.leaf) list = list.filter((p) => p.catLeaf === params.leaf);
       if (params.brand) list = list.filter((p) => p.brand === params.brand);
@@ -291,17 +295,24 @@
         'console': '游戏机', 'monitor': '显示器', 'router': '路由器', 'ssd': '固态硬盘', 'gpu': '显卡',
         'cpu': '处理器', 'printer': '打印机', 'projector': '投影'
       };
-      const rawToks = String(params.q || '').toLowerCase().split(/[\s,，、;；+]+/)
-        .filter((t) => t && !(t.length === 1 && /[a-z0-9]/.test(t)))
-        .map((t) => QUERY_ALIAS[t] || t).join(' ').split(/\s+/).filter(Boolean);
-      /* 中文长词切双字（「降噪耳机」→ 降噪+耳机） */
+      /* 分词：按字符类型切边界（「iphone手机」→ iphone + 手机），中英混排不再整段落空（问题 7） */
+      const segs = String(params.q || '').toLowerCase().split(/[\s,，、;；+]+/)
+        .map((t) => t.replace(/[^一-龥a-z0-9.\-]+/g, ''))
+        .filter((t) => t && !(t.length === 1 && /[a-z0-9]/.test(t)));
+      const rawToks = [];
+      segs.forEach((seg) => {
+        const parts = seg.match(/[一-龥]+|[a-z0-9][a-z0-9.\-]*/g) || [seg];
+        parts.forEach((p) => { if (p && !(p.length === 1 && /[a-z0-9]/.test(p))) rawToks.push(QUERY_ALIAS[p] || p); });
+      });
+      const normToks = rawToks.join(' ').split(/\s+/).filter(Boolean);
+      /* 中文滑动双字（「降噪耳机」→ 降噪/噪耳/耳机），2 字整词保留，拉丁整词不动 */
       const toks = [];
-      rawToks.forEach((t) => {
-        if (/^[\u4e00-\u9fa5]+$/.test(t) && t.length >= 4) {
-          for (let i = 0; i + 1 < t.length; i += 2) toks.push(t.slice(i, i + 2));
+      normToks.forEach((t) => {
+        if (/^[一-龥]+$/.test(t) && t.length >= 3) {
+          for (let i = 0; i + 1 < t.length; i++) toks.push(t.slice(i, i + 2));
         } else toks.push(t);
       });
-      const phrase = rawToks.join(' ');
+      const phrase = normToks.join(' ');
       if (toks.length) {
         const scored = [];
         list.forEach((p) => {
@@ -383,10 +394,24 @@
         return r.items || [];
       }
       const t = text.toLowerCase();
-      const hits = DATA.products.filter((p) => {
+      /* 品牌别名反查：搜「苹果」也能联想 Apple 系（BRAND_ALIAS: 品牌 → 别名串） */
+      const aliasBrands = [];
+      const BA = window.BRAND_ALIAS || {};
+      Object.keys(BA).forEach((brand) => {
+        const words = (brand + ' ' + BA[brand]).toLowerCase().split(/\s+/).filter(Boolean);
+        if (words.some((w) => w === t || w.indexOf(t) === 0)) aliasBrands.push(brand);
+      });
+      const pool = visibleProducts(); /* 联想不给演示数据引流（问题 4） */
+      const direct = pool.filter((p) => {
         const n = String(p.name).toLowerCase(), b = String(p.brand).toLowerCase();
         return n.indexOf(t) !== -1 || b.indexOf(t) !== -1;
-      }).sort((a, b) => {
+      });
+      const seen = {};
+      const hits = direct.concat(aliasBrands.length
+        ? pool.filter((p) => aliasBrands.indexOf(p.brand) !== -1)
+          .sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 4)
+        : []).filter((p) => (seen[p.id] ? false : (seen[p.id] = true)));
+      hits.sort((a, b) => {
         const an = String(a.name).toLowerCase().indexOf(t) === 0 ? 0 : 1;
         const bn = String(b.name).toLowerCase().indexOf(t) === 0 ? 0 : 1;
         return an - bn || String(a.name).length - String(b.name).length;
@@ -416,7 +441,7 @@
         });
         return api.get('api/ranking?' + q.toString());
       }
-      let list = DATA.products.slice();
+      let list = visibleProducts().slice(); /* 榜单默认剔除演示数据（问题 4） */
       if (params.cat) list = list.filter((p) => p.category === params.cat);
       const key = params.sort || 'score';
       const dir = parseInt(params.dir != null ? params.dir : -1, 10) || -1;
@@ -435,7 +460,7 @@
     async timeline() {
       if (DATA.online) return api.get('api/timeline');
       const ymap = new Map();
-      DATA.products.forEach((p) => {
+      visibleProducts().forEach((p) => {
         const y = p.year || 0;
         if (!ymap.has(y)) ymap.set(y, []);
         ymap.get(y).push(p);
@@ -452,7 +477,7 @@
       if (DATA.online) return (await api.get('api/related?id=' + encodeURIComponent(id))).items || [];
       const base = DATA.byId[id];
       if (!base) return [];
-      return DATA.products.filter((p) => p.category === base.category && p.id !== id)
+      return visibleProducts().filter((p) => p.category === base.category && p.id !== id)
         .sort((a, b) => Math.abs((a.score || 0) - (base.score || 0)) - Math.abs((b.score || 0) - (base.score || 0)))
         .slice(0, 4);
     },
@@ -545,13 +570,22 @@
     favorites: store.get('favorites', []),
     compare: store.get('compare', []),
     reviews: store.get('reviews', {}),
-    theme: store.get('theme', 'dark')
+    theme: store.get('theme', 'dark'),
+    showDemo: store.get('showDemo', false) /* 演示（合成）数据默认隐藏 */
   };
 
   function saveState() {
     store.set('favorites', state.favorites);
     store.set('compare', state.compare);
     store.set('reviews', state.reviews);
+    store.set('showDemo', state.showDemo);
+  }
+
+  /* 演示数据治理：source=bulk 的合成样本默认不进任何决策入口，用户可显式开关 */
+  const isDemo = (p) => p && p.source === 'bulk';
+  const demoVisible = () => !!state.showDemo;
+  function visibleProducts() {
+    return demoVisible() ? DATA.products : DATA.products.filter((p) => !isDemo(p));
   }
 
   const isFav = (id) => state.favorites.indexOf(id) !== -1;
@@ -842,7 +876,7 @@
       (g.items || []).slice(0, 6).map((p) =>
         '<a class="tl-item" href="#/product/' + esc(p.id) + '">' +
           '<span class="tl-emoji">' + catIconOf(p) + '</span>' +
-          '<span><b>' + esc(p.name) + '</b><span>' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></span>' +
+          '<span><b>' + esc(p.name) + (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</b><span>' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></span>' +
         '</a>').join('') +
       '</div></div>').join('') + '</div>';
 
@@ -857,11 +891,15 @@
         '</div>' +
         searchChips +
         '<div class="hero-stats">' +
-          '<div class="stat"><b>' + fmtNum(st.total) + '</b><span>收录产品</span></div>' +
+          '<div class="stat"><b>' + fmtNum(st.curated != null ? st.curated : st.total) + '</b><span>真实精选</span></div>' +
           '<div class="stat"><b>' + fmtNum(st.leaves != null ? st.leaves : st.categories) + '</b><span>细分品类</span></div>' +
           '<div class="stat"><b>' + fmtNum(st.brands) + '</b><span>品牌</span></div>' +
           '<div class="stat"><b>' + esc(st.yearMin) + '–' + esc(st.yearMax) + '</b><span>年份跨度</span></div>' +
         '</div>' +
+        '<div class="demo-bar muted">演示（合成）数据 ' + fmtNum(st.bulk || 0) + ' 条，当前' +
+          (demoVisible() ? '已显示' : '已隐藏') +
+          ' <button class="chip' + (demoVisible() ? ' on' : '') + '" data-action="toggle-demo">' +
+          (demoVisible() ? '隐藏演示数据' : '显示演示数据') + '</button></div>' +
       '</section>' +
 
       '<section class="section">' +
@@ -888,6 +926,24 @@
         sectionHead('穿越时间线', '看看每一年诞生了什么', '#/timeline', '完整时间线 →') +
         timelinePreview +
       '</section>';
+  }
+
+  /* 零结果引导：拆词重试提示 + 换词建议（问题 38） */
+  async function emptyWithSuggest(q) {
+    let extra = '';
+    if (q) {
+      const first = q.split(/[\s,，、;；+]+/).filter(Boolean)[0] || q;
+      const sugs = (await Q.suggest(first)).slice(0, 5);
+      if (sugs.length) {
+        extra += '<div class="empty-suggest"><p class="muted">换个词试试：</p>' +
+          sugs.map((s) => '<a class="chip" href="#/product/' + esc(s.id) + '">' + catIconOf(s) + ' ' + esc(s.name) + '</a>').join('') + '</div>';
+      }
+      if (/[一-龥]/.test(q) && /[a-z0-9]/i.test(q)) {
+        const splitQ = q.replace(/([一-龥])([a-z0-9])/gi, '$1 $2').replace(/([a-z0-9])([一-龥])/gi, '$1 $2');
+        if (splitQ !== q) extra += '<p class="muted">可试试拆词搜索：<a href="#/products?q=' + encodeURIComponent(splitQ) + '">' + esc(splitQ) + '</a></p>';
+      }
+    }
+    return '<div class="empty"><span class="big">🕳️</span>没有找到匹配的产品。<br />试试更换关键词或清除筛选条件。' + extra + '</div>';
   }
 
   /* ================= 页面：产品列表 / 搜索 ================= */
@@ -925,7 +981,7 @@
     }
 
     const brandOptions = ['<option value="">全部品牌</option>']
-      .concat(brands.slice(0, 200).map((b) =>
+      .concat(brands.map((b) => /* 全量品牌，修复 201/656 静默截断（问题 11） */
         '<option value="' + esc(b) + '"' + (brand === b ? ' selected' : '') + '>' + esc(b) + '</option>')).join('');
 
     const eraOptions = [
@@ -938,15 +994,20 @@
       ['old', '年份旧→新'], ['priceDesc', '价格高→低'], ['priceAsc', '价格低→高'], ['name', '名称 A→Z']
     ].map((e) => '<option value="' + e[0] + '"' + (sort === e[0] ? ' selected' : '') + '>' + e[1] + '</option>').join('');
 
-    const body = (res.items && res.items.length)
-      ? (HL = q.toLowerCase().split(/\s+/).filter(Boolean), productGrid(res.items)) + pagination(res.page, Math.max(1, Math.ceil(res.total / res.pageSize)))
-      : '<div class="empty"><span class="big">🕳️</span>没有找到匹配的产品。<br />试试更换关键词或清除筛选条件。</div>';
+    let body;
+    if (res.items && res.items.length) {
+      HL = q.toLowerCase().split(/\s+/).filter(Boolean);
+      body = productGrid(res.items) + pagination(res.page, Math.max(1, Math.ceil(res.total / res.pageSize)));
+    } else {
+      body = await emptyWithSuggest(q);
+    }
     HL = [];
 
     return '' +
       '<div class="page-head">' +
         '<h1>' + (q ? '搜索：' + esc(q) : (leaf ? esc(leafNameOf(leaf, cats)) : (cat ? esc((cats.filter((c) => c.id === cat)[0] || {}).name || cat) : '全部产品'))) + '</h1>' +
-        '<p>' + (q ? '在 ' + fmtNum(meta.total) + ' 款产品中搜索' : '共收录 ' + fmtNum(meta.total) + ' 款产品，持续扩展中') + '</p>' +
+        '<p>' + (q ? '在 ' + fmtNum(meta.curated || meta.total) + ' 款真实产品中搜索' : '共收录 ' + fmtNum(meta.curated || meta.total) + ' 款真实精选产品' +
+          ((meta.bulk || 0) ? '，另有 ' + fmtNum(meta.bulk) + ' 条演示数据' + (demoVisible() ? '' : '（已隐藏）') : '')) + '</p>' +
       '</div>' +
       '<div class="filter-bar">' +
         catChips +
@@ -958,6 +1019,9 @@
       leafChips +
       '<div class="filter-bar" style="padding:10px 14px">' +
         '<span class="result-count">共 ' + fmtNum(res.total) + ' 个结果</span>' +
+        '<span class="spacer"></span>' +
+        '<button class="chip' + (demoVisible() ? ' on' : '') + '" data-action="toggle-demo">' +
+        (demoVisible() ? '演示数据：显示中' : '演示数据：已隐藏') + '</button>' +
       '</div>' +
       body;
   }
@@ -1158,7 +1222,7 @@
     };
 
     const headerRow = '<tr><th>产品</th>' + list.map((p) =>
-      '<td><div class="ct-name">' + esc(p.name) + '</div>' +
+      '<td><div class="ct-name">' + esc(p.name) + (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</div>' +
       '<div class="muted" style="font-size:11.5px">' + esc(p.brand) + ' · ' + esc(p.year) + '</div>' +
       '<button class="ct-remove" data-action="cmp" data-id="' + esc(p.id) + '" title="移出对比">✕</button></td>').join('') + '</tr>';
 
@@ -1222,6 +1286,7 @@
       '<tr>' +
         '<td class="num">' + (medals[(res.page - 1) * res.pageSize + i] || ((res.page - 1) * res.pageSize + i + 1)) + '</td>' +
         '<td class="rank-name"><a href="#/product/' + esc(p.id) + '">' + esc(p.name) + '</a>' +
+          (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') +
           '<span class="muted">' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></td>' +
         '<td class="num">' + esc(p.year) + '</td>' +
         '<td class="num" style="color:var(--accent);font-weight:700">' + fmtScore(p.score) + '</td>' +
@@ -1263,7 +1328,7 @@
         (g.items || []).map((p) =>
           '<a class="tl-item" href="#/product/' + esc(p.id) + '">' +
             '<span class="tl-emoji">' + catIconOf(p) + '</span>' +
-            '<span><b>' + esc(p.name) + '</b><span>' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></span>' +
+            '<span><b>' + esc(p.name) + (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</b><span>' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></span>' +
           '</a>').join('') +
         '</div></div>').join('') + '</div>';
   }
@@ -1459,13 +1524,15 @@
     });
   }
 
-  async function renderRoute() {
+  async function renderRoute(keepScroll) {
     const r = currentRoute();
     const app = $('#app');
     const head = r.parts[0] || '';
+    /* keepScroll：局部刷新（收藏/对比态变更）保留滚动位置，不把用户甩回页首（问题 9） */
+    const savedY = keepScroll ? (window.scrollY || window.pageYOffset || 0) : 0;
 
     /* 路由切换：滚动复位 + 轻量加载骨架，避免白屏闪烁 */
-    if (window.scrollTo) window.scrollTo(0, 0);
+    if (!keepScroll && window.scrollTo) window.scrollTo(0, 0);
     app.classList.remove('page-enter');
     app.innerHTML = '<div class="loading" style="min-height:320px">正在加载</div>';
 
@@ -1505,6 +1572,7 @@
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => app.classList.add('page-enter'));
     } else app.classList.add('page-enter');
+    if (keepScroll && window.scrollTo) window.scrollTo(0, savedY);
     refreshFavButtons();
     refreshCmpButtons();
     renderCompareTray();
@@ -1571,13 +1639,15 @@
     let sugSeq = 0; /* 竞态防护：旧请求的响应序号过期则丢弃 */
 
     function renderSuggest(items, q) {
+      box.setAttribute('role', 'listbox');
       box.innerHTML = items.map((p) =>
-        '<div class="suggest-item" data-goto="#/product/' + esc(p.id) + '">' +
+        '<div class="suggest-item" role="option" data-goto="#/product/' + esc(p.id) + '">' +
           '<span>' + catIconOf(p) + '</span>' +
-          '<span class="s-name"><b>' + esc(p.name) + '</b> · ' + esc(p.brand) + '</span>' +
+          '<span class="s-name"><b>' + esc(p.name) + '</b> · ' + esc(p.brand) +
+          (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</span>' +
           '<span class="s-cat">' + esc(p.categoryName || '') + '</span>' +
         '</div>').join('') +
-        '<div class="suggest-item" data-goto="#/products?q=' + encodeURIComponent(q) + '">' +
+        '<div class="suggest-item" role="option" data-goto="#/products?q=' + encodeURIComponent(q) + '">' +
           '<span>🔎</span><span class="s-name">查看 “' + esc(q) + '” 的全部结果</span></div>';
       box.hidden = false;
       sugIndex = -1;
@@ -1626,7 +1696,7 @@
     // 对比浮条清空
     $('#compare-clear').addEventListener('click', () => {
       state.compare = [];
-      saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute();
+      saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
     });
 
     // 全局委托点击
@@ -1645,19 +1715,25 @@
         const id = act.getAttribute('data-id');
 
         if (action === 'fav') {
-          toggleFav(id);
-          if (currentRoute().parts[0] === 'product') renderRoute();
+          toggleFav(id); /* 按钮态由 refreshFavButtons 局部更新，不整页重渲染甩回页首（问题 9） */
           return;
         }
         if (action === 'cmp') {
           toggleCompare(id);
-          const head = currentRoute().parts[0];
-          if (head === 'product' || head === 'compare') renderRoute();
+          /* 仅对比页内容真正变化时重绘，且保留滚动位置 */
+          if (currentRoute().parts[0] === 'compare') renderRoute(true);
           return;
         }
         if (action === 'cmp-clear-all') {
           state.compare = [];
-          saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute();
+          saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
+          return;
+        }
+        if (action === 'toggle-demo') {
+          state.showDemo = !state.showDemo;
+          store.set('showDemo', state.showDemo);
+          renderRoute();
+          toast(state.showDemo ? '演示数据已显示' : '演示数据已隐藏');
           return;
         }
         if (action === 'page') {
