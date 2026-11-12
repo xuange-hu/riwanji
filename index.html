@@ -27,8 +27,12 @@
     } catch (e) { /* noop */ }
   </script>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="alternate" type="application/rss+xml" title="日理万机 · 更新日志" href="feed.xml" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"日理万机 · 数码产品百科全书","url":"https://xuange-hu.github.io/riwanji/","potentialAction":{"@type":"SearchAction","target":"https://xuange-hu.github.io/riwanji/#/products?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
   <script>window.RLWJ_API = false;</script></head>
 <body>
+  <a class=\"skip-link\" href=\"#app\">跳到主内容</a>
+  <div id=\"route-live\" class=\"sr-only\" aria-live=\"polite\" aria-atomic=\"true\"></div>
   <header class="site-header">
     <div class="container header-inner">
       <a class="logo" href="#/">
@@ -51,7 +55,8 @@
       <div class="search-box" id="search-box">
         <span class="search-icon">🔍</span>
         <input id="global-search" type="search" autocomplete="off"
-               placeholder="搜索产品、品牌、参数……" aria-label="全站搜索" />
+               placeholder="搜索产品、品牌、参数……" aria-label="全站搜索"
+               role="combobox" aria-expanded="false" aria-controls="search-suggest" aria-autocomplete="list" />
         <div class="suggest" id="search-suggest" hidden></div>
       </div>
 

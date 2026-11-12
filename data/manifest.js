@@ -38,531 +38,6 @@ window.DB_MANIFEST = {
       "count": 21
     },
     {
-      "file": "data/gen/bulk-static-01.js",
-      "category": "3d-printer",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-02.js",
-      "category": "baby-monitor",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-03.js",
-      "category": "band",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-04.js",
-      "category": "battery",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-05.js",
-      "category": "cable-sleeve",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-06.js",
-      "category": "calculator",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-07.js",
-      "category": "camera",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-08.js",
-      "category": "camera-gear",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-09.js",
-      "category": "car-electronics",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-10.js",
-      "category": "case-fan",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-100.js",
-      "category": "tv",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-101.js",
-      "category": "tvbox",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-102.js",
-      "category": "video-conf",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-103.js",
-      "category": "vr",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-104.js",
-      "category": "watch",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-105.js",
-      "category": "workstation",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-11.js",
-      "category": "cleaning",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-12.js",
-      "category": "climate",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-13.js",
-      "category": "commercial",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-14.js",
-      "category": "components",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-15.js",
-      "category": "console",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-16.js",
-      "category": "cooler",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-17.js",
-      "category": "cpu",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-18.js",
-      "category": "desktop",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-19.js",
-      "category": "devboard",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-20.js",
-      "category": "diy-tool",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-21.js",
-      "category": "drawing-display",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-22.js",
-      "category": "drone",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-23.js",
-      "category": "earbud-case",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-24.js",
-      "category": "edu",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-25.js",
-      "category": "ereader",
-      "count": 96
-    },
-    {
-      "file": "data/gen/bulk-static-26.js",
-      "category": "ev-charger",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-27.js",
-      "category": "expansion",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-28.js",
-      "category": "fitness",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-29.js",
-      "category": "game-accessory",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-30.js",
-      "category": "gaming-furniture",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-31.js",
-      "category": "gateway",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-32.js",
-      "category": "glasses",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-33.js",
-      "category": "gpu",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-34.js",
-      "category": "headphone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-35.js",
-      "category": "hifi",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-36.js",
-      "category": "instrument",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-37.js",
-      "category": "intercom",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-38.js",
-      "category": "iot-module",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-39.js",
-      "category": "kitchen",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-40.js",
-      "category": "laptop",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-41.js",
-      "category": "laundry",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-42.js",
-      "category": "lens",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-43.js",
-      "category": "mcu",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-44.js",
-      "category": "measure-tool",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-45.js",
-      "category": "medical",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-46.js",
-      "category": "megaphone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-47.js",
-      "category": "mic",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-48.js",
-      "category": "mini-pc",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-49.js",
-      "category": "mobility",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-50.js",
-      "category": "monitor",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-51.js",
-      "category": "motherboard",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-52.js",
-      "category": "motor",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-53.js",
-      "category": "nas",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-54.js",
-      "category": "network-device",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-55.js",
-      "category": "outdoor",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-56.js",
-      "category": "pc-case",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-57.js",
-      "category": "peripheral",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-58.js",
-      "category": "personal-care",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-59.js",
-      "category": "pet-device",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-60.js",
-      "category": "phone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-61.js",
-      "category": "photo-frame",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-62.js",
-      "category": "power-module",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-63.js",
-      "category": "power-tool",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-64.js",
-      "category": "powerbank",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-65.js",
-      "category": "powerbank-case",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-66.js",
-      "category": "printer",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-67.js",
-      "category": "printer-photo",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-68.js",
-      "category": "projector",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-69.js",
-      "category": "psu",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-70.js",
-      "category": "ram",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-71.js",
-      "category": "rc-model",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-72.js",
-      "category": "relay-module",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-73.js",
-      "category": "retro-audio",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-74.js",
-      "category": "retro-camera",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-75.js",
-      "category": "retro-computer",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-76.js",
-      "category": "retro-console",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-77.js",
-      "category": "retro-phone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-78.js",
-      "category": "retro-tv",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-79.js",
-      "category": "robot",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-80.js",
-      "category": "robot-vacuum",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-81.js",
-      "category": "router",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-82.js",
-      "category": "rugged-phone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-83.js",
-      "category": "satellite-phone",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-84.js",
-      "category": "sensor",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-85.js",
-      "category": "sensor-module",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-86.js",
-      "category": "smart-appliance",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-87.js",
-      "category": "smart-cam",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-88.js",
-      "category": "smart-garden",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-89.js",
-      "category": "smart-kitchen-iot",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-90.js",
-      "category": "smart-light",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-91.js",
-      "category": "smart-lock",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-92.js",
-      "category": "smart-plug",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-93.js",
-      "category": "smart-speaker",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-94.js",
-      "category": "soundbar",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-95.js",
-      "category": "speaker",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-96.js",
-      "category": "storage",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-97.js",
-      "category": "studio-gear",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-98.js",
-      "category": "tablet",
-      "count": 95
-    },
-    {
-      "file": "data/gen/bulk-static-99.js",
-      "category": "thermal",
-      "count": 95
-    },
-    {
       "file": "data/headphone-2.js",
       "category": "headphone",
       "count": 15
@@ -658,6 +133,258 @@ window.DB_MANIFEST = {
       "count": 5
     }
   ],
+  "bulk": [
+    {
+      "file": "data/gen/bulk-static-01.js",
+      "category": "phone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-02.js",
+      "category": "phone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-03.js",
+      "category": "phone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-04.js",
+      "category": "tablet",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-05.js",
+      "category": "satellite-phone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-06.js",
+      "category": "laptop",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-07.js",
+      "category": "desktop",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-08.js",
+      "category": "cpu",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-09.js",
+      "category": "motherboard",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-10.js",
+      "category": "psu",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-11.js",
+      "category": "case-fan",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-12.js",
+      "category": "monitor",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-13.js",
+      "category": "tv",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-14.js",
+      "category": "soundbar",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-15.js",
+      "category": "headphone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-16.js",
+      "category": "speaker",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-17.js",
+      "category": "instrument",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-18.js",
+      "category": "camera",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-19.js",
+      "category": "lens",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-20.js",
+      "category": "drone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-21.js",
+      "category": "game-accessory",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-22.js",
+      "category": "watch",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-23.js",
+      "category": "band",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-24.js",
+      "category": "personal-care",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-25.js",
+      "category": "smart-speaker",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-26.js",
+      "category": "smart-cam",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-27.js",
+      "category": "smart-light",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-28.js",
+      "category": "sensor",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-29.js",
+      "category": "smart-appliance",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-30.js",
+      "category": "smart-garden",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-31.js",
+      "category": "pet-device",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-32.js",
+      "category": "kitchen",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-33.js",
+      "category": "cleaning",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-34.js",
+      "category": "climate",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-35.js",
+      "category": "devboard",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-36.js",
+      "category": "iot-module",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-37.js",
+      "category": "motor",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-38.js",
+      "category": "diy-tool",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-39.js",
+      "category": "power-tool",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-40.js",
+      "category": "battery",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-41.js",
+      "category": "network-device",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-42.js",
+      "category": "peripheral",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-43.js",
+      "category": "printer",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-44.js",
+      "category": "car-electronics",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-45.js",
+      "category": "edu",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-46.js",
+      "category": "medical",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-47.js",
+      "category": "powerbank-case",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-48.js",
+      "category": "retro-computer",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-49.js",
+      "category": "retro-phone",
+      "count": 200
+    },
+    {
+      "file": "data/gen/bulk-static-50.js",
+      "category": "retro-tv",
+      "count": 200
+    }
+  ],
   "enrich": [
     "data/enrich/media-1.js",
     "data/enrich/media-2.js",
@@ -668,5 +395,6 @@ window.DB_MANIFEST = {
     "data/enrich/media-7.js",
     "data/enrich/media-8.js",
     "data/enrich/media-9.js"
-  ]
+  ],
+  "index": "data/index.js"
 };

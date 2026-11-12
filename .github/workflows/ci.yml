@@ -1,0 +1,20 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # 数据 schema / 分片完整性校验
+      - run: node tools/validate.js
+      # 统计口径单源校验（README 数字与实算一致，问题 12/37）
+      - run: node tools/stats.js --check
+      # 渲染回归（沙箱加载 app.js 全量跑 17 项断言）
+      - run: node tools/smoke-test.js
+      # 静态托管就绪度审计
+      - run: node tools/static-audit.js

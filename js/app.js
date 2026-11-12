@@ -24,6 +24,31 @@
   const fmtScore = (n) => (typeof n === 'number' ? n.toFixed(1) : '–');
   const fmtNum = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : String(n));
 
+  /* 可撤销 Toast（问题 31）：5 秒内点「撤销」回滚快照 */
+  function toastUndo(msg, undoFn) {
+    let el = $('#toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'toast';
+      el.className = 'toast';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '';
+    el.appendChild(document.createTextNode(msg + ' '));
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = '撤销';
+    b.className = 'toast-undo';
+    b.addEventListener('click', () => {
+      el.classList.remove('show');
+      undoFn();
+    });
+    el.appendChild(b);
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
   /* 轻量 Toast 提示 */
   function toast(msg) {
     let el = $('#toast');
@@ -48,6 +73,18 @@
     document.body.removeChild(ta);
   }
 
+  /* 集中配置（问题 41）：散落的魔法数字统一收口 */
+  const CONFIG = {
+    PAGE_SIZE: 24,         /* 列表每页条数 */
+    TIMELINE_PREVIEW: 8,   /* 时间线每年默认展示条数 */
+    RECENT_MAX: 8,         /* 最近搜索保留条数 */
+    COMPARE_MAX: 3         /* 对比上限 */
+  };
+
+  /* 诊断计数器（问题 42）：线上静默失败可观测，关于页有面板 */
+  const DIAG = { shardOk: 0, shardFail: 0, imgFail: 0 };
+  window.__rlwjDiag = DIAG;
+
   const store = {
     get(k, d) {
       try { const v = JSON.parse(localStorage.getItem('rlwj:' + k)); return v == null ? d : v; }
@@ -71,7 +108,7 @@
     brands: []
   };
 
-  const PAGE_SIZE = 24;
+  const PAGE_SIZE = CONFIG.PAGE_SIZE;
 
   const api = {
     async get(path) {
@@ -120,6 +157,30 @@
         cat.count++;
       });
     });
+
+    /* bulk 轻索引合并（问题 3）：列表/搜索/排序用轻量字段即可，详情/对比走 ensureFull 懒补全 */
+    const bulkIdx = window.DB_BULK_INDEX;
+    if (Array.isArray(bulkIdx) && bulkIdx.length) {
+      const bcats = window.DB_BULK_CATS || {};
+      Object.keys(bcats).forEach((k) => {
+        if (!catMap.has(k)) {
+          catMap.set(k, { id: k, name: bcats[k].name || k, icon: bcats[k].icon || '📦', description: bcats[k].description || '', count: 0 });
+        }
+      });
+      bulkIdx.forEach((e) => {
+        if (!e || !e.id || idSet.has(e.id)) return;
+        idSet.add(e.id);
+        const cat = catMap.get(e.category);
+        const p = Object.assign({}, e);
+        p.categoryName = cat ? cat.name : (e.categoryName || e.category);
+        p.source = e.source || 'bulk';
+        p._lite = true;
+        p._shard = e.shard;
+        p._hay = buildHaystack(p);
+        DATA.products.push(p);
+        if (cat) cat.count++;
+      });
+    }
 
     DATA.cats = Array.from(catMap.values());
     DATA.catById = {};
@@ -178,13 +239,50 @@
     };
   }
 
+  /* ---- 懒加载补全（问题 3）：轻索引产品首次进详情/对比时拉完整分片 ---- */
+  const FULL_LOADED = new Set();
+  async function ensureFull(p) {
+    if (!p || DATA.online || !p._lite) return p;
+    const f = p._shard;
+    if (f && !FULL_LOADED.has(f) && (await loadShard(f))) FULL_LOADED.add(f);
+    const chunks = window.DB_CHUNKS || [];
+    for (const c of chunks) {
+      for (const full of (c.products || [])) {
+        if (!full || full.id !== p.id) continue;
+        /* 媒体补充字段随对象替换保留 */
+        if (p.image && !full.image) full.image = p.image;
+        if (p.images && !full.images) full.images = p.images;
+        if (p.media && !full.media) full.media = p.media;
+        full.category = full.category || p.category;
+        full.categoryName = full.categoryName || p.categoryName;
+        full.source = full.source || p.source;
+        full._hay = buildHaystack(full);
+        const i = DATA.products.indexOf(p);
+        if (i >= 0) DATA.products[i] = full; else DATA.products.push(full);
+        DATA.byId[p.id] = full;
+        return full;
+      }
+    }
+    return p; /* 分片缺失时轻索引条目仍可渲染（降级不空白） */
+  }
+
   function loadShard(file) {
+    /* 失败自动重试 1 次 + 可观测（问题 6）：不再静默 resolve(false) */
     return new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.src = file;
-      s.onload = () => resolve(true);
-      s.onerror = () => resolve(false);
-      document.head.appendChild(s);
+      const attempt = (left) => {
+        const s = document.createElement('script');
+        s.src = file;
+        s.onload = () => { DIAG.shardOk++; resolve(true); };
+        s.onerror = () => {
+          if (left > 0) { attempt(left - 1); return; }
+          DIAG.shardFail++;
+          console.warn('[rlwj] 数据分片加载失败：' + file);
+          toast('数据分片加载失败：' + file + '（可刷新重试）');
+          resolve(false);
+        };
+        document.head.appendChild(s);
+      };
+      attempt(1);
     });
   }
 
@@ -198,7 +296,11 @@
     const enrichFiles = (manifest.enrich && manifest.enrich.length)
       ? manifest.enrich
       : [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => 'data/enrich/media-' + i + '.js');
-    const totalShards = manifest.shards.length + enrichFiles.length;
+    /* bulk 演示分片改走轻索引 + 按需懒加载（问题 3）：
+       原实现启动即全量注入 147 个分片（解码 ≈18.7MB），现在首屏只拉精选分片 + 索引 */
+    const bulkFiles = (manifest.bulk || []).map((s) => s.file || s);
+    const useIndex = !!(manifest.index && bulkFiles.length);
+    const totalShards = manifest.shards.length + enrichFiles.length + (useIndex ? 1 : bulkFiles.length);
     app.innerHTML = '<div class="loading">正在载入产品库…… <span id="load-progress">0 / ' + totalShards + '</span> 个数据分片</div>';
     /* 进度随分片装载实时更新（原实现只写一次文案，用户无法区分加载中与卡死） */
     let loadedCount = 0;
@@ -210,6 +312,11 @@
     await Promise.all(manifest.shards.map((s) => loadShard(s.file || s).then(tickProgress)));
     /* 媒体/图片补充数据：清单由 build-manifest 写入 manifest.enrich（原硬编码 1..12，越界产生 404） */
     await Promise.all(enrichFiles.map((f) => loadShard(f).then(tickProgress)));
+    if (useIndex) {
+      await loadShard(manifest.index).then(tickProgress); /* 轻索引 ≈3MB，覆盖全部 bulk */
+    } else {
+      await Promise.all(bulkFiles.map((f) => loadShard(f).then(tickProgress)));
+    }
     buildStaticDB();
   }
 
@@ -239,7 +346,8 @@
       });
       const timeline = Array.from(ymap.keys()).sort((a, b) => b - a).map((y) => ({
         year: y, count: ymap.get(y).length,
-        items: ymap.get(y).slice().sort(byYear).slice(0, 8)
+        all: ymap.get(y).slice().sort(byYear), /* 全量保留，页面可展开（问题 27） */
+        items: ymap.get(y).slice().sort(byYear).slice(0, CONFIG.TIMELINE_PREVIEW)
       }));
       return {
         stats: {
@@ -421,7 +529,7 @@
 
     async product(id) {
       if (DATA.online) return api.get('api/product/' + encodeURIComponent(id));
-      return DATA.byId[id] || null;
+      return ensureFull(DATA.byId[id] || null);
     },
 
     async byIds(ids) {
@@ -466,10 +574,14 @@
         ymap.get(y).push(p);
       });
       return {
-        years: Array.from(ymap.keys()).sort((a, b) => b - a).map((y) => ({
-          year: y, count: ymap.get(y).length,
-          items: ymap.get(y).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 8)
-        }))
+        years: Array.from(ymap.keys()).sort((a, b) => b - a).map((y) => {
+          const sorted = ymap.get(y).sort((a, b) => (b.score || 0) - (a.score || 0));
+          return {
+            year: y, count: sorted.length,
+            all: sorted.slice(), /* 全量保留，页面可展开（问题 27） */
+            items: sorted.slice(0, CONFIG.TIMELINE_PREVIEW)
+          };
+        })
       };
     },
 
@@ -570,8 +682,11 @@
     favorites: store.get('favorites', []),
     compare: store.get('compare', []),
     reviews: store.get('reviews', {}),
-    theme: store.get('theme', 'dark'),
-    showDemo: store.get('showDemo', false) /* 演示（合成）数据默认隐藏 */
+    /* 默认跟随系统主题（问题 28）；手动切换后写 themeAuto=false 不再跟随 */
+    theme: store.get('theme', (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'),
+    showDemo: store.get('showDemo', false), /* 演示（合成）数据默认隐藏 */
+    tlOpen: new Set(),  /* 时间线年份展开态（瞬态） */
+    cmpDiff: false      /* 对比「只看差异」开关（瞬态） */
   };
 
   function saveState() {
@@ -730,8 +845,8 @@
     else if (DATA.online) src = 'api/image/' + encodeURIComponent(p.id);
     else src = posterURI(p);
     IMG_REGISTRY[String(p.id)] = p;
-    return '<img loading="lazy" src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
-      'onerror="window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />';
+    return '<img loading="lazy" width="640" height="480" src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
+      'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />';
   }
 
   /* 产品图集渲染：主图 + 缩略图条（≥3 张），点击切换主图 */
@@ -740,15 +855,16 @@
     IMG_REGISTRY[String(p.id)] = p;
     return '<div class="gallery" data-pid="' + esc(String(p.id)) + '">' +
       '<div class="gallery-main">' +
-        '<img id="gallery-main-img" loading="lazy" src="' + esc(imgs[0]) + '" alt="' + esc(p.name) + '" ' +
-        'onerror="window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />' +
+        '<img id="gallery-main-img" loading="lazy" width="640" height="480" src="' + esc(imgs[0]) + '" alt="' + esc(p.name) + '" ' +
+        'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />' +
         '<span class="gallery-count">' + imgs.length + ' 图</span>' +
       '</div>' +
       '<div class="gallery-thumbs">' +
         imgs.map((src, i) =>
-          '<img class="gallery-thumb' + (i === 0 ? ' active' : '') + '" loading="lazy" src="' + esc(src) + '" ' +
+          '<img class="gallery-thumb' + (i === 0 ? ' active' : '') + '" loading="lazy" width="144" height="144" src="' + esc(src) + '" ' +
+          'role="button" tabindex="0" aria-label="查看第 ' + (i + 1) + ' 张图" ' +
           'data-action="gallery-thumb" data-src="' + esc(src) + '" alt="' + esc(p.name) + ' 图' + (i + 1) + '" ' +
-          'onerror="window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />').join('') +
+          'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />').join('') +
       '</div>' +
     '</div>';
   }
@@ -819,28 +935,58 @@
     const btn = (label, p, disabled, cls) =>
       '<button class="btn btn-sm ' + (cls || 'btn-ghost') + '" data-action="page" data-page="' + p + '"' +
       (disabled ? ' disabled style="opacity:.45"' : '') + '>' + label + '</button>';
+    /* 页码窗口 + 跳页（问题 26）：首尾 + 当前 ±2 + 省略号 */
+    const nums = [];
+    const push = (n) => { if (n >= 1 && n <= pages && nums.indexOf(n) === -1) nums.push(n); };
+    push(1); push(2);
+    for (let n = page - 2; n <= page + 2; n++) push(n);
+    push(pages - 1); push(pages);
+    nums.sort((a, b) => a - b);
+    let out = '';
+    let prev = 0;
+    nums.forEach((n) => {
+      if (n - prev > 1) out += '<span class="muted" style="font-size:12px;padding:0 3px">…</span>';
+      out += (n === page)
+        ? '<button class="btn btn-sm btn-primary" disabled>' + n + '</button>'
+        : btn(String(n), n, false);
+      prev = n;
+    });
     return '<div class="pagination">' +
-      btn('« 上一页', page - 1, page <= 1) +
-      '<span class="muted" style="font-size:13px">第 ' + page + ' / ' + pages + ' 页</span>' +
+      btn('« 上一页', page - 1, page <= 1) + out +
       btn('下一页 »', page + 1, page >= pages) +
+      '<span class="muted" style="font-size:13px">第 ' + page + ' / ' + pages + ' 页</span>' +
+      '<input id="page-goto" type="number" min="1" max="' + pages + '" placeholder="跳页" ' +
+        'aria-label="跳到指定页" style="width:64px;height:30px;border-radius:8px;border:1px solid var(--border-strong);background:var(--card);color:var(--text);padding:0 8px;font-size:12.5px" />' +
       '</div>';
   }
 
   /* ================= 页面：首页 ================= */
 
   /* 热搜词（基于真实型号/品牌，非空想）+ 最近搜索（localStorage） */
-  const HOT_WORDS = ['iPhone 4', '徕卡', '降噪耳机', 'PS5', 'RTX 4090', 'AirPods Pro',
-    'Find X6', 'Nintendo Switch', '机械键盘', '智能手表', '无人机', '单反相机',
-    'Nokia 3310', 'iPod', 'Mavic 3', 'iPad Pro', 'Walkman', 'Kindle'];
+  /* 热搜词（问题 46）：以在售品类/品牌为主，压降怀旧词占比，词条均可在库内命中 */
+  const HOT_WORDS = ['降噪耳机', '智能手表', '机械键盘', '游戏本', '无人机', '单反相机',
+    'iPad Pro', 'AirPods Pro', 'RTX 4090', 'PS5', 'Nintendo Switch', '固态硬盘',
+    '4K 显示器', '投影仪', '移动电源', '机械轴', 'Switch OLED', 'Kindle'];
   function recentSearches() {
-    try { return JSON.parse(localStorage.getItem('riwanji.recent') || '[]'); } catch (e) { return []; }
+    try {
+      /* 存储前缀统一（问题 29）：旧键 riwanji.recent 一次性迁移 */
+      const cur = localStorage.getItem('rlwj:recent');
+      if (cur != null) return JSON.parse(cur) || [];
+      const legacy = localStorage.getItem('riwanji.recent');
+      if (legacy != null) {
+        localStorage.setItem('rlwj:recent', legacy);
+        localStorage.removeItem('riwanji.recent');
+        return JSON.parse(legacy) || [];
+      }
+      return [];
+    } catch (e) { return []; }
   }
   function pushRecent(term) {
     if (!term) return;
     try {
       const list = recentSearches().filter((x) => x !== term);
       list.unshift(term);
-      localStorage.setItem('riwanji.recent', JSON.stringify(list.slice(0, 8)));
+      localStorage.setItem('rlwj:recent', JSON.stringify(list.slice(0, CONFIG.RECENT_MAX)));
     } catch (e) { /* 忽略 */ }
   }
 
@@ -848,7 +994,7 @@
     const data = await Q.home();
     const st = data.stats;
 
-    const catCards = (data.categories || []).map((c) =>
+    const catCards = (data.categories || []).slice(0, 12).map((c) =>
       '<a class="card cat-card" href="#/products?cat=' + esc(c.id) + '">' +
         '<span class="cat-icon">' + c.icon + '</span>' +
         '<h3>' + esc(c.name) + '</h3>' +
@@ -919,7 +1065,10 @@
 
       '<section class="section">' +
         sectionHead('品类之王', '每个品类里编辑评分最高的那一台', '#/ranking') +
-        productGrid(data.topPerCat) +
+        productGrid((data.topPerCat || []).slice(0, 12)) +
+        (data.topPerCat && data.topPerCat.length > 12
+          ? '<div style="margin-top:14px"><a class="btn btn-ghost" href="#/ranking">查看全部 ' + data.topPerCat.length + ' 个品类 →</a></div>'
+          : '') +
       '</section>' +
 
       '<section class="section">' +
@@ -1154,23 +1303,25 @@
   function renderUserReviews(p) {
     const list = (state.reviews[p.id] || []);
     const items = list.length
-      ? list.slice().reverse().map((r) =>
+      ? list.slice().reverse().map((r, ri) =>
           '<div class="review-item">' +
             '<div class="r-head"><span class="r-name">' + esc(r.name || '匿名用户') + '</span>' +
-            '<span class="r-score">' + esc(r.score) + '/10</span></div>' +
+            '<span class="r-score">' + esc(r.score) + '/10</span>' +
+            '<button class="review-del" data-action="review-del" data-id="' + esc(p.id) + '" data-idx="' + (list.length - 1 - ri) + '" aria-label="删除这条笔记">✕</button></div>' +
             '<div class="r-date">' + esc(r.date) + '</div>' +
             '<p>' + esc(r.text) + '</p>' +
           '</div>').join('')
-      : '<div class="empty" style="padding:34px">还没有用户评价，来写第一条吧 ✍️</div>';
+      : '<div class="empty" style="padding:34px">还没有本机笔记，来写第一条吧 ✍️</div>';
 
     return '' +
       '<section class="user-reviews">' +
-        '<h2>用户评价（' + list.length + '）</h2>' +
+        '<h2>我的本机笔记（' + list.length + '）<span class="muted" style="font-size:11.5px;font-weight:400"> · 仅保存在本机浏览器，不上传、不同步</span></h2>' +
         '<form class="review-form" id="review-form" data-id="' + esc(p.id) + '">' +
           '<div class="row">' +
             '<input name="name" maxlength="20" placeholder="你的昵称（可留空）" />' +
             '<select name="score">' +
-              Array.from({ length: 10 }, (_, i) => '<option value="' + (10 - i) + '"' + (10 - i === 8 ? ' selected' : '') + '>' + (10 - i) + ' 分</option>').join('') +
+              '<option value="" disabled selected>给个分</option>' +
+              Array.from({ length: 10 }, (_, i) => '<option value="' + (10 - i) + '">' + (10 - i) + ' 分</option>').join('') +
             '</select>' +
           '</div>' +
           '<textarea name="text" maxlength="500" required placeholder="说说你对 ' + esc(p.name) + ' 的看法……（将保存在本机浏览器）"></textarea>' +
@@ -1182,8 +1333,21 @@
 
   /* ================= 页面：对比 ================= */
 
-  async function renderCompare() {
-    const list = await Q.byIds(state.compare.filter(Boolean));
+  async function renderCompare(query) {
+    /* 分享链接导入（问题 30）：#/compare?ids=a,b,c 直接还原对比组合 */
+    if (query && query.get('ids')) {
+      const ids = query.get('ids').split(',').map(safeDecode).filter(Boolean).slice(0, CONFIG.COMPARE_MAX);
+      let changed = false;
+      ids.forEach((id) => { if (state.compare.indexOf(id) === -1) { state.compare.push(id); changed = true; } });
+      if (changed) {
+        state.compare = state.compare.slice(-CONFIG.COMPARE_MAX);
+        saveState();
+        renderCompareTray();
+      }
+    }
+    const base = await Q.byIds(state.compare.filter(Boolean));
+    /* 对比需要完整 specs/评分维度：轻索引产品先懒补全（问题 3） */
+    const list = DATA.online ? base : await Promise.all(base.map((p) => ensureFull(p)));
 
     const picker =
       '<div class="compare-picker">' +
@@ -1235,33 +1399,52 @@
         '</td>').join('') + '</tr>';
     };
 
+    const rowObj = (html, diff) => ({ html: html, diff: !!diff });
+    const uniqOf = (vals) => new Set(vals.map((v) => String(v))).size > 1;
     const rows = [
-      '<tr><td>品类</td>' + list.map((p) => '<td>' + esc(p.categoryName || '') + '</td>').join('') + '</tr>',
-      scoreRow('编辑评分', list.map((p) => p.score), ' /10'),
-      scoreRow('用户评分', list.map((p) => p.userScore), ' /10'),
-      '<tr><td>上市年份</td>' + list.map((p) => '<td>' + esc(p.year) + '</td>').join('') + '</tr>',
-      '<tr><td>上市价格</td>' + list.map((p) =>
+      rowObj('<tr><td>品类</td>' + list.map((p) => '<td>' + esc(p.categoryName || '') + '</td>').join('') + '</tr>',
+        uniqOf(list.map((p) => p.categoryName || ''))),
+      rowObj(scoreRow('编辑评分', list.map((p) => p.score), ' /10'), uniqOf(list.map((p) => p.score))),
+      rowObj(scoreRow('用户评分', list.map((p) => p.userScore), ' /10'), uniqOf(list.map((p) => p.userScore))),
+      rowObj('<tr><td>上市年份</td>' + list.map((p) => '<td>' + esc(p.year) + '</td>').join('') + '</tr>',
+        uniqOf(list.map((p) => p.year))),
+      rowObj('<tr><td>上市价格</td>' + list.map((p) =>
         '<td' + (p.price === best(list.map((x) => x.price), false) ? ' class="best"' : '') + '>' +
-        esc(p.priceText || '–') + '</td>').join('') + '</tr>'
+        esc(p.priceText || '–') + '</td>').join('') + '</tr>',
+        uniqOf(list.map((p) => p.price)))
     ].concat(
-      dims.map((d) => scoreRow(d, list.map((p) => dimOf(p, d)))),
+      dims.map((d) => rowObj(scoreRow(d, list.map((p) => dimOf(p, d))), uniqOf(list.map((p) => dimOf(p, d))))),
       specKeys.map((k) => {
         const vals = list.map((p) => specOf(p, k));
         /* 差异高亮：该项取值不唯一时，全部单元格加 diff 淡描边，方便逐项比对 */
         const uniq = new Set(vals.map((v) => String(v)));
-        const diffCls = (list.length > 1 && uniq.size > 1) ? ' class="diff"' : '';
-        return '<tr><td>' + esc(k) + '</td>' + vals.map((v) => '<td' + diffCls + '>' + esc(v) + '</td>').join('') + '</tr>';
+        const diff = list.length > 1 && uniq.size > 1;
+        const diffCls = diff ? ' class="diff"' : '';
+        return rowObj('<tr><td>' + esc(k) + '</td>' + vals.map((v) => '<td' + diffCls + '>' + esc(v) + '</td>').join('') + '</tr>', diff);
       }),
-      ['<tr><td>优点</td>' + list.map((p) => '<td style="text-align:left;font-size:12.5px">' +
-        (p.pros || []).map((x) => '✓ ' + esc(x)).join('<br />') + '</td>').join('') + '</tr>',
-       '<tr><td>不足</td>' + list.map((p) => '<td style="text-align:left;font-size:12.5px">' +
-        (p.cons || []).map((x) => '✕ ' + esc(x)).join('<br />') + '</td>').join('') + '</tr>']
+      [rowObj('<tr><td>优点</td>' + list.map((p) => '<td style="text-align:left;font-size:12.5px">' +
+        (p.pros || []).map((x) => '✓ ' + esc(x)).join('<br />') + '</td>').join('') + '</tr>', false),
+       rowObj('<tr><td>不足</td>' + list.map((p) => '<td style="text-align:left;font-size:12.5px">' +
+        (p.cons || []).map((x) => '✕ ' + esc(x)).join('<br />') + '</td>').join('') + '</tr>', false)]
     );
+    const shownRows = (state.cmpDiff && list.length > 1) ? rows.filter((r) => r.diff) : rows;
+    const diffCount = rows.filter((r) => r.diff).length;
+    const crossCat = new Set(list.map((p) => p.category)).size > 1;
+    const diffToggle = list.length > 1
+      ? '<div class="filter-bar">' +
+          '<button class="chip' + (state.cmpDiff ? '' : ' on') + '" data-action="cmp-diff" data-value="0">全部参数</button>' +
+          '<button class="chip' + (state.cmpDiff ? ' on' : '') + '" data-action="cmp-diff" data-value="1">只看差异（' + diffCount + ' 项）</button>' +
+          '<button class="chip" data-action="cmp-share">🔗 复制对比链接</button>' +
+        '</div>'
+      : '<div class="filter-bar"><button class="chip" data-action="cmp-share">🔗 复制对比链接</button></div>';
 
     return '' +
-      '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / 3 款产品（绿色为该项最优，淡黄底色为存在差异的参数项）</p></div>' +
-      picker +
-      '<div class="table-scroll"><table class="compare-table"><thead>' + headerRow + '</thead><tbody>' + rows.join('') + '</tbody></table></div>';
+      '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / ' + CONFIG.COMPARE_MAX + ' 款产品（绿色为该项最优，淡黄底色为存在差异的参数项）' +
+      (crossCat ? ' · <b style="color:#eab308">跨品类对比：参数取并集，缺失项显示 –</b>' : '') + '</p></div>' +
+      picker + diffToggle +
+      (state.cmpDiff && !shownRows.length ? '<div class="empty">所选产品参数完全一致</div>' : '') +
+      '<div class="table-scroll"><table class="compare-table"><thead>' + headerRow + '</thead><tbody>' +
+      shownRows.map((r) => r.html).join('') + '</tbody></table></div>';
   }
 
   /* ================= 页面：排行榜 ================= */
@@ -1275,16 +1458,20 @@
     const meta = await Q.meta();
     const res = await Q.ranking({ cat, sort, dir, page, pageSize: 50 });
 
+    /* 表头排序按钮化（问题 10）：th 内真实 button，键盘可 Tab 可回车 */
     const th = (label, k) => {
       const isSorted = sort === k;
-      return '<th class="' + (isSorted ? 'sorted' : '') + '" data-action="rank-sort" data-key="' + k + '">' +
-        label + (isSorted ? (dir === -1 ? ' ↓' : ' ↑') : '') + '</th>';
+      return '<th class="' + (isSorted ? 'sorted' : '') + '"' +
+        (isSorted ? ' aria-sort="' + (dir === -1 ? 'descending' : 'ascending') + '"' : '') + '>' +
+        '<button class="th-sort" data-action="rank-sort" data-key="' + k + '">' +
+        label + (isSorted ? (dir === -1 ? ' ↓' : ' ↑') : '') + '</button></th>';
     };
 
     const medals = ['🥇', '🥈', '🥉'];
     const rows = (res.items || []).map((p, i) =>
       '<tr>' +
-        '<td class="num">' + (medals[(res.page - 1) * res.pageSize + i] || ((res.page - 1) * res.pageSize + i + 1)) + '</td>' +
+        '<td class="num">' + (medals[(res.page - 1) * res.pageSize + i] || ((res.page - 1) * res.pageSize + i + 1)) +
+          (medals[(res.page - 1) * res.pageSize + i] ? '<span class="sr-only">第 ' + ((res.page - 1) * res.pageSize + i + 1) + ' 名</span>' : '') + '</td>' +
         '<td class="rank-name"><a href="#/product/' + esc(p.id) + '">' + esc(p.name) + '</a>' +
           (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') +
           '<span class="muted">' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></td>' +
@@ -1323,14 +1510,22 @@
     return '' +
       '<div class="page-head"><h1>产品时间线</h1><p>从 ' + years[years.length - 1].year + ' 年到 ' + years[0].year +
       ' 年，' + fmtNum(years.reduce((n, y) => n + (y.count || 0), 0)) + ' 款产品的诞生轨迹</p></div>' +
-      '<div class="timeline">' + years.map((g) =>
-        '<div class="tl-year"><h3>' + esc(g.year) + '</h3><div class="tl-items">' +
-        (g.items || []).map((p) =>
+      '<div class="timeline">' + years.map((g) => {
+        const open = state.tlOpen.has(String(g.year));
+        const items = (open && g.all && g.all.length) ? g.all : (g.items || []);
+        const total = (g.all && g.all.length) ? g.all.length : items.length;
+        const more = total > items.length
+          ? '<button class="btn btn-ghost btn-sm" data-action="tl-more" data-year="' + esc(g.year) + '" style="margin:6px 0 2px 28px">展开全年 ' + total + ' 款 →</button>'
+          : (open ? '<button class="btn btn-ghost btn-sm" data-action="tl-more" data-year="' + esc(g.year) + '" style="margin:6px 0 2px 28px">收起 ↑</button>' : '');
+        return '<div class="tl-year"><h3>' + esc(g.year) + '</h3><div class="tl-items">' +
+        items.map((p) =>
           '<a class="tl-item" href="#/product/' + esc(p.id) + '">' +
             '<span class="tl-emoji">' + catIconOf(p) + '</span>' +
             '<span><b>' + esc(p.name) + (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</b><span>' + esc(p.brand) + ' · ' + esc(p.categoryName || '') + '</span></span>' +
           '</a>').join('') +
-        '</div></div>').join('') + '</div>';
+        more +
+        '</div></div>';
+      }).join('') + '</div>';
   }
 
   /* ================= 页面：收藏 ================= */
@@ -1338,7 +1533,8 @@
   async function renderFavorites() {
     const list = await Q.byIds(state.favorites);
     return '' +
-      '<div class="page-head"><h1>我的收藏</h1><p>收藏保存在本机浏览器，共 ' + list.length + ' 款</p></div>' +
+      '<div class="page-head"><h1>我的收藏</h1><p>收藏保存在本机浏览器，共 ' + list.length + ' 款</p>' +
+      (list.length ? '<button class="btn btn-ghost btn-sm" data-action="fav-clear-all" style="margin-top:8px">清空收藏</button>' : '') + '</div>' +
       (list.length ? productGrid(list) :
         '<div class="empty"><span class="big">🤍</span>还没有收藏任何产品。<br />在产品卡片上点击 ♥ 按钮添加收藏。</div>');
   }
@@ -1466,6 +1662,12 @@
     return '' +
       '<div class="page-head"><h1>关于「日理万机」</h1><p>数码产品百科全书 · 数据驱动 · 持续扩展</p></div>' +
       '<div class="about-grid">' +
+        '<div class="card"><h3>🩺 诊断面板（本机会话）</h3>' +
+          '<p>数据分片加载：成功 <b>' + DIAG.shardOk + '</b> / 失败 <b>' + DIAG.shardFail + '</b>；' +
+          '图片加载失败降级为本地海报 <b>' + DIAG.imgFail + '</b> 次。' +
+          (DIAG.shardFail ? '<br /><b style="color:#eab308">存在分片加载失败，刷新可重试；失败文件名见浏览器控制台 warn。</b>' : '') +
+          '</p></div>' +
+
         '<div class="card"><h3>📖 这是什么</h3>' +
           '<p>「日理万机」收录手机、平板、耳机、相机、笔记本、智能手表、游戏机、音箱等品类的数码产品，' +
           '提供详细参数、客观评测、主观点评、编辑评分、用户口碑与横向对比。当前收录 <b>' + fmtNum(meta.total) +
@@ -1547,11 +1749,15 @@
       : head === 'brand' ? (safeDecode(r.parts[1]) + ' 品牌馆 —— 日理万机')
         : (TITLES[head] || '页面不存在') + (TITLES[head] ? ' —— 日理万机' : ''));
 
+    /* 路由播报（问题 17）：aria-live 告知读屏用户页面已切换 */
+    const live = document.getElementById('route-live');
+    if (live) live.textContent = document.title;
+
     try {
       if (head === '') { app.innerHTML = await renderHome(); setActiveNav('home'); }
       else if (head === 'products' || head === 'search') { app.innerHTML = await renderProducts(r.query); setActiveNav('products'); }
       else if (head === 'product') { app.innerHTML = await renderProduct(safeDecode(r.parts[1])); setActiveNav('products'); }
-      else if (head === 'compare') { app.innerHTML = await renderCompare(); setActiveNav('compare'); }
+      else if (head === 'compare') { app.innerHTML = await renderCompare(r.query); setActiveNav('compare'); }
       else if (head === 'ranking') { app.innerHTML = await renderRanking(r.query); setActiveNav('ranking'); }
       else if (head === 'timeline') { app.innerHTML = await renderTimeline(); setActiveNav('timeline'); }
       else if (head === 'favorites') { app.innerHTML = await renderFavorites(); setActiveNav('favorites'); }
@@ -1619,13 +1825,47 @@
     themeBtn.addEventListener('click', () => {
       state.theme = state.theme === 'dark' ? 'light' : 'dark';
       store.set('theme', state.theme);
+      store.set('themeAuto', false); /* 手动切换后不再跟随系统（问题 28） */
       document.documentElement.setAttribute('data-theme', state.theme);
       themeBtn.textContent = state.theme === 'dark' ? '🌙' : '☀️';
     });
 
+    /* 系统主题跟随（问题 28）：用户未手动切换时响应系统深浅色变化 */
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      const applySys = (light) => {
+        if (!store.get('themeAuto', true)) return;
+        state.theme = light ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        const tb = $('#theme-toggle');
+        if (tb) tb.textContent = state.theme === 'dark' ? '🌙' : '☀️';
+      };
+      if (mq.addEventListener) mq.addEventListener('change', (e) => applySys(e.matches));
+    }
+    /* 多标签同步（问题 28）：其他标签页改收藏/对比/主题/笔记时本页跟随 */
+    window.addEventListener('storage', (e) => {
+      if (!e.key || e.key.indexOf('rlwj:') !== 0) return;
+      try {
+        const v = e.newValue == null ? null : JSON.parse(e.newValue);
+        const k = e.key.slice(5);
+        if (k === 'theme' && v) {
+          state.theme = v;
+          document.documentElement.setAttribute('data-theme', v);
+          const tb = $('#theme-toggle');
+          if (tb) tb.textContent = v === 'dark' ? '🌙' : '☀️';
+        } else if (k === 'favorites' && v) { state.favorites = v; refreshFavButtons(); }
+        else if (k === 'compare' && v) { state.compare = v; refreshCmpButtons(); renderCompareTray(); }
+        else if (k === 'reviews' && v) { state.reviews = v; }
+        else return;
+        renderRoute(true);
+      } catch (err) { /* 忽略坏数据 */ }
+    });
+
     // 移动端菜单
     $('#menu-toggle').addEventListener('click', () => {
-      $('#main-nav').classList.toggle('open');
+      const nav = $('#main-nav');
+      nav.classList.toggle('open');
+      $('#menu-toggle').setAttribute('aria-expanded', nav.classList.contains('open') ? 'true' : 'false');
     });
     $('#main-nav').addEventListener('click', (e) => {
       if (e.target.tagName === 'A') $('#main-nav').classList.remove('open');
@@ -1650,6 +1890,7 @@
         '<div class="suggest-item" role="option" data-goto="#/products?q=' + encodeURIComponent(q) + '">' +
           '<span>🔎</span><span class="s-name">查看 “' + esc(q) + '” 的全部结果</span></div>';
       box.hidden = false;
+      if (input.setAttribute) input.setAttribute('aria-expanded', 'true');
       sugIndex = -1;
     }
 
@@ -1673,7 +1914,7 @@
         renderSuggest(hits, q);
       }, 120);
     });
-    input.addEventListener('blur', () => { setTimeout(() => { box.hidden = true; }, 180); });
+    input.addEventListener('blur', () => { setTimeout(() => { box.hidden = true; if (input.setAttribute) input.setAttribute('aria-expanded', 'false'); }, 180); });
     input.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); moveSuggest(1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); moveSuggest(-1); }
@@ -1695,8 +1936,13 @@
 
     // 对比浮条清空
     $('#compare-clear').addEventListener('click', () => {
+      const snap = state.compare.slice();
       state.compare = [];
       saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
+      toastUndo('已清空对比', () => {
+        state.compare = snap;
+        saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
+      });
     });
 
     // 全局委托点击
@@ -1725,8 +1971,13 @@
           return;
         }
         if (action === 'cmp-clear-all') {
+          const snap = state.compare.slice();
           state.compare = [];
           saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
+          toastUndo('已清空对比', () => {
+            state.compare = snap;
+            saveState(); refreshCmpButtons(); renderCompareTray(); renderRoute(true);
+          });
           return;
         }
         if (action === 'toggle-demo') {
@@ -1768,9 +2019,61 @@
           }
           return;
         }
+        if (action === 'tl-more') {
+          const y = act.getAttribute('data-year');
+          if (state.tlOpen.has(y)) state.tlOpen.delete(y); else state.tlOpen.add(y);
+          renderRoute(true);
+          return;
+        }
+        if (action === 'cmp-diff') {
+          state.cmpDiff = act.getAttribute('data-value') === '1';
+          renderRoute(true);
+          return;
+        }
+        if (action === 'cmp-share') {
+          const ids = state.compare.filter(Boolean).map(encodeURIComponent).join(',');
+          const url = location.origin + location.pathname + '#/compare?ids=' + ids;
+          const done = () => toast('对比链接已复制，可直接发给朋友');
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
+          else fallbackCopy(url, done);
+          return;
+        }
+        if (action === 'review-del') {
+          const rid = act.getAttribute('data-id');
+          const idx = parseInt(act.getAttribute('data-idx'), 10);
+          const arr = state.reviews[rid] || [];
+          const snapshot = arr.slice();
+          if (idx >= 0 && idx < arr.length) {
+            arr.splice(idx, 1);
+            saveState();
+            renderRoute(true);
+            toastUndo('已删除本机笔记', () => {
+              state.reviews[rid] = snapshot;
+              saveState();
+              renderRoute(true);
+            });
+          }
+          return;
+        }
+        if (action === 'fav-clear-all') {
+          const snap = state.favorites.slice();
+          state.favorites = [];
+          saveState(); refreshFavButtons(); renderRoute(true);
+          toastUndo('已清空收藏', () => {
+            state.favorites = snap;
+            saveState(); refreshFavButtons(); renderRoute(true);
+          });
+          return;
+        }
         if (action === 'clear-recent') {
-          try { localStorage.removeItem('riwanji.recent'); } catch (e) { /* 忽略 */ }
+          /* 可撤销（问题 31）：快照保留 5 秒 */
+          const snap = recentSearches();
+          try { localStorage.removeItem('rlwj:recent'); localStorage.removeItem('riwanji.recent'); } catch (e) { /* 忽略 */ }
           renderRoute();
+          toastUndo('已清空最近搜索', () => {
+            try { localStorage.setItem('rlwj:recent', JSON.stringify(snap)); } catch (e) { /* 忽略 */ }
+            renderRoute();
+          });
           return;
         }
         if (action === 'copy-link') {
@@ -1808,6 +2111,28 @@
         if (e.target.id === 'hero-search') {
           const v = e.target.value.trim();
           if (v) location.hash = '#/products?q=' + encodeURIComponent(v);
+        }
+      }
+      // 跳页输入框回车（问题 26）
+      if (e.key === 'Enter' && e.target && e.target.id === 'page-goto') {
+        const v = parseInt(e.target.value, 10);
+        const max = parseInt(e.target.getAttribute('max'), 10);
+        if (v >= 1 && v <= max) location.hash = hrefWith({ page: String(v) });
+        return;
+      }
+      // 卡片 Space 激活 / 非按钮动作项（缩略图等）Enter、Space 触发（问题 17）
+      if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') && e.target && e.target.closest) {
+        const actEl = e.target.closest('[data-action]');
+        if (actEl && !/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(actEl.tagName)) {
+          e.preventDefault();
+          actEl.click();
+          return;
+        }
+        const card = e.target.closest('[data-link]');
+        if (card && e.target === card && (e.key === ' ' || e.key === 'Spacebar')) {
+          e.preventDefault();
+          location.hash = card.getAttribute('data-link');
+          return;
         }
       }
       // 全局快捷键：/ 聚焦搜索框（不在输入框内时）；Esc 从搜索框移开焦点
@@ -1867,7 +2192,8 @@
       const name = (form.querySelector('[name="name"]').value || '').trim() || '匿名用户';
       const score = form.querySelector('[name="score"]').value;
       const text = (form.querySelector('[name="text"]').value || '').trim();
-      if (!text) return;
+      if (!text) { toast('写点什么再发布吧'); return; }
+      if (!score) { toast('请先给个评分'); return; }
       (state.reviews[id] = state.reviews[id] || []).push({
         name, score, text,
         date: new Date().toISOString().slice(0, 10)
