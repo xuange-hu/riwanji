@@ -26,11 +26,12 @@ let mediaTotal = 0, mn = 0;
 for (const f of fs.readdirSync(path.join(R, 'data', 'enrich'))) if (f.endsWith('.js')) { mediaTotal += size(path.join(R, 'data', 'enrich', f)); mn++; }
 ok.push('data/*.js ' + n + ' 个 ' + (jsTotal / 1048576).toFixed(2) + ' MB | enrich/*.js ' + mn + ' 个 ' + (mediaTotal / 1048576).toFixed(2) + ' MB');
 
-/* 4. manifest 覆盖面 */
+/* 4. manifest 覆盖面：只检查数据分片，索引/分类/别名等元数据文件不是 shard */
 const w = {};
 new Function('window', fs.readFileSync(path.join(R, 'data', 'manifest.js'), 'utf8'))(w);
 const files = (w.DB_MANIFEST.shards || []).map((s) => s.file);
-const loose = fs.readdirSync(path.join(R, 'data')).filter((f) => f.endsWith('.js') && !['manifest.js', 'categories.js', 'brand-alias.js'].includes(f));
+const meta = ['manifest.js', 'categories.js', 'brand-alias.js', 'index.js'];
+const loose = fs.readdirSync(path.join(R, 'data')).filter((f) => f.endsWith('.js') && !meta.includes(f));
 const uncovered = loose.filter((f) => !files.includes('data/' + f));
 if (uncovered.length) issues.push('manifest 未收录: ' + uncovered.join(', '));
 else ok.push('manifest 覆盖全部 ' + files.length + ' 个数据分片');
