@@ -64,9 +64,11 @@ function main() {
 
   const urls = [SITE];
   const feedItems = [];
+  const produced = new Set();
 
   products.forEach((p) => {
     const file = safeFile(p.id) + '.html';
+    produced.add(file);
     const url = SITE + 'p/' + file;
     urls.push(url);
     const img = imgSrcOf(p.image || (Array.isArray(p.images) && p.images[0]) || '');
@@ -136,6 +138,13 @@ function main() {
 
     feedItems.push({ title: p.name, url: url, desc: p.summary || p.name });
   });
+
+  /* 孤儿页清理：产品下架/改名后的旧预渲染页删除（防 stale SEO 页混入索引） */
+  for (const f of fs.readdirSync(P)) {
+    if (f.endsWith('.html') && !produced.has(f)) {
+      try { fs.unlinkSync(path.join(P, f)); console.log('  清理孤儿页: p/' + f); } catch (_) { /* noop */ }
+    }
+  }
 
   /* sitemap.xml：首页 + 预渲染页 */
   const sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +

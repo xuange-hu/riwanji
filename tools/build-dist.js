@@ -58,14 +58,26 @@ for (const dir of ['css', 'js']) {
 }
 
 /* 3. data：只取 .js（分片/清单/类目/品牌别名 + gen/ 扩充分片），跳过 bulk jsonl 与缓存 */
+function pruneOrphans(srcDir, distDir) {
+  /* 定向孤儿清理：源侧已不存在的数据文件从 dist 删除（防止旧分片残留拉爆统计口径）。
+     只 unlink 文件、不动目录树（安全删除 shim 逐文件超时太慢，树结构本就稳定）。 */
+  if (!fs.existsSync(distDir)) return;
+  const src = new Set(fs.readdirSync(srcDir));
+  for (const f of fs.readdirSync(distDir)) {
+    if (!f.endsWith('.js') || f.startsWith('_') || src.has(f)) continue;
+    try { fs.unlinkSync(path.join(distDir, f)); console.log('  清理孤儿: ' + path.relative(DIST, path.join(distDir, f))); } catch (_) { /* noop */ }
+  }
+}
 for (const f of fs.readdirSync(path.join(ROOT, 'data'))) {
   if (f.endsWith('.js')) cp(path.join(ROOT, 'data', f), path.join(DIST, 'data', f));
 }
+pruneOrphans(path.join(ROOT, 'data'), path.join(DIST, 'data'));
 const GEN = path.join(ROOT, 'data', 'gen');
 if (fs.existsSync(GEN)) {
   for (const f of fs.readdirSync(GEN)) {
     if (f.endsWith('.js')) cp(path.join(GEN, f), path.join(DIST, 'data', 'gen', f));
   }
+  pruneOrphans(GEN, path.join(DIST, 'data', 'gen'));
 }
 
 /* 4. enrich 媒体分片（图集+测评，排除下划线缓存） */
@@ -73,6 +85,7 @@ const ENRICH = path.join(ROOT, 'data', 'enrich');
 for (const f of fs.readdirSync(ENRICH)) {
   if (f.endsWith('.js') && !f.startsWith('_')) cp(path.join(ENRICH, f), path.join(DIST, 'data', 'enrich', f));
 }
+pruneOrphans(ENRICH, path.join(DIST, 'data', 'enrich'));
 
 /* 5. 部署说明 */
 fs.writeFileSync(path.join(DIST, '.nojekyll'), ''); /* GitHub Pages 兼容（Gitee 无害） */
