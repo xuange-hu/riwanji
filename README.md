@@ -1,13 +1,13 @@
 # 日理万机 · 数码产品百科全书
 
-> 数码产品百科：静态版 10,346 个产品 / 657 品牌 / 106 品类（在线服务端另有 200 万+ SKU 池）。
+> 数码产品百科：静态版 10,346 个产品 / 657 品牌 / 106 品类（在线服务版规划中）。
 > 参数比官网更全 · 每产品 ≥3 图 · 测评链接 · 品牌细分 · 横向对比 · 产品时间线。
 >
 > 统计口径以 `tools/stats.js` 实算为准（`node tools/stats.js --check` 校验本文数字一致）。
 
 ## 静态版（本仓库）
 
-本仓库是**纯静态版**，可直接由 Gitee Pages 托管：
+本仓库是**纯静态版**，由 GitHub Pages 托管：<https://xuange-hu.github.io/riwanji/>
 
 - **10,346 个产品**：346 精选（真实图集 + 测评索引）+ 10,000 热门 SKU（覆盖全部 106 个品类 / 657 品牌，均带 synthetic:true 溯源字段）
 - 全功能可用：搜索 / 筛选 / 品牌细分 / 对比表 / 收藏 / 时间线 / 排行榜
@@ -23,33 +23,36 @@
 npx serve .        # 或 python -m http.server 8000
 ```
 
-## 开启 Gitee Pages
+## 托管说明
 
-1. 仓库「服务」→「Gitee Pages」→ 选择分支部署（`master` / 根目录）
-2. 生成的地址如 `https://<你的用户名>.gitee.io/<仓库名>/`
-3. 推送更新后在 Gitee Pages 页面点「更新」即可
+1. 线上部署：<https://xuange-hu.github.io/riwanji/>（GitHub Pages，master 分支自动发布）
+2. 任意静态托管（Netlify / Cloudflare Pages / nginx）直接托管本目录同样可用
+3. 本地预览：双击 `index.html` 或 `npx serve .`
 
 ## 目录结构
 
 ```
-index.html          外壳（OG/Twitter meta、theme-color）
-css/style.css       主题样式（玻璃拟态 + 科技感）
-js/app.js           全部前端逻辑（路由/搜索/对比/收藏/图集）
-data/manifest.js    数据分片清单（131 分片）
-data/*.js           精选产品分片（27 个）
-data/gen/*.js       热门 SKU 扩充分片（105 个）
-data/categories.js  品类注册表（16 大类 / 105 品类 / 2,279 细分）
+index.html          外壳（OG/Twitter meta、theme-color、数据清单驱动）
+css/style.css       主题样式（玻璃拟态 + 科技感 + 打印样式）
+js/                 前端模块 7 个（util→data→state→router→components→pages→app 按依赖序加载）
+img/                本地产品图（精选产品图集镜像，防盗链/热链失效不再开天窗）
+data/enrich-local.js 本地图片覆盖表（url → img/…，tools/localize-images.js 生成）
+data/manifest.js    数据分片清单 + 全库统计口径（86 条目：26 精选 + 50 演示 + 9 图集 + 1 轻索引）
+data/*.js           精选产品分片（26 个）
+data/gen/*.js       演示样本分片（50 个，source:'bulk' + synthetic:true 明确标注）
+data/categories.js  品类注册表（16 大类 / 2,279 细分，106 个品类有产品收录）
 data/brand-alias.js 品牌别名（搜索归一）
-data/enrich/*.js    图集 + 测评链接补充（346 产品 / 1,038 图 / 27 测评）
+data/enrich/*.js    图集 + 测评链接补充（346 产品 / 1,025 图 / 38 测评）
 ```
 
 ## 数据来源
 
-精选产品参数来自官方规格书与实测数据整理；热门 SKU 由确定性生成器
-（mulberry32 种子 20240101）基于真实品牌 × 型名库组合扩充；
+精选产品参数来自官方规格书与实测数据整理；演示样本由确定性生成器
+（`tools/gen-bulk-v2.js`，mulberry32 种子 20261112）按品类参数池组合生成，
+每条带 `source:'bulk'` + `synthetic:true` 溯源字段并默认隐藏；
 测评链接均为严格标题匹配 + 可达性验证的真实文章，无一臆造。
 
-## 完整版（200 万 SKU 在线版）
+## 规划：在线服务版
 
-完整在线版含 2,000,306 SKU 的服务端（Node.js，支持海量 SKU 检索与详情
-按需加载），部署方法见项目内 `DEPLOY.md`。
+支撑更大数据集的服务端检索版（Node.js API，`tools/serve.js` 为同构雏形）
+在路线图中，部署方案见 `DEPLOY.md`。

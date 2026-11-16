@@ -100,10 +100,10 @@ ufw allow 22,80,443/tcp && ufw enable
 
 ## 路线 C：Gitee Pages 纯静态托管（零服务器、零费用、国内直连）
 
-站点自带静态模式（`data/*.js` 分片 + file:// 可跑），已构建好部署包 **`dist/`**（148 文件 / 18.5MB / git 仓库已初始化）：
+站点自带静态模式（`data/*.js` 分片 + file:// 可跑），已构建好部署包 **`dist/`**（git 仓库已初始化）：
 
 ```powershell
-# 1) 生成部署包（一键构建 dist/：外壳 + js/css + 131 数据分片 + README）
+# 1) 生成部署包（一键构建 dist/：外壳 + js/css 模块 + 全部数据分片 + 本地图片 + README）
 node tools/build-dist.js
 
 # 2) （可选）调整静态版产品规模后重建

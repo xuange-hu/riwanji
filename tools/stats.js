@@ -47,6 +47,26 @@ function collect() {
       }
     }
   }
+  /* N6：媒体/图片补充数据（data/enrich/*.js → window.DB_MEDIA）必须并入，
+     否则 curatedImages/mediaLinks 只统计到分片内残留字段（10/11 → 实际 1,038/27） */
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const enrichDir = path.join(ROOT, 'data', 'enrich');
+  if (fs.existsSync(enrichDir)) {
+    for (const f of fs.readdirSync(enrichDir)) {
+      if (!f.endsWith('.js') || f.startsWith('_')) continue;
+      const w = {};
+      try { new Function('window', fs.readFileSync(path.join(enrichDir, f), 'utf8'))(w); } catch (e) { continue; }
+      const MEDIA = w.DB_MEDIA || {};
+      Object.keys(MEDIA).forEach((id) => {
+        const p = byId.get(id);
+        const e = MEDIA[id];
+        if (!p || !e) return;
+        if (e.image) p.image = e.image;
+        if (e.images && e.images.length) p.images = e.images;
+        if (e.media && e.media.length) p.media = e.media;
+      });
+    }
+  }
   return products;
 }
 
@@ -59,8 +79,13 @@ function compute() {
   const cats = new Set(products.map((p) => p._chunkCat));
   const leaves = new Set(products.map((p) => p.catLeaf).filter(Boolean));
   const years = products.map((p) => p.year).filter((y) => typeof y === 'number');
-  const images = curated.reduce((n, p) =>
-    n + (Array.isArray(p.images) ? p.images.length : 0) + (p.image ? 1 : 0), 0);
+  /* 图片按去重 URL 计数（p.image 可能与 images[] 首图重复） */
+  const imgSet = new Set();
+  curated.forEach((p) => {
+    if (p.image) imgSet.add(p.image);
+    (Array.isArray(p.images) ? p.images : []).forEach((u) => { if (u) imgSet.add(u); });
+  });
+  const images = imgSet.size;
   const media = products.reduce((n, p) => n + ((p.media && p.media.length) || 0), 0);
   return {
     total: products.length,

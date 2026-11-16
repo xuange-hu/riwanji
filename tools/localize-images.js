@@ -52,31 +52,48 @@ async function main() {
   const limitIdx = process.argv.indexOf('--limit');
   const limit = limitIdx !== -1 ? parseInt(process.argv[limitIdx + 1], 10) : Infinity;
 
-  /* 收集精选产品的全部图片 URL（image + images） */
+  /* 收集全部图片 URL：产品分片（image + images）＋ enrich DB_MEDIA（统计口径同 stats.js） */
   const reserved = new Set(['manifest.js', 'categories.js', 'brand-alias.js', 'index.js']);
   const jobs = []; /* { id, url, file } */
   const seen = new Set();
+  const usedFiles = new Set();
   let n = 0;
+  const collect = (id, urls) => {
+    [].concat(urls || []).forEach((u, i) => {
+      if (typeof u !== 'string' || !/^https?:\/\//.test(u) || seen.has(u)) return;
+      if (n >= limit) return;
+      seen.add(u);
+      n++;
+      const ext = (u.match(/\.(jpe?g|png|webp|gif)(\?|$)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
+      const base = String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+      let file = base + '-' + i + '.' + ext;
+      for (let k = 2; usedFiles.has(file); k++) file = base + '-' + i + '-' + k + '.' + ext;
+      usedFiles.add(file);
+      jobs.push({ id: id, idx: i, url: u, file: file });
+    });
+  };
   for (const f of fs.readdirSync(path.join(ROOT, 'data'))) {
     if (!f.endsWith('.js') || reserved.has(f)) continue;
     for (const c of loadChunks(path.join(ROOT, 'data', f))) {
       for (const p of (c.products || [])) {
         if (!p || !p.id || p.source === 'bulk') continue;
-        const urls = [].concat(p.image || [], p.images || []).filter(Boolean);
-        urls.forEach((u, i) => {
-          if (typeof u !== 'string' || !/^https?:\/\//.test(u) || seen.has(u)) return;
-          if (n >= limit) return;
-          seen.add(u);
-          n++;
-          const ext = (u.match(/\.(jpe?g|png|webp|gif)(\?|$)/i) || [, 'jpg'])[1].toLowerCase().replace('jpeg', 'jpg');
-          jobs.push({ id: p.id, idx: i, url: u, file: String(p.id).replace(/[^a-zA-Z0-9_-]/g, '_') + '-' + i + '.' + ext });
-        });
+        collect(p.id, [].concat(p.image || [], p.images || []));
       }
+    }
+  }
+  /* enrich 媒体分片 DB_MEDIA 的图片（只取 image/images，media 是外链不本地化） */
+  const enrichDir = path.join(ROOT, 'data', 'enrich');
+  if (fs.existsSync(enrichDir)) {
+    for (const f of fs.readdirSync(enrichDir).filter((x) => x.endsWith('.js') && !x.startsWith('_'))) {
+      const w = {};
+      new Function('window', fs.readFileSync(path.join(enrichDir, f), 'utf8'))(w);
+      const M = w.DB_MEDIA || {};
+      Object.keys(M).forEach((id) => collect(id, [].concat((M[id] && M[id].image) || [], (M[id] && M[id].images) || [])));
     }
   }
 
   console.log('待处理图片：' + jobs.length + ' 张 → dist/img/');
-  const map = {}; /* id -> [local urls] */
+  const map = {}; /* 远程 url -> 本地 img/ 路径（按 URL 键：部分失败时其余 URL 不串位） */
   let done = 0, ok = 0;
   const queue = jobs.slice();
 
@@ -86,10 +103,11 @@ async function main() {
       const dest = path.join(IMG, j.file);
       let good = fs.existsSync(dest) && fs.statSync(dest).size > 0;
       if (!good) good = await fetchOne(j.url, dest);
+      if (!good) { try { fs.unlinkSync(dest); } catch (_) { /* 无半截残留 */ } }
       done++;
       if (good) {
         ok++;
-        (map[j.id] = map[j.id] || []).push('img/' + j.file);
+        map[j.url] = 'img/' + j.file;
       }
       if (done % 25 === 0) console.log('  进度 ' + done + '/' + jobs.length + '（成功 ' + ok + '）');
     }
@@ -100,7 +118,7 @@ async function main() {
   const body = '/* 本文件由 tools/localize-images.js 自动生成：本地图片覆盖表 */\n' +
     'window.DB_MEDIA_LOCAL = ' + JSON.stringify(map) + ';\n';
   fs.writeFileSync(OUT, body, 'utf8');
-  console.log('完成：成功 ' + ok + '/' + jobs.length + '，覆盖表 → data/enrich-local.js（' + Object.keys(map).length + ' 个产品）');
+  console.log('完成：成功 ' + ok + '/' + jobs.length + '，覆盖表 → data/enrich-local.js（' + Object.keys(map).length + ' 个 URL）');
   console.log('下一步：node tools/build-dist.js 把 img/ 与覆盖表打进部署包');
 }
 

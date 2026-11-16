@@ -9,11 +9,11 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="日理万机" />
   <meta property="og:title" content="日理万机 · 数码产品百科全书" />
-  <meta property="og:description" content="收录 10,000+ 数码产品档案：参数、评测、口碑、对比一站查齐（含精选真实数据与明确标注的演示样本）。" />
+  <meta property="og:description" content="收录 10,346 个数码产品档案（346 真实精选 + 10,000 条明确标注的演示样本）：参数、评测、口碑、对比一站查齐。" />
   <meta property="og:locale" content="zh_CN" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="日理万机 · 数码产品百科全书" />
-  <meta name="twitter:description" content="收录 10,000+ 数码产品档案：参数、评测、口碑、对比一站查齐。" />
+  <meta name="twitter:description" content="收录 10,346 个数码产品档案（346 真实精选 + 10,000 条明确标注的演示样本）：参数、评测、口碑、对比一站查齐。" />
   <meta property="og:image" content="https://opengraph.githubassets.com/1/xuange-hu/riwanji" />
   <meta name="twitter:image" content="https://opengraph.githubassets.com/1/xuange-hu/riwanji" />
   <link rel="canonical" href="https://xuange-hu.github.io/riwanji/" />
@@ -31,8 +31,8 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"日理万机 · 数码产品百科全书","url":"https://xuange-hu.github.io/riwanji/","potentialAction":{"@type":"SearchAction","target":"https://xuange-hu.github.io/riwanji/#/products?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
   <script>window.RLWJ_API = false;</script></head>
 <body>
-  <a class=\"skip-link\" href=\"#app\">跳到主内容</a>
-  <div id=\"route-live\" class=\"sr-only\" aria-live=\"polite\" aria-atomic=\"true\"></div>
+  <a class="skip-link" href="#app">跳到主内容</a>
+  <div id="route-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <header class="site-header">
     <div class="container header-inner">
       <a class="logo" href="#/">
@@ -61,7 +61,7 @@
       </div>
 
       <button class="theme-toggle" id="theme-toggle" title="切换深浅色主题" aria-label="切换主题">🌙</button>
-      <button class="menu-toggle" id="menu-toggle" title="菜单" aria-label="菜单">☰</button>
+      <button class="menu-toggle" id="menu-toggle" title="菜单" aria-label="菜单" aria-expanded="false" aria-controls="main-nav">☰</button>
     </div>
   </header>
 
@@ -89,9 +89,6 @@
         产品数据以纯数据文件维护，可持续扩展品类与机型
       </div>
     </div>
-  </footer>
-
-  <footer class="site-footer">
     <div class="container" style="padding:18px 0;font-size:12.5px;color:var(--muted)">
       日理万机 · 数码产品百科 ——
       <a href="https://github.com/xuange-hu/riwanji" target="_blank" rel="noopener">GitHub 仓库</a> ·
@@ -101,7 +98,7 @@
   </footer>
 
   <!-- 数据清单（data/manifest.js 由 tools/build-manifest.js 自动生成，
-       登记全部数据分片；app.js 按清单加载，新增品类/分片无需改本文件） -->
+       登记全部数据分片；js/data.js 按清单加载，新增品类/分片无需改本文件） -->
   <script src="data/manifest.js"></script>
 
   <!-- 品牌别名（中英互通检索） -->
@@ -111,6 +108,13 @@
   <script src="data/categories.js"></script>
 
   <!-- 应用逻辑 -->
+  <script src="data/enrich-local.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/pages.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

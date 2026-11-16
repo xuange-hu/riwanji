@@ -2,7 +2,7 @@
 /* ============================================================
    tools/smoke-test.js
    无浏览器冒烟测试：用微型 DOM 桩在 Node 里真实执行
-   data/*.js + js/app.js，把每个页面渲染一遍并断言输出。
+   data/*.js + js/ 模块（util→data→state→router→components→pages→app），把每个页面渲染一遍并断言输出。
 
    用法： node tools/smoke-test.js
    ============================================================ */
@@ -110,7 +110,10 @@ async function main() {
   const manifestCode = fs.readFileSync(path.join(ROOT, 'data', 'manifest.js'), 'utf8');
   new Function('window', manifestCode)(windowStub);
 
-  const appCode = fs.readFileSync(path.join(ROOT, 'js', 'app.js'), 'utf8');
+  const appCode = ['util', 'data', 'state', 'router', 'components', 'pages', 'app']
+    .map((m) => fs.readFileSync(path.join(ROOT, 'js', m + '.js'), 'utf8')).join('\n');
+  /* 本地图片覆盖表（N17）与浏览器一致先于模块加载 */
+  new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'enrich-local.js'), 'utf8'))(windowStub);
   new Function('window', 'document', 'location', 'localStorage', 'alert', 'console',
     appCode)(windowStub, documentStub, locationStub, localStorageStub,
     (m) => { throw new Error('alert: ' + m); }, console);

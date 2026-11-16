@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## v1.2.0 — 2026-11-16
+
+第二轮审查报告（N1–N17）与第一轮遗留问题修复批次：
+
+### 架构
+- **app.js 模块化拆分（问题 40）**：2,232 行 IIFE 单体 → 7 个经典脚本模块
+  （util→data→state→router→components→pages→app 按依赖序加载），
+  不用 ES module 以保留 file:// 双击即开特性；smoke-test 同步多文件加载器
+- **冷启动重构（N3）**：首屏只载 35 片（26 精选 + 9 enrich），演示轻索引 5.4MB
+  改为开演示开关/访问演示产品时按需装载（ensureBulk 状态机）
+- **统计口径单源（N9）**：manifest.stats 由 build-manifest.js 全量实算，
+  首页/品类页/关于页/品牌页/og/README 全部引用同一数字
+
+### 数据质量
+- **演示数据 pros/cons 组合全局去重（N8）**：采样互不重复条目 + 组合 key 80 次
+  重试 + 品类池∪通用池扩容（C(24,3)=2,024 组合/品类），重复 1,370 组 → 0
+- stats.js 合并 enrich 图片/测评口径（curatedImages 10→1,025、mediaLinks 11→38）（N6）
+- static-audit 新增 index.html DOM 断言 + 轻索引与 gen 分片交叉校验（N7）
+
+### 可信度
+- **图片本地化（N17）**：1,021 张精选产品图镜像到 img/（110MB），
+  url→本地路径覆盖表（data/enrich-local.js），热链防盗链失效不再全站开天窗；
+  预渲染页 og:image/图片引用转站内绝对 URL
+- **测评兜底诚实标注（问题 13）**：媒体链接缺失时统一「🔎 全网搜索直达」，
+  不再冒充机构/媒体/社区分组
+- **JSON-LD 诚实化（N5）**：移除 aggregateRating 冒充用户聚合，改 Review schema
+  （author=日理万机编辑部）；预渲染页补充主客观评测摘要/优缺点/参数表（N15）
+- og/twitter description 与实际统计口径对齐（N15）
+
+### 交互与可访问性
+- **收藏导出（问题 30）**：收藏/对比支持导出 JSON、分享链接 #/favorites?ids= 导入、
+  对比页导出
+- 表格 sticky 修复（N4，border-collapse→separate）；卡片嵌套交互修复（N13，
+  标题改真实链接）；对比表 th scope 语义（N16）；点击目标 ≥44px（N14）
+- 浅色主题渐变文字对比度 ≥3.3:1（N10）；skip-link 转义引号修复（N1）；
+  单一 footer（N11）；menu-toggle aria-expanded/aria-controls（N12）
+- README 校准：移除「200 万+ SKU」过期宣称，文档结构与实际文件对齐
+
 ## v1.1.0 — 2026-11-12
 
 前端审查报告（46 项）修复批次：

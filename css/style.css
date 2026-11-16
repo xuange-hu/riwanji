@@ -396,8 +396,8 @@ button { font-family: inherit; }
 .suggest-item .s-name b { color: var(--accent); font-weight: 700; }
 
 .theme-toggle, .menu-toggle {
-  width: 41px;
-  height: 41px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--card);
@@ -1278,7 +1278,8 @@ button { font-family: inherit; }
 
 .compare-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1466,7 +1467,8 @@ button { font-family: inherit; }
 
 .rank-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1913,3 +1915,29 @@ button { font-family: inherit; }
   table { page-break-inside: auto; }
   img { max-width: 100% !important; }
 }
+
+/* ===== 第三轮审查修复补丁 ===== */
+
+/* N10 浅色主题渐变文字对比度：#22d3ee 对白底仅 ≈1.8:1（连大字号 3:1 都不到），
+   浅色下渐变整体换深一档（最浅端对白底 ≥3.3:1），深色主题保持原样 */
+html[data-theme="light"] .hero h1 .grad,
+html[data-theme="light"] .hero-stats .stat b,
+html[data-theme="light"] .big-score b,
+html[data-theme="light"] .tl-year h3 {
+  background-image: linear-gradient(115deg, #2c55c9, #0e7490 55%, #6d4fc4);
+}
+
+/* N14 导航链接命中区 44px（原 ≈37px）：视觉不变，::before 纵向外扩 */
+.main-nav a::before {
+  content: '';
+  position: absolute;
+  inset: -8px -2px;
+}
+
+/* N13 卡片标题真实链接：视觉与原纯文本一致，键盘焦点可见 */
+.pc-name .pc-link { color: inherit; text-decoration: none; }
+.pc-name .pc-link:hover { color: var(--accent); }
+.pc-name .pc-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* N16 表头产品列改 th scope=col 后保持原视觉（仅补语义，字重还原） */
+.compare-table thead th:not(:first-child) { font-weight: 400; }

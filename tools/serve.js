@@ -76,15 +76,16 @@ function loadEnrich() {
   return merged;
 }
 
-/* 全网测评搜索直达链接（真实可用的搜索入口，非杜撰链接） */
+/* 全网测评搜索直达链接（真实可用的搜索入口，非杜撰链接）
+   问题 13：搜索兜底统一 kind='search'，不冒充机构/媒体/社区测评分组 */
 function searchLinks(name) {
   const q = encodeURIComponent(name + ' 测评');
   const qv = encodeURIComponent(name + ' 评测');
   return [
-    { kind: 'video', title: 'B 站搜索「' + name + ' 评测」', source: 'bilibili', url: 'https://search.bilibili.com/all?keyword=' + qv },
-    { kind: 'video', title: 'YouTube 搜索「' + name + ' review」', source: 'YouTube', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' review') },
-    { kind: 'community', title: '知乎搜索「' + name + '」', source: '知乎', url: 'https://www.zhihu.com/search?q=' + encodeURIComponent(name) },
-    { kind: 'institution', title: 'Google 搜索「' + name + ' 评测」', source: 'Google', url: 'https://www.google.com/search?q=' + q }
+    { kind: 'search', title: 'B 站搜索「' + name + ' 评测」', source: 'bilibili', url: 'https://search.bilibili.com/all?keyword=' + qv },
+    { kind: 'search', title: 'YouTube 搜索「' + name + ' review」', source: 'YouTube', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' review') },
+    { kind: 'search', title: '知乎搜索「' + name + '」', source: '知乎', url: 'https://www.zhihu.com/search?q=' + encodeURIComponent(name) },
+    { kind: 'search', title: 'Google 搜索「' + name + ' 评测」', source: 'Google', url: 'https://www.google.com/search?q=' + q }
   ];
 }
 

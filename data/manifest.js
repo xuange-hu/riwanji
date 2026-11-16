@@ -396,5 +396,18 @@ window.DB_MANIFEST = {
     "data/enrich/media-8.js",
     "data/enrich/media-9.js"
   ],
-  "index": "data/index.js"
+  "index": "data/index.js",
+  "stats": {
+    "total": 10346,
+    "curated": 346,
+    "bulk": 10000,
+    "brands": 657,
+    "brandsCurated": 192,
+    "categories": 106,
+    "leavesWithProducts": 1035,
+    "groups": 16,
+    "leaves": 2279,
+    "yearMin": 1954,
+    "yearMax": 2024
+  }
 };

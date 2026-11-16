@@ -429,18 +429,33 @@ function genName(brand, k, variantLabel) {
 
 /* ---- 生成单条产品 ---- */
 const usedPros = new Set(), usedCons = new Set();
+/* pros/cons 组合全局去重（问题 8 / N8 修复）：
+   旧实现在组合空间（每池 12 选 3 = 220 组合）耗尽后退化为无去重随机抽样，
+   10,000 条里产出 1,370 组重复 pros。现改为：
+   ① 一次采样 n 个互不重复条目（数组内不重复）；
+   ② 组合 key 全局去重、冲突重试（80 次）；
+   ③ 品类池与通用池合并扩大组合空间（24 选 3 = 2,024 组合/品类，足敷 ~600 条/品类） */
 function pickUnique(pool, used, n) {
-  const out = [];
-  for (let t = 0; t < 60 && out.length < n; t++) {
-    const a = pick(pool), b = pick(pool), c = pick(pool);
-    const key = [a, b, c].sort().join('|');
+  const sample = () => {
+    const s = [];
+    while (s.length < n) {
+      const a = pick(pool);
+      if (s.indexOf(a) === -1) s.push(a);
+    }
+    return s;
+  };
+  for (let t = 0; t < 80; t++) {
+    const s = sample();
+    const key = s.slice().sort().join('|');
     if (used.has(key)) continue;
     used.add(key);
-    out.push(a, b, c);
+    return s;
   }
-  while (out.length < n) out.push(pick(pool));
-  return out.slice(0, n);
+  /* 组合空间仍耗尽（理论不会发生）：接受本次组合，宁可重复也不阻塞生成 */
+  return sample();
 }
+const prosPoolOf = (k) => Array.from(new Set((k.pros || []).concat(KIND_DEFAULT.pros)));
+const consPoolOf = (k) => Array.from(new Set((k.cons || []).concat(KIND_DEFAULT.cons)));
 
 function genProduct(base, seq) {
   const k = KIND[base.kind] || KIND_DEFAULT;
@@ -483,8 +498,8 @@ function genProduct(base, seq) {
     scores: scores,
     score: score,
     userScore: userScore,
-    pros: pickUnique(k.pros, usedPros, 3),
-    cons: pickUnique(k.cons, usedCons, 2),
+    pros: pickUnique(prosPoolOf(k), usedPros, 3),
+    cons: pickUnique(consPoolOf(k), usedCons, 2),
     review: {
       objective: '从实测数据看，' + name + ' 在' + point + '上表现稳定，核心参数没有明显短板。',
       subjective: '如果你在找一台' + (base.name || '设备') + '，' + name + ' 是值得纳入候选的一台。'
@@ -535,6 +550,14 @@ function main() {
   });
   if (nameSet.size !== products.length) throw new Error('name duplicate: ' + (products.length - nameSet.size));
   if (idSet.size !== products.length) throw new Error('id duplicate');
+  /* pros 组合重复断言（问题 8 / N8）：全局唯一组合，重复即失败 */
+  const prosSeen = new Set();
+  let prosDup = 0;
+  products.forEach((p) => {
+    const key = (p.pros || []).slice().sort().join('|');
+    if (prosSeen.has(key)) prosDup++; else prosSeen.add(key);
+  });
+  if (prosDup > 0) throw new Error('pros duplicate: ' + prosDup);
   if (brandBrand > 0 || salad > 0 || catWordName > 0) {
     throw new Error('quality check failed: brandBrand=' + brandBrand + ' salad=' + salad + ' catWord=' + catWordName);
   }
