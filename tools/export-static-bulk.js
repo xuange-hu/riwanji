@@ -156,6 +156,8 @@ async function main() {
   }
   flush();
   console.log('输出：data/gen/ 共 ' + files + ' 个分片 / ' + written.toLocaleString() + ' 条');
-  console.log('下一步：node tools/build-manifest.js');
+  /* 问题 58：导出后必须重建清单 + 演示轻索引（漏掉任一步都会造成
+     「分片条目数 ≠ 索引条目数 ≠ 页面运行数」的数据漂移） */
+  console.log('下一步：node tools/build-manifest.js && node tools/build-index.js');
 }
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -13,7 +13,9 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
-const SITE = 'https://xuange-hu.github.io/riwanji/';
+/* 站点地址单源（问题 55）：可用 SITE_URL 环境变量改写（部署到 Gitee/自定义域名时，
+   canonical/OG/RSS/sitemap/robots/返回首页链接全部跟随），默认官方 GitHub Pages */
+const SITE = (process.env.SITE_URL || 'https://xuange-hu.github.io/riwanji/').replace(/\/*$/, '/');
 
 function loadChunks(file) {
   const w = {};
@@ -29,6 +31,11 @@ function esc(s) {
 
 function safeFile(id) {
   return String(id).replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
+/* JSON-LD 安全序列化（问题 56）：< 转 \u003c，杜绝第三方字段 </script> 闭合注入 */
+function safeJSON(obj) {
+  return JSON.stringify(obj).replace(/</g, '\\u003c');
 }
 
 /* 本地图片覆盖表（N17）：url → img/…；预渲染页在 /p/ 子路径，引用转 SITE 绝对 URL */
@@ -73,7 +80,7 @@ function main() {
     urls.push(url);
     const img = imgSrcOf(p.image || (Array.isArray(p.images) && p.images[0]) || '');
     const specs = (p.specs || []).slice(0, 16).map((s) =>
-      '        <tr><th>' + esc(s[0]) + '</th><td>' + esc(s[1]) + '</td></tr>').join('\n');
+      '        <tr><th scope="row">' + esc(s[0]) + '</th><td>' + esc(s[1]) + '</td></tr>').join('\n');
     const ld = {
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -108,14 +115,17 @@ function main() {
       '  <meta property="og:title" content="' + esc(p.name) + '" />\n' +
       '  <meta property="og:url" content="' + esc(url) + '" />\n' +
       (img ? '  <meta property="og:image" content="' + esc(img) + '" />\n' : '') +
-      '  <script type="application/ld+json">' + JSON.stringify(ld) + '</script>\n' +
+      '  <script type="application/ld+json">' + safeJSON(ld) + '</script>\n' +
       '  <style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:860px;margin:0 auto;padding:24px;line-height:1.7;color:#1a2233}h1{font-size:26px}h2{font-size:18px;margin:22px 0 8px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #dde3ee;padding:8px 12px;text-align:left;font-size:14px}th{width:34%;background:#f2f5fb}a{color:#345fd8}.meta{color:#55617a;font-size:13.5px}.hero-img{max-width:100%;max-height:380px;border-radius:12px;border:1px solid #dde3ee;display:block;margin:12px 0}.pc{columns:2;gap:24px;margin:8px 0 0;padding-left:20px}.pc li{margin:4px 0;font-size:14.5px}@media(max-width:640px){.pc{columns:1}}</style>\n' +
       '</head>\n<body>\n' +
+      /* 问题 65：地标结构——预渲染页补 <main>，读屏可跳转主内容 */
+      '  <main>\n' +
       '  <h1>' + esc(p.name) + '</h1>\n' +
       '  <p class="meta">' + esc(p.brand) + ' · ' + esc(p.year || '') + ' · ' + esc(p.priceText || '') +
       (p.categoryName ? ' · ' + esc(p.categoryName) : '') +
       (typeof p.score === 'number' ? ' · 编辑评分 ' + esc(p.score) + '/10' : '') +
-      (typeof p.userScore === 'number' ? ' · 用户评分 ' + esc(p.userScore) + '/10' : '') + '</p>\n' +
+      /* 问题 52：用户评分如实标注来源（口碑整理值，非本站用户打分） */
+      (typeof p.userScore === 'number' ? ' · 用户评分 ' + esc(p.userScore) + '/10（公开口碑整理值，非本站打分）' : '') + '</p>\n' +
       (img ? '  <img class="hero-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" />\n' : '') +
       (p.summary ? '  <p>' + esc(p.summary) + '</p>\n' : '') +
       (p.review && p.review.objective
@@ -133,10 +143,11 @@ function main() {
       (specs ? '  <h2>参数规格</h2>\n  <table><tbody>\n' + specs + '\n  </tbody></table>\n' : '') +
       '  <p><a href="' + SITE + '#/product/' + encodeURIComponent(p.id) + '">在「日理万机」中查看完整图集、评分与横向对比 →</a></p>\n' +
       '  <p class="meta"><a href="' + SITE + '">← 返回首页</a></p>\n' +
+      '  </main>\n' +
       '</body>\n</html>\n';
     fs.writeFileSync(path.join(P, file), html, 'utf8');
 
-    feedItems.push({ title: p.name, url: url, desc: p.summary || p.name });
+    feedItems.push({ title: p.name, url: url, desc: p.summary || p.name, year: p.year });
   });
 
   /* 孤儿页清理：产品下架/改名后的旧预渲染页删除（防 stale SEO 页混入索引） */
@@ -152,7 +163,8 @@ function main() {
     '\n</urlset>\n';
   fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sm, 'utf8');
 
-  /* feed.xml：RSS 更新日志通道（问题 46），按预渲染批次生成 */
+  /* feed.xml：RSS 更新日志通道（问题 46），按预渲染批次生成
+     条目带 pubDate（上市年份）与 permalink guid（问题 72），阅读器可判断更新顺序 */
   const now = new Date().toUTCString();
   const rss = '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>\n' +
     '  <title>日理万机 · 数码产品百科全书</title>\n' +
@@ -161,11 +173,30 @@ function main() {
     '  <lastBuildDate>' + now + '</lastBuildDate>\n' +
     feedItems.slice(0, 30).map((it) =>
       '  <item><title>' + esc(it.title) + '</title><link>' + esc(it.url) + '</link>' +
+      '<guid isPermaLink="true">' + esc(it.url) + '</guid>' +
+      (it.year ? '<pubDate>' + new Date(it.year, 0, 1).toUTCString() + '</pubDate>' : '') +
       '<description>' + esc(it.desc) + '</description></item>').join('\n') +
     '\n</channel></rss>\n';
   fs.writeFileSync(path.join(DIST, 'feed.xml'), rss, 'utf8');
 
-  console.log('prerender：' + products.length + ' 个精选产品页 → dist/p/，sitemap ' + urls.length + ' 条，feed 30 条');
+  /* 站点地址统一改写（问题 55）：robots.txt 与 index.html 里的硬编码官方地址随 SITE_URL 走，
+     自定义域名/Gitee 部署后 SEO 归属不再指向别的站点 */
+  {
+    const robotsPath = path.join(DIST, 'robots.txt');
+    if (fs.existsSync(robotsPath)) {
+      let r = fs.readFileSync(robotsPath, 'utf8');
+      r = r.replace(/^Sitemap:.*$/m, 'Sitemap: ' + SITE + 'sitemap.xml');
+      fs.writeFileSync(robotsPath, r, 'utf8');
+    }
+    const idxPath = path.join(DIST, 'index.html');
+    if (fs.existsSync(idxPath)) {
+      let h = fs.readFileSync(idxPath, 'utf8');
+      h = h.split('https://xuange-hu.github.io/riwanji/').join(SITE);
+      fs.writeFileSync(idxPath, h, 'utf8');
+    }
+  }
+
+  console.log('prerender：' + products.length + ' 个精选产品页 → dist/p/，sitemap ' + urls.length + ' 条，feed 30 条，SITE=' + SITE);
 }
 
 main();

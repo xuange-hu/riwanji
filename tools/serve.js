@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 /* ============================================================
-   tools/serve.js — 日理万机在线服务器（v2 · 百万 SKU 架构）
-   静态文件 + 百万级产品检索 API。
+   tools/serve.js — 日理万机在线服务器（开发 / 回归参考实现）
+   静态文件 + 产品检索 API。
    架构：精选数据全内存；海量 SKU 用「轻量索引常驻内存 +
-   完整详情按需从 bulk-detail.jsonl 随机读取」，支撑百万级数据。
+   完整详情按需从 bulk-detail.jsonl 随机读取」的检索参考实现。
 
-   启动： node tools/serve.js [--port 8123]
+   ★ 规模声明（问题 57）：这是开发/回归级服务器，不是生产网关——
+     搜索/建议为多轮全库扫描、排行榜按排序键缓存多份全量数组、
+     大响应 gzipSync 同步压缩、无请求频率限制。当前千级数据毫无压力，
+     但不能把这套实现直接等同于「可承受百万级 SKU 公网流量」；
+     真正百万级部署前需补索引化检索、异步压缩、限流与水平扩展
+     （见 README「规模化路径」与 DEPLOY.md「路线 B」）。
+
+   启动： node tools/serve.js [--port 8123]   （默认只听 127.0.0.1；
+          对外暴露用 HOST=0.0.0.0 显式开启，公网部署建议 Nginx 反代）
    前端契约：
      GET /api/meta        全库概览（含品类树统计）
      GET /api/categories  品类树 + 各品类型号数
@@ -37,8 +45,14 @@ const MIME = {
   '.js': 'application/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.jsonl': 'application/x-ndjson; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml',
   '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8',
-  '.csv': 'text/csv; charset=utf-8'
+  '.csv': 'text/csv; charset=utf-8', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif', '.avif': 'image/avif', '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8'
 };
+
+/* 静态资源白名单（问题 27/11）：只暴露站点资产，.git/tools/日志等一律不可达 */
+const STATIC_ROOT_FILES = new Set(['index.html', '404.html', 'sitemap.xml', 'feed.xml', 'robots.txt', 'LICENSE', '.nojekyll']);
+const STATIC_DIRS = new Set(['js', 'css', 'data', 'img', 'p', 'fonts']);
 
 /* ---------- 参数 ---------- */
 function parseArgs() {
@@ -254,7 +268,9 @@ function finalize(catMeta) {
   const catBrand = new Map(); /* 品类 → 品牌 → 数量（品牌细分） */
   for (const p of PRODUCTS) {
     counts[p.category] = (counts[p.category] || 0) + 1;
-    if (p.catLeaf) leafCounts[p.catLeaf] = (leafCounts[p.catLeaf] || 0) + 1;
+    /* leaf 口径（问题 12）：无 catLeaf 的精选产品归入根叶子（= 基础品类），与 category 计数一致 */
+    const leafKey = p.catLeaf || p.category;
+    if (leafKey) leafCounts[leafKey] = (leafCounts[leafKey] || 0) + 1;
     if (p.year) { if (p.year < YEAR_MIN) YEAR_MIN = p.year; if (p.year > YEAR_MAX) YEAR_MAX = p.year; }
     if (!BY_ID.has(p.id)) BY_ID.set(p.id, p); else console.warn('  重复 id 已忽略：' + p.id);
     let bm = catBrand.get(p.category);
@@ -284,7 +300,7 @@ function finalize(catMeta) {
   for (const c of CATS) {
     const b = baseById[c.id];
     if (!b) { c.leaves = [{ id: c.id, name: c.name, count: c.count }]; continue; }
-    const leaves = [{ id: b.id, name: b.name, count: leafCounts[b.id] || 0 }];
+    const leaves = [{ id: b.id, name: b.name, count: counts[b.id] || 0 }];
     for (const v of (b.variants || [])) {
       const lid = b.id + '-' + v.slug;
       if (b.cross && b.cross.length) {
@@ -318,14 +334,22 @@ function buildHaystacks() {
     p._brand = (String(p.brand) + alias).toLowerCase();
     p._tags = (p.tags || []).join(' ').toLowerCase();
     p._cat = (String(p.catName || '') + ' ' + String(p.subcat || '') + ' ' + String(p.categoryName || '')).toLowerCase(); /* 品类词表（含细分，如「耳机 降噪耳机」） */
-    if (p.catLeaf) p._leaf = p.catLeaf;
+    p._leaf = p.catLeaf || p.category; /* 精选无 catLeaf 归根叶子（问题 12） */
   }
 }
 
 /* ---------- 检索与排序 ---------- */
-/* 单字符英文数字噪声（如 "xbox series x" 的 x）直接丢弃 */
-const tokenize = (q) => String(q || '').toLowerCase().split(/[\s,，、;；+]+/)
-  .filter((t) => t && !(t.length === 1 && /[a-z0-9]/.test(t)));
+/* 单字符英文数字噪声（如 "xbox series x" 的 x）直接丢弃；但用户明确的单字符查询保留（问题 14） */
+const tokenize = (q) => {
+  const raw = String(q || '');
+  const toks = raw.toLowerCase().split(/[\s,，、;；+]+/)
+    .filter((t) => t && !(t.length === 1 && /[a-z0-9]/.test(t)));
+  if (!toks.length && raw.trim()) {
+    const only = raw.trim().toLowerCase().replace(/[^一-龥a-z0-9.\-]+/g, '');
+    if (only) toks.push(only);
+  }
+  return toks;
+};
 
 /* 中文长词切分为双字词（「降噪耳机」→ 降噪+耳机），提升中文语义查询命中 */
 const isCJK = (t) => /[\u4e00-\u9fa5]/.test(t);
@@ -366,10 +390,10 @@ function expandQuery(q) {
     .join(' ');
 }
 
-function searchItems(q, cat, leaf, brand, era, source) {
-  let list = PRODUCTS;
+function searchItems(q, cat, leaf, brand, era, source, includeDemo) {
+  let list = demoPool(includeDemo);
   if (cat) list = list.filter((p) => p.category === cat);
-  if (leaf) list = list.filter((p) => p._leaf === leaf);
+  if (leaf) list = list.filter((p) => (p._leaf || p.category) === leaf); /* 精选归根叶子（问题 12） */
   if (brand) list = list.filter((p) => p.brand === brand);
   if (source === 'curated' || source === 'bulk') list = list.filter((p) => p.source === source);
   if (era) {
@@ -452,6 +476,15 @@ const SORTERS = {
   name: (a, b) => String(a.name).localeCompare(String(b.name), 'zh-CN')
 };
 
+/* 演示可见性（问题 42）：demo=1 才含演示样本，检索/计数与前端演示开关同步 */
+const withDemo = (q) => String(q.get('demo')) === '1';
+const demoPool = (inc) => inc ? PRODUCTS : PRODUCTS.filter((p) => p.source !== 'bulk');
+/* 时间线全年展开的轻量视图（问题 44）：只带渲染所需字段 */
+const liteOf = (p) => ({
+  id: p.id, name: p.name, brand: p.brand, year: p.year,
+  category: p.category, categoryName: p.categoryName || '', source: p.source
+});
+
 const RANK_CACHE = new Map();
 function sortItems(list, sort, dir) {
   if (dir === 1 || dir === -1) {
@@ -484,26 +517,38 @@ function metaPayload() {
 }
 
 /* 品类树 + 各品类（含细分）的型号数 */
-function categoriesPayload() {
+function categoriesPayload(incDemo) {
+  /* 计数与检索同池同口径（问题 42/12）：按 demo 可见性动态重算，基础品类卡 = category 维度 */
+  const pool = demoPool(incDemo);
+  const leafCounts = {}, catCounts = {};
+  for (const p of pool) {
+    const lk = p.catLeaf || p.category;
+    if (lk) leafCounts[lk] = (leafCounts[lk] || 0) + 1;
+    if (p.category) catCounts[p.category] = (catCounts[p.category] || 0) + 1;
+  }
   const catBrands = {};
-  for (const c of CATS) catBrands[c.id] = c.brands || [];
+  for (const c of CATS) {
+    const bm = {};
+    for (const p of pool) if (p.category === c.id) bm[p.brand] = (bm[p.brand] || 0) + 1;
+    catBrands[c.id] = Object.keys(bm).sort((x, y) => bm[y] - bm[x]).map((b) => ({ name: b, count: bm[b] }));
+  }
   return {
     stats: TREE.stats,
-    leafCounts: LEAF_COUNTS,
+    leafCounts: leafCounts,
     groups: TREE.groups.map((g) => ({
       id: g.id, name: g.name, icon: g.icon,
       bases: g.bases.map((b) => ({
         id: b.id, name: b.name, icon: b.icon,
-        count: LEAF_COUNTS[b.id] || 0,
+        count: catCounts[b.id] || 0,
         brands: catBrands[b.id] || [],
-        leaves: [{ id: b.id, name: b.name, count: LEAF_COUNTS[b.id] || 0 }]
+        leaves: [{ id: b.id, name: b.name, count: catCounts[b.id] || 0 }]
           .concat((b.variants || []).map((v) => {
             const lid = b.id + '-' + v.slug;
             const cross = (b.cross || []).map((c) => {
               const cid = lid + '-' + c.slug;
-              return { id: cid, name: b.name + ' · ' + v.label + ' ' + c.label, count: LEAF_COUNTS[cid] || 0 };
+              return { id: cid, name: b.name + ' · ' + v.label + ' ' + c.label, count: leafCounts[cid] || 0 };
             });
-            const self = { id: lid, name: b.name + ' · ' + v.label, count: LEAF_COUNTS[lid] || 0 };
+            const self = { id: lid, name: b.name + ' · ' + v.label, count: leafCounts[lid] || 0 };
             return b.cross && b.cross.length ? cross : [self];
           }).flat())
       }))
@@ -511,37 +556,40 @@ function categoriesPayload() {
   };
 }
 
-let HOME_CACHE = null;
-function homePayload() {
-  if (HOME_CACHE) return HOME_CACHE;
-  const curated = PRODUCTS.filter((p) => p.source === 'curated');
+let HOME_CACHE = new Map(); /* demo=0/1 双缓存（问题 42） */
+function homePayload(incDemo) {
+  if (HOME_CACHE.has(incDemo)) return HOME_CACHE.get(incDemo);
+  const pool = demoPool(incDemo);
+  const curated = pool.filter((p) => p.source === 'curated');
   const editors = curated.slice().sort(SORTERS.score).slice(0, 8);
   const popular = curated.slice().sort(SORTERS.user).slice(0, 8);
   const topPerCat = CATS.map((c) => curated.filter((p) => p.category === c.id).sort(SORTERS.score)[0]).filter(Boolean);
 
   const byYear = new Map();
-  for (const p of PRODUCTS) {
+  for (const p of pool) {
     const y = p.year || 0;
-    if (!byYear.has(y)) byYear.set(y, { year: y, count: 0, curated: [], bulk: [] });
+    if (!byYear.has(y)) byYear.set(y, { year: y, count: 0, curated: [], bulk: [], all: [] });
     const g = byYear.get(y);
     g.count++;
     if (g.curated.length + g.bulk.length < 8) (p.source === 'curated' ? g.curated : g.bulk).push(p);
+    g.all.push(liteOf(p)); /* 全年全量（问题 44）：展开全年不再只有 8 条 */
   }
   const timeline = Array.from(byYear.values())
     .sort((a, b) => b.year - a.year)
-    .map((g) => ({ year: g.year, count: g.count, items: g.curated.concat(g.bulk).slice(0, 8) }));
+    .map((g) => ({ year: g.year, count: g.count, items: g.curated.concat(g.bulk).slice(0, 8), all: g.all }));
 
-  HOME_CACHE = {
-    stats: { total: PRODUCTS.length, categories: CATS.length, brands: BRANDS.length,
+  const payload = {
+    stats: { total: pool.length, categories: CATS.length, brands: BRANDS.length,
       yearMin: YEAR_MIN, yearMax: YEAR_MAX,
       groups: TREE.stats.groups, bases: TREE.stats.bases, leaves: TREE.stats.leaves },
     categories: CATS, editors: editors, popular: popular, topPerCat: topPerCat, timeline: timeline
   };
-  return HOME_CACHE;
+  HOME_CACHE.set(incDemo, payload);
+  return payload;
 }
 
-function timelinePayload() {
-  return { years: homePayload().timeline };
+function timelinePayload(incDemo) {
+  return { years: homePayload(incDemo).timeline };
 }
 
 /* ---------- HTTP ---------- */
@@ -569,28 +617,43 @@ function sendJSON(res, obj, status, cache) {
   res.end(body);
 }
 
-/* 公网安全响应头：防 MIME 嗅探 / 点击劫持 / 限制 Referrer */
+/* 公网安全响应头：防 MIME 嗅探 / 点击劫持 / 限制 Referrer / CSP 纵深（问题 79） */
 const SEC = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'SAMEORIGIN',
-  'Referrer-Policy': 'strict-origin-when-cross-origin'
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  /* 问题 79：严格 CSP——源码已无内联脚本/内联 onerror（外联 theme-init/boot-config +
+     document 级 error 委托），script-src 不再需要 'unsafe-inline' */
+  'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
 };
 
-/* 静态资源缓存策略：带 hash 潜力的长期缓存 + ETag 协商（避免重复传输） */
+/* 静态资源缓存策略：图片等指纹型资产长缓存；html/js/css/数据文件无指纹名 → no-cache 走 ETag 协商（问题 46） */
 function serveStatic(req, res, urlPath) {
   let rel;
   try { rel = decodeURIComponent(urlPath); } catch (e) { rel = urlPath; } /* 非法百分号编码不炸进程 */
   if (rel === '/') rel = '/index.html';
+  if (rel.indexOf('\0') !== -1) { res.writeHead(403, SEC); res.end('Forbidden'); return; }
   const abs = path.normalize(path.join(ROOT, rel));
-  if (!abs.startsWith(ROOT)) { res.writeHead(403, SEC); res.end('Forbidden'); return; }
-  fs.stat(abs, (err, st) => {
+  /* 路径边界（问题 11）：分隔符边界 + 实路径约束，防 /..%2f 前缀逃逸与符号链接穿出 */
+  if (abs !== ROOT && abs.indexOf(ROOT + path.sep) !== 0) { res.writeHead(403, SEC); res.end('Forbidden'); return; }
+  let real = abs;
+  try { real = fs.realpathSync(abs); } catch (e) { real = abs; } /* 不存在的文件交给 404 */
+  if (real !== ROOT && real.indexOf(ROOT + path.sep) !== 0) { res.writeHead(403, SEC); res.end('Forbidden'); return; }
+  /* dotfile 拦截（问题 27）：.git/.github/点文件一律不可达，白名单文件除外 */
+  const relSegs = rel.split(/[\\/]/).filter(Boolean);
+  const first = relSegs[0] || '';
+  const allowed = STATIC_ROOT_FILES.has(relSegs.join('/')) ||
+    (STATIC_DIRS.has(first) && relSegs.length > 1);
+  if (!allowed) { res.writeHead(403, SEC); res.end('Forbidden'); return; }
+  if (relSegs.some((s) => s.charAt(0) === '.' && !STATIC_ROOT_FILES.has(s))) {
+    res.writeHead(403, SEC); res.end('Forbidden'); return;
+  }
+  fs.stat(real, (err, st) => {
     if (err || !st.isFile()) { res.writeHead(404, SEC); res.end('Not Found'); return; }
-    const ext = path.extname(abs).toLowerCase();
-    /* 数据分片体积大 → 强缓存 7 天；外壳文件短缓存保证更新生效 */
-    const isData = abs.indexOf(path.join(ROOT, 'data')) === 0;
-    const isAsset = ext === '.css' || ext === '.js';
-    const cache = isData ? 'public, max-age=604800'
-      : (isAsset ? 'public, max-age=3600' : 'public, max-age=600');
+    const ext = path.extname(real).toLowerCase();
+    const isImg = ext === '.png' || ext === '.webp' || ext === '.jpg' || ext === '.jpeg' ||
+      ext === '.gif' || ext === '.avif' || ext === '.svg' || ext === '.ico' || ext === '.woff2';
+    const cache = isImg ? 'public, max-age=86400' : 'no-cache';
     const etag = 'W/"' + st.size.toString(16) + '-' + Math.floor(st.mtimeMs).toString(16) + '"';
     if (req.headers['if-none-match'] === etag) { res.writeHead(304, Object.assign({ 'ETag': etag }, SEC)); res.end(); return; }
     res.writeHead(200, Object.assign({
@@ -598,7 +661,7 @@ function serveStatic(req, res, urlPath) {
       'Cache-Control': cache,
       'ETag': etag
     }, SEC));
-    fs.createReadStream(abs).pipe(res);
+    fs.createReadStream(real).pipe(res);
   });
 }
 
@@ -607,13 +670,13 @@ function handleAPI(req, res, url) {
   const q = url.searchParams;
 
   if (p === '/api/meta') return sendJSON(res, metaPayload(), 200, 'public, max-age=300');
-  if (p === '/api/categories') return sendJSON(res, categoriesPayload(), 200, 'public, max-age=300');
-  if (p === '/api/home') return sendJSON(res, homePayload(), 200, 'public, max-age=120');
-  if (p === '/api/timeline') return sendJSON(res, timelinePayload(), 200, 'public, max-age=300');
+  if (p === '/api/categories') return sendJSON(res, categoriesPayload(withDemo(q)), 200, 'public, max-age=300');
+  if (p === '/api/home') return sendJSON(res, homePayload(withDemo(q)), 200, 'public, max-age=120');
+  if (p === '/api/timeline') return sendJSON(res, timelinePayload(withDemo(q)), 200, 'public, max-age=300');
 
   if (p === '/api/search') {
     const qtext = q.get('q');
-    const { list } = searchItems(qtext, q.get('cat'), q.get('leaf'), q.get('brand'), q.get('era'), q.get('source'));
+    const { list } = searchItems(qtext, q.get('cat'), q.get('leaf'), q.get('brand'), q.get('era'), q.get('source'), withDemo(q));
     // 有关键词且未指定其他排序时保持相关度顺序；否则按所选维度排序
     const sortParam = q.get('sort');
     const sorted = (qtext && (!sortParam || sortParam === 'score')) ? list : sortItems(list, sortParam || 'score');
@@ -637,17 +700,18 @@ function handleAPI(req, res, url) {
       if (seen.has(it.id)) return;
       seen.add(it.id); items.push(it);
     };
+    const spool = demoPool(withDemo(q)); /* 问题 42 */
     /* 优先：整句前缀/包含于名称；再：全部词命中名称或品牌 */
-    for (const it of PRODUCTS) {
+    for (const it of spool) {
       if (items.length >= 7) break;
       if (it._name.indexOf(phrase) === 0) push(it);
     }
-    for (const it of PRODUCTS) {
+    for (const it of spool) {
       if (items.length >= 7) break;
       if (it._name.indexOf(phrase) !== -1) push(it);
     }
     if (items.length < 7) {
-      outer: for (const it of PRODUCTS) {
+      outer: for (const it of spool) {
         for (const t of toks) {
           if (it._name.indexOf(t) === -1 && it._brand.indexOf(t) === -1) continue outer;
         }
@@ -693,10 +757,10 @@ function handleAPI(req, res, url) {
     const cat = q.get('cat');
     const sort = q.get('sort') || 'score';
     const dir = parseInt(q.get('dir') || '-1', 10);
-    const cacheKey = (cat || '') + '|' + sort + '|' + dir;
+    const cacheKey = (cat || '') + '|' + sort + '|' + dir + '|' + withDemo(q);
     let sorted = RANK_CACHE.get(cacheKey);
     if (!sorted) {
-      let list = PRODUCTS;
+      let list = demoPool(withDemo(q)); /* 问题 42 */
       if (cat) list = list.filter((x) => x.category === cat);
       sorted = sortItems(list, sort, dir);
       if (RANK_CACHE.size > 16) RANK_CACHE.delete(RANK_CACHE.keys().next().value);
@@ -712,7 +776,7 @@ function handleAPI(req, res, url) {
   if (p === '/api/related') {
     const base = BY_ID.get(String(q.get('id') || ''));
     if (!base) return sendJSON(res, { items: [] });
-    const items = PRODUCTS.filter((x) => x.category === base.category && x.id !== base.id)
+    const items = demoPool(withDemo(q)).filter((x) => x.category === base.category && x.id !== base.id) /* 问题 42 */
       .sort((a, b) => Math.abs((a.score || 0) - (base.score || 0)) - Math.abs((b.score || 0) - (base.score || 0)))
       .slice(0, 4);
     return sendJSON(res, { items: items });
@@ -721,7 +785,7 @@ function handleAPI(req, res, url) {
   /* 品牌专区：品牌目录（跨品类产品数/品类分布/年代跨度） */
   if (p === '/api/brands') {
     const map = new Map();
-    for (const x of PRODUCTS) {
+    for (const x of demoPool(withDemo(q))) { /* 问题 42 */
       let b = map.get(x.brand);
       if (!b) map.set(x.brand, b = { name: x.brand, count: 0, cats: {}, yearMin: 9999, yearMax: 0, scoreSum: 0, scoreN: 0 });
       b.count++;
@@ -730,13 +794,18 @@ function handleAPI(req, res, url) {
       const sc = Number(x.score);
       if (sc) { b.scoreSum += sc; b.scoreN++; }
     }
+    const catIndex = new Map(CATS.map((c) => [c.id, c]));
     const items = Array.from(map.values()).map((b) => ({
       name: b.name, count: b.count,
       score: b.scoreN ? Math.round((b.scoreSum / b.scoreN) * 10) / 10 : null,
       yearMin: b.yearMin === 9999 ? null : b.yearMin,
       yearMax: b.yearMax || null,
       catCount: Object.keys(b.cats).length,
-      topCats: Object.keys(b.cats).sort((a, c) => b.cats[c] - b.cats[a]).slice(0, 3)
+      /* topCats 带名称/图标（问题 45）：前端 DATA.cats 在线模式为空，退化 id 不可接受 */
+      topCats: Object.keys(b.cats).sort((a, c) => b.cats[c] - b.cats[a]).slice(0, 3).map((cid) => {
+        const c = catIndex.get(cid);
+        return { id: cid, name: c ? c.name : cid, icon: c ? c.icon : '📦' };
+      })
     })).sort((a, c) => c.count - a.count);
     return sendJSON(res, { total: items.length, items: items }, 200, 'public, max-age=300');
   }
@@ -744,7 +813,7 @@ function handleAPI(req, res, url) {
   /* 品牌详情：该品牌产品（分页 + 品类分布 + 年代跨度） */
   if ((m = p.match(/^\/api\/brand\/([^/]+)$/))) {
     const name = decodeURIComponent(m[1]);
-    const list = PRODUCTS.filter((x) => x.brand === name);
+    const list = demoPool(withDemo(q)).filter((x) => x.brand === name); /* 问题 42 */
     if (!list.length) return sendJSON(res, { error: 'not found' }, 404);
     const catMap = {};
     let yMin = 9999, yMax = 0, scoreSum = 0, scoreN = 0;
@@ -759,7 +828,7 @@ function handleAPI(req, res, url) {
       return { id: c.id, name: c.name, icon: c.icon, count: catMap[cid] };
     }).sort((a, c) => c.count - a.count);
     const sort = q.get('sort') || 'score';
-    const sorted = sortItems(list, sort, -1);
+    const sorted = sortItems(list, sort); /* 问题 43：UI 排序名走 SORTERS，不再当字段名 */
     const pageSize = Math.min(60, Math.max(1, parseInt(q.get('pageSize') || '24', 10) || 24));
     const total = sorted.length;
     const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -828,7 +897,9 @@ async function main() {
     }
   });
 
-  server.listen(args.port, process.env.HOST || '0.0.0.0', () => {
+  /* 默认只听本机回环（问题 57）：开发/回归服务器不主动暴露到所有网卡；
+     需要对外时显式 HOST=0.0.0.0（公网部署仍应走 Nginx 反代，见 DEPLOY.md） */
+  server.listen(args.port, process.env.HOST || '127.0.0.1', () => {
     console.log('  总计：' + PRODUCTS.length.toLocaleString() + ' 条，品类 ' + CATS.length + '（细分 ' + TREE.stats.leaves.toLocaleString() + '），品牌 ' + BRANDS.length);
     console.log('  启动耗时：' + ((Date.now() - t0) / 1000).toFixed(1) + 's');
     console.log('  ▶ http://127.0.0.1:' + args.port + '/');

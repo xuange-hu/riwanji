@@ -19,17 +19,12 @@
   <link rel="canonical" href="https://xuange-hu.github.io/riwanji/" />
   <title>日理万机 · 数码产品百科</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cdefs%3E%3ClinearGradient%20id='rlwjLogoGrad'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%235b8cff'/%3E%3Cstop%20offset='1'%20stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg%20fill='url(%23rlwjLogoGrad)'%3E%3Crect%20x='21'%20y='5'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='30'%20y='5'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='39'%20y='5'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='21'%20y='51'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='30'%20y='51'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='39'%20y='51'%20width='4'%20height='8'%20rx='1.5'/%3E%3Crect%20x='5'%20y='21'%20width='8'%20height='4'%20rx='1.5'/%3E%3Crect%20x='5'%20y='39'%20width='8'%20height='4'%20rx='1.5'/%3E%3Crect%20x='51'%20y='21'%20width='8'%20height='4'%20rx='1.5'/%3E%3Crect%20x='51'%20y='39'%20width='8'%20height='4'%20rx='1.5'/%3E%3C/g%3E%3Crect%20x='10'%20y='10'%20width='44'%20height='44'%20rx='9'%20fill='url(%23rlwjLogoGrad)'/%3E%3Ccircle%20cx='16.5'%20cy='16.5'%20r='2'%20fill='%23fff'%20opacity='0.85'/%3E%3Cg%20fill='%23fff'%3E%3Crect%20x='19.8'%20y='14.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='19.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='24.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='29.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='34.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='39.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='19.8'%20y='44.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='14.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='19.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='24.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='29.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='34.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='39.8'%20y='39.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='24.8'%20y='14.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='29.8'%20y='14.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='34.8'%20y='14.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='24.8'%20y='29.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='29.8'%20y='29.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='34.8'%20y='29.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='24.8'%20y='44.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='29.8'%20y='44.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3Crect%20x='34.8'%20y='44.8'%20width='4.4'%20height='4.4'%20rx='0.8'/%3E%3C/g%3E%3C/svg%3E" />
-  <script>
-    // 主题预加载，避免闪烁
-    try {
-      var t = JSON.parse(localStorage.getItem('rlwj:theme') || '"dark"');
-      document.documentElement.setAttribute('data-theme', t);
-    } catch (e) { /* noop */ }
-  </script>
+  <!-- 主题预载脚本外联（问题 79）：不再内联可执行脚本，为严格 CSP 让路 -->
+  <script src="js/theme-init.js"></script>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="alternate" type="application/rss+xml" title="日理万机 · 更新日志" href="feed.xml" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"日理万机 · 数码产品百科全书","url":"https://xuange-hu.github.io/riwanji/","potentialAction":{"@type":"SearchAction","target":"https://xuange-hu.github.io/riwanji/#/products?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
-  <script>window.RLWJ_API = false;</script></head>
+  <script src="js/boot-config.js"></script></head>
 <body>
   <a class="skip-link" href="#app">跳到主内容</a>
   <div id="route-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -53,19 +48,20 @@
       </nav>
 
       <div class="search-box" id="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon" aria-hidden="true">🔍</span>
         <input id="global-search" type="search" autocomplete="off"
                placeholder="搜索产品、品牌、参数……" aria-label="全站搜索"
                role="combobox" aria-expanded="false" aria-controls="search-suggest" aria-autocomplete="list" />
         <div class="suggest" id="search-suggest" hidden></div>
       </div>
 
-      <button class="theme-toggle" id="theme-toggle" title="切换深浅色主题" aria-label="切换主题">🌙</button>
-      <button class="menu-toggle" id="menu-toggle" title="菜单" aria-label="菜单" aria-expanded="false" aria-controls="main-nav">☰</button>
+      <button class="theme-toggle" id="theme-toggle" title="切换深浅色主题" aria-label="切换主题"><span aria-hidden="true">🌙</span></button>
+      <button class="menu-toggle" id="menu-toggle" title="菜单" aria-label="菜单" aria-expanded="false" aria-controls="main-nav"><span aria-hidden="true">☰</span></button>
     </div>
   </header>
 
-  <main id="app" class="container">
+  <!-- tabindex=-1：SPA 路由切换后程序化聚焦主内容（问题 38），键盘用户不必重穿页头 -->
+  <main id="app" class="container" tabindex="-1">
     <div class="loading">正在载入产品库……</div>
   </main>
 

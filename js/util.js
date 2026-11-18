@@ -12,10 +12,21 @@ const esc = (s) => String(s == null ? '' : s)
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+/* 分享链接基址（问题 30）：file:// 下 origin 是字符串 "null"，用完整地址去 hash 拼接 */
+function shareBase() {
+  const o = location.origin;
+  if (!o || o === 'null' || String(location.protocol) === 'file:') return String(location.href || '').split('#')[0];
+  return o + location.pathname;
+}
 /* 安全解码：非法百分号编码（如 %E0%A4%A）不抛 URIError 导致白屏 */
 const safeDecode = (s) => { try { return decodeURIComponent(s || ''); } catch (e) { return String(s || ''); } };
 const fmtScore = (n) => (typeof n === 'number' ? n.toFixed(1) : '–');
 const fmtNum = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : String(n));
+/* 本地日期 YYYY-MM-DD（问题 69）：toISOString 是 UTC，中国凌晨 0–8 点会显示前一天 */
+function localDate(d) {
+  const x = d || new Date();
+  return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+}
 
 /* 可撤销 Toast（问题 31）：5 秒内点「撤销」回滚快照 */
 function toastUndo(msg, undoFn) {
@@ -24,6 +35,9 @@ function toastUndo(msg, undoFn) {
     el = document.createElement('div');
     el.id = 'toast';
     el.className = 'toast';
+    /* 问题 10：读屏播报 + 撤销按钮可点（toast 容器 pointer-events:none 需对按钮恢复） */
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
     document.body.appendChild(el);
   }
   el.innerHTML = '';
@@ -49,6 +63,8 @@ function toast(msg) {
     el = document.createElement('div');
     el.id = 'toast';
     el.className = 'toast';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
     document.body.appendChild(el);
   }
   el.textContent = msg;
@@ -62,7 +78,11 @@ function fallbackCopy(text, done) {
   ta.style.cssText = 'position:fixed;opacity:0';
   document.body.appendChild(ta);
   ta.select();
-  try { document.execCommand('copy'); done(); } catch (e) { toast('复制失败，请手动复制地址栏链接'); }
+  /* 问题 31：execCommand 返回 false 也是失败，不能当成功提示 */
+  try {
+    const ok = document.execCommand('copy');
+    if (ok) done(); else toast('复制失败，请手动复制地址栏链接');
+  } catch (e) { toast('复制失败，请手动复制地址栏链接'); }
   document.body.removeChild(ta);
 }
 
@@ -80,11 +100,23 @@ window.__rlwjDiag = DIAG;
 
 const store = {
   get(k, d) {
-    try { const v = JSON.parse(localStorage.getItem('rlwj:' + k)); return v == null ? d : v; }
-    catch (e) { return d; }
+    try {
+      const v = JSON.parse(localStorage.getItem('rlwj:' + k));
+      if (v == null) return d;
+      /* 类型校验（问题 28）：合法 JSON 但类型不符（如 favorites 存了 {}）直接回默认，防 indexOf 崩溃 */
+      if (Array.isArray(d)) return Array.isArray(v) ? v : d;
+      if (typeof d === 'object' && d !== null) {
+        return (typeof v === 'object' && v !== null && !Array.isArray(v)) ? v : d;
+      }
+      return typeof v === typeof d ? v : d;
+    } catch (e) { return d; }
   },
   set(k, v) {
-    try { localStorage.setItem('rlwj:' + k, JSON.stringify(v)); } catch (e) { /* 忽略 */ }
+    try { localStorage.setItem('rlwj:' + k, JSON.stringify(v)); }
+    catch (e) {
+      /* 问题 29：配额满/隐私模式不能静默吞——提示一次，避免用户以为已保存 */
+      if (!store._warned) { store._warned = true; toast('浏览器存储不可用，本次更改不会被保存'); }
+    }
   }
 };
 

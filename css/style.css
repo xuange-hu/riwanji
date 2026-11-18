@@ -18,6 +18,9 @@
   --accent-2: #22d3ee;
   --accent-3: #a78bfa;
   --accent-grad: linear-gradient(120deg, #5b8cff 0%, #22d3ee 100%);
+  /* 问题 39：承载白色文字的按钮/选中态专用渐变（端点 #2f5fd0≈5.8:1、#0e7490≈5.4:1，
+     均 ≥4.5:1）；--accent-grad 保留给装饰性光条/进度条，不影响品牌观感 */
+  --btn-grad: linear-gradient(120deg, #2f5fd0 0%, #0e7490 100%);
   --rainbow-grad: linear-gradient(120deg, #5b8cff, #22d3ee, #a78bfa, #5b8cff);
   --good: #34d399;
   --bad: #f87171;
@@ -66,6 +69,11 @@ html[data-theme="light"] {
   --aurora-1: rgba(91, 140, 255, 0.14);
   --aurora-2: rgba(34, 211, 238, 0.12);
   --aurora-3: rgba(167, 139, 250, 0.10);
+  /* 问题 40：浅色主题状态色换深一档（原 #fbbf24/#f87171/#34d399 对白底仅 1.7–2.8:1）：
+     绿 ≈5.5:1 / 红 ≈6.7:1 / 琥珀 ≈5.1:1（普通文字 AA 4.5:1 达标） */
+  --good: #0b7a52;
+  --bad: #dc2626;
+  --warn: #b45309;
   color-scheme: light;
 }
 
@@ -141,11 +149,14 @@ mark.hl {
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), visibility 0.25s;
   z-index: 300;
 }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+/* 问题 10：撤销按钮恢复指针事件（容器 pointer-events:none 否则点不到） */
+.toast button, .toast .toast-undo { pointer-events: auto; cursor: pointer; }
 
 /* 搜索建议键盘选中态 */
 .suggest-item.active {
@@ -323,7 +334,7 @@ button { font-family: inherit; }
 .main-nav a.active {
   color: #fff;
   font-weight: 600;
-  background: var(--accent-grad);
+  background: var(--btn-grad);
   box-shadow: 0 4px 16px rgba(91, 140, 255, 0.4);
 }
 
@@ -441,7 +452,7 @@ button { font-family: inherit; }
 .btn:active { transform: translateY(0); }
 
 .btn-primary {
-  background: var(--accent-grad);
+  background: var(--btn-grad);
   color: #fff;
   box-shadow: 0 6px 20px rgba(91, 140, 255, 0.4);
 }
@@ -466,7 +477,8 @@ button { font-family: inherit; }
 .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
 
 .btn-sm { padding: 6px 13px; font-size: 12.5px; border-radius: 10px; }
-.btn.active { background: var(--accent-grad); color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(91, 140, 255, 0.4); }
+/* 问题 20：选中态统一 .active/.on 双类名兼容（refresh 只切 .on，渲染曾用 .active） */
+.btn.active, .btn.on { background: var(--btn-grad); color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(91, 140, 255, 0.4); }
 
 .section { padding: 38px 0 6px; }
 
@@ -642,10 +654,12 @@ button { font-family: inherit; }
   background: linear-gradient(135deg, #5b8cff, #8b5bff); flex: 0 0 auto;
 }
 .hot-clear {
+  position: relative; /* 问题 67：命中区补足 44px（视觉不变） */
   font-size: 10px; padding: 2px 8px; border-radius: 999px;
   border: 1px solid rgba(120,150,255,0.16); background: transparent;
   color: var(--muted); cursor: pointer; transition: all 0.2s;
 }
+.hot-clear::before { content: ''; position: absolute; inset: -12px -4px; } /* 横向外扩对齐 8px 行距，不与相邻 chip 重叠 */
 .hot-clear:hover { color: #ff7a7a; border-color: rgba(255,122,122,0.5); }
 
 .hero-stats {
@@ -844,7 +858,7 @@ button { font-family: inherit; }
 
 .pc-score b { font-size: 22px; line-height: 1; font-family: var(--mono); }
 .pc-score span { font-size: 10.5px; color: var(--muted); font-weight: 500; }
-.pc-foot .actions { margin-left: auto; display: flex; gap: 6px; }
+.pc-foot .actions { margin-left: auto; display: flex; gap: 12px; } /* 问题 67：32px 视觉 + 6px 外扩命中区互不重叠（原 gap 6px 重叠 6px） */
 
 .icon-btn {
   width: 32px;
@@ -862,7 +876,7 @@ button { font-family: inherit; }
 }
 
 .icon-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
-.icon-btn.on { background: var(--accent-grad); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(91, 140, 255, 0.45); }
+.icon-btn.on { background: var(--btn-grad); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(91, 140, 255, 0.45); }
 
 /* 评分条 */
 .score-bars { display: flex; flex-direction: column; gap: 11px; }
@@ -930,7 +944,7 @@ button { font-family: inherit; }
 .chip:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 
 .chip.on {
-  background: var(--accent-grad);
+  background: var(--btn-grad);
   color: #fff;
   border-color: transparent;
   font-weight: 600;
@@ -974,6 +988,9 @@ button { font-family: inherit; }
   margin: 28px 0 50px;
   flex-wrap: wrap;
 }
+/* 问题 67：分页小按钮 / 跳页框命中区 44px。.btn 有 overflow:hidden 会裁掉伪元素外扩，
+   这里给真实尺寸（跳页 input 同步改 44px 高，行高对齐） */
+.pagination .btn-sm { min-width: 44px; min-height: 44px; }
 
 /* ---------------- 产品详情 ---------------- */
 
@@ -1231,6 +1248,12 @@ button { font-family: inherit; }
   box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.15);
 }
 
+/* 问题 35：label + 字段成列；内联错误提示；aria-invalid 字段高亮（错误不只靠 Toast） */
+.review-form .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
+.review-form label { font-size: 12.5px; font-weight: 600; color: var(--muted); letter-spacing: 0.3px; }
+.field-error { color: var(--bad); font-size: 12.5px; line-height: 1.55; margin: 0; }
+.review-form [aria-invalid="true"] { border-color: var(--bad); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14); }
+
 .review-item {
   background: var(--card);
   border: 1px solid var(--border);
@@ -1331,6 +1354,9 @@ button { font-family: inherit; }
 }
 
 .compare-table .ct-remove {
+  position: relative; /* 问题 67：36px 最小命中 + 外扩至 44px */
+  min-width: 36px;
+  min-height: 36px;
   border: none;
   background: none;
   color: var(--muted);
@@ -1338,6 +1364,7 @@ button { font-family: inherit; }
   font-size: 15px;
   transition: color 0.2s, transform 0.2s;
 }
+.compare-table .ct-remove::before { content: ''; position: absolute; inset: -4px; }
 
 .compare-table .ct-remove:hover { color: var(--bad); transform: scale(1.2); }
 
@@ -1368,7 +1395,12 @@ button { font-family: inherit; }
   border-top: 1px solid var(--border-strong);
   box-shadow: 0 -14px 36px rgba(0, 0, 0, 0.25);
   animation: rise 0.3s var(--ease);
+  padding-bottom: env(safe-area-inset-bottom, 0); /* 问题 25：刘海屏底部安全区 */
 }
+
+/* 问题 25：浮条显示时给页面预留底部空间（移动端浮条可达 ~210px），不再遮挡页脚 */
+body.cmp-tray-open { padding-bottom: 260px; }
+@media (min-width: 768px) { body.cmp-tray-open { padding-bottom: 120px; } }
 
 .compare-tray-inner { display: flex; align-items: center; gap: 12px; padding: 12px 22px; flex-wrap: wrap; }
 .compare-tray-label { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: 1px; }
@@ -1387,6 +1419,9 @@ button { font-family: inherit; }
 }
 
 .compare-chip button {
+  position: relative; /* 问题 67：命中区 28px + 外扩至 44px（chip 内无相邻交互件） */
+  min-width: 28px;
+  min-height: 28px;
   border: none;
   background: none;
   color: var(--muted);
@@ -1395,6 +1430,7 @@ button { font-family: inherit; }
   padding: 0;
   transition: color 0.2s;
 }
+.compare-chip button::before { content: ''; position: absolute; inset: -8px; } /* 28px 外扩至 44px 命中区（问题 67）：右侧仍在 chip 12px 内边距内，不与相邻交互件重叠 */
 
 .compare-chip button:hover { color: var(--bad); }
 
@@ -1726,7 +1762,7 @@ button { font-family: inherit; }
   width: 44px; height: 44px; border-radius: 12px; flex: 0 0 auto;
   display: grid; place-items: center;
   font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
-  color: #fff; background: linear-gradient(135deg, #5b8cff, #8b5bff);
+  color: #fff; background: var(--btn-grad); /* 问题 39：白字徽标对比度达标 */
 }
 .brand-card-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .brand-card-meta b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1839,7 +1875,7 @@ button { font-family: inherit; }
   left: -9999px;
   top: 0;
   z-index: 999;
-  background: var(--accent);
+  background: #2f5fd0; /* 问题 39：白字对比度 ≥4.5:1（原 --accent 仅 3.16:1） */
   color: #fff;
   padding: 10px 18px;
   border-radius: 0 0 12px 0;
@@ -1859,8 +1895,9 @@ button { font-family: inherit; }
 }
 .th-sort:hover { color: var(--accent); }
 
-/* 本机笔记删除（问题 31） */
+/* 本机笔记删除（问题 31）；命中区外扩至 ≈44px（问题 67，视觉不变） */
 .review-del {
+  position: relative;
   margin-left: auto;
   background: none;
   border: 0;
@@ -1870,6 +1907,7 @@ button { font-family: inherit; }
   padding: 2px 8px;
   border-radius: 8px;
 }
+.review-del::before { content: ''; position: absolute; inset: -10px -6px; }
 .review-del:hover { color: #ef4444; background: rgba(239, 68, 68, 0.12); }
 
 /* toast 撤销按钮（问题 31） */
@@ -1912,6 +1950,18 @@ button { font-family: inherit; }
     overflow: visible !important;
   }
   a { color: #000 !important; text-decoration: underline; }
+  /* 问题 41：只重置容器不够——后代更具体的 var(--muted)/--text-2 浅灰文字
+     （实测产品摘要 rgb(184,196,218)，白底对比度 ≈1.76:1）和渐变文字的
+     color:transparent（不打印背景图形时直接消失）都必须强制为深色实体字 */
+  body *, body *::before, body *::after {
+    color: #111 !important;
+    -webkit-text-fill-color: #111 !important;
+    background-image: none !important;
+    text-shadow: none !important;
+  }
+  a { color: #000 !important; text-decoration: underline; }
+  /* 渐变背景被移除后按钮补一圈浅灰描边，保持可辨识 */
+  .btn, .chip, .icon-btn { border: 1px solid #999 !important; }
   table { page-break-inside: auto; }
   img { max-width: 100% !important; }
 }
@@ -1927,11 +1977,11 @@ html[data-theme="light"] .tl-year h3 {
   background-image: linear-gradient(115deg, #2c55c9, #0e7490 55%, #6d4fc4);
 }
 
-/* N14 导航链接命中区 44px（原 ≈37px）：视觉不变，::before 纵向外扩 */
+/* N14 导航链接命中区 44px（原 ≈37px）：视觉不变，::before 纵向外扩（横向不扩，避免相邻项重叠） */
 .main-nav a::before {
   content: '';
   position: absolute;
-  inset: -8px -2px;
+  inset: -8px 0;
 }
 
 /* N13 卡片标题真实链接：视觉与原纯文本一致，键盘焦点可见 */

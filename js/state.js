@@ -42,7 +42,7 @@ function toggleCompare(id) {
   const i = state.compare.indexOf(id);
   if (i !== -1) { state.compare.splice(i, 1); }
   else {
-    if (state.compare.length >= 3) { toast('最多同时对比 3 款产品'); return; }
+    if (state.compare.length >= CONFIG.COMPARE_MAX) { toast('最多同时对比 ' + CONFIG.COMPARE_MAX + ' 款产品'); return; }
     state.compare.push(id);
   }
   saveState(); refreshCmpButtons(); renderCompareTray();
@@ -52,6 +52,8 @@ function refreshFavButtons() {
   $$('[data-action="fav"]').forEach((b) => {
     const on = isFav(b.getAttribute('data-id'));
     b.classList.toggle('on', on);
+    /* 问题 37：切换状态同步 aria-pressed（仅开关型按钮；纯移除 ✕ 不设） */
+    if (b.classList.contains('btn') || b.classList.contains('icon-btn')) b.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (b.classList.contains('btn')) b.textContent = on ? '♥ 已收藏' : '♥ 收藏';
   });
 }
@@ -60,6 +62,7 @@ function refreshCmpButtons() {
   $$('[data-action="cmp"]').forEach((b) => {
     const on = inCompare(b.getAttribute('data-id'));
     b.classList.toggle('on', on);
+    if (b.classList.contains('btn') || b.classList.contains('icon-btn')) b.setAttribute('aria-pressed', on ? 'true' : 'false');
     if (b.classList.contains('btn')) b.textContent = on ? '⇋ 已加入对比' : '⇋ 加入对比';
   });
 }

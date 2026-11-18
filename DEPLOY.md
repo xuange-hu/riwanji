@@ -109,8 +109,20 @@ node tools/build-dist.js
 # 2) （可选）调整静态版产品规模后重建
 node tools/export-static-bulk.js --count 10000 --per-shard 200   # 热门 SKU → data/gen/
 node tools/build-manifest.js                                     # 重建清单
+node tools/build-index.js                                        # 重建演示轻索引（动过演示数据必跑，漏了会数据漂移）
 node tools/build-dist.js                                         # 重建部署包
 ```
+
+> **部署到非官方地址（Gitee / 自有域名）先设 `SITE_URL`**：预渲染的 sitemap / RSS /
+> canonical / OG / robots 绝对地址默认指向 `https://xuange-hu.github.io/riwanji/`，
+> 设 `SITE_URL` 后统一改写为目标地址再发布：
+>
+> ```powershell
+> # PowerShell
+> $env:SITE_URL = "https://<你的用户名>.gitee.io/riwanji/"; node tools/prerender.js
+> # bash
+> SITE_URL=https://<你的用户名>.gitee.io/riwanji/ node tools/prerender.js
+> ```
 
 **推送 Gitee 三步**（Gitee 网页先建空仓库，如 `riwanji`）：
 
@@ -124,11 +136,13 @@ git push -u origin master
 得到永久固定地址 `https://<你的用户名>.gitee.io/riwanji/`。
 
 **静态版内容**（构建时 Observed 实测）：
-- **10,346 个产品**：347 精选（真实图集 + 测评索引）+ 10,000 热门 SKU
-- 覆盖 **106 个品类 / 656 品牌**，全功能可用（搜索/筛选/品牌细分/对比/收藏/时间线/排行榜）
+- **10,346 个产品**：346 精选（真实图集 + 测评索引）+ 10,000 热门 SKU
+- 覆盖 **106 个品类 / 657 品牌**，全功能可用（搜索/筛选/品牌细分/对比/收藏/时间线/排行榜）
 - 每产品 ≥3 图（真实图优先，SVG 海报变体补足）
 - 已适配 Gitee Pages 子路径部署（全相对路径，静态审计 5/5 通过）
-- 限制：200 万海量 SKU 依赖 Node 服务端（路线 B）；静态版为精选+热门快照
+- 限制：`tools/serve.js` 是开发/回归参考实现（多轮全库扫描、gzipSync 同步压缩、无请求频控），
+  **不能直接等同于可承受 200 万 SKU 公网流量**；海量数据请按 README「规模化路径」
+  迁移数据库 + 服务端检索（如 Meilisearch）。静态版为精选 + 热门快照
 
 | 平台 | 免费额度 | 国内可访问性 |
 |---|---|---|
@@ -152,9 +166,9 @@ git push -u origin master
 ## 公开前检查清单
 
 - [x] 安全响应头（X-Content-Type-Options / X-Frame-Options / Referrer-Policy）已加
-- [x] 路径穿越防护（`abs.startsWith(ROOT)`）
+- [x] 路径穿越防护（normalize + 分隔符边界 + realpath 实路径约束 + 隐藏文件拒绝，见 serve.js 静态文件处理）
 - [x] API 全只读（无写接口，无需鉴权）
 - [x] 搜索/输入全量转义（XSS 防护已过 27 项边缘用例）
 - [x] 图源 100% https（无混合内容）
-- [ ] 服务器内存 ≥ 2GB（200 万 SKU 索引驻留 ≈ 1.2GB）
+- [ ] 服务器内存充足（serve.js 数据全量驻留内存；海量 SKU 场景先迁移数据库 + 服务端检索，见上文限制）
 - [ ] 域名备案（仅国内服务器需要）

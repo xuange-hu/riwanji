@@ -15,9 +15,11 @@ for (const f of ['index.html'].concat(jsFiles)) {
   else ok.push(f + ' 无绝对资源路径');
 }
 
-/* 2. /api 探测失败必须回退静态模式 */
+/* 2. /api 探测失败必须回退静态模式（问题 60：断言失败必须进 issues，不能一律打勾） */
 const app = jsFiles.map((f) => fs.readFileSync(path.join(R, f), 'utf8')).join('\n');
-ok.push('boot 探测→静态回退: ' + (/api\/meta/.test(app) && /loadStatic/.test(app)));
+const bootOK = /api\/meta/.test(app) && /loadStatic/.test(app);
+if (bootOK) ok.push('boot 探测→静态回退');
+else issues.push('boot 缺少 API 探测→静态回退链路');
 
 /* 3. 体积 */
 const size = (p) => { try { const s = fs.statSync(p); return s.isFile() ? s.size : 0; } catch (e) { return 0; } };

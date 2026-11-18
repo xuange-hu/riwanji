@@ -42,11 +42,12 @@ cp(path.join(ROOT, 'index.html'), path.join(DIST, 'index.html'));
   const src = path.join(ROOT, f);
   if (fs.existsSync(src)) cp(src, path.join(DIST, f));
 });
-/* 静态包无后端：注入 RLWJ_API=false，前端跳过 api/meta 探测（消除每次启动的必现 404） */
+/* 静态包无后端：注入 boot-config.js 引用（问题 2/76/79）——外联脚本设 RLWJ_API=false，
+   前端跳过 api/meta 探测（消除每次启动的必现 404）；不用内联脚本，严格 CSP 友好 */
 {
   const f = path.join(DIST, 'index.html');
   let h = fs.readFileSync(f, 'utf8');
-  h = h.replace('</head>', '  <script>window.RLWJ_API = false;</script></head>');
+  h = h.replace('</head>', '  <script src="js/boot-config.js"></script></head>');
   fs.writeFileSync(f, h);
 }
 
@@ -56,6 +57,9 @@ for (const dir of ['css', 'js']) {
     if (f.endsWith('.js') || f.endsWith('.css')) cp(path.join(ROOT, dir, f), path.join(DIST, dir, f));
   }
 }
+/* 部署包的 boot-config.js 覆盖为静态模式开关（源码侧是开发占位空文件，问题 2/76） */
+fs.writeFileSync(path.join(DIST, 'js', 'boot-config.js'),
+  '/* js/boot-config.js — 静态部署包启动开关（tools/build-dist.js 生成） */\nwindow.RLWJ_API = false;\n');
 
 /* 3. data：只取 .js（分片/清单/类目/品牌别名 + gen/ 扩充分片），跳过 bulk jsonl 与缓存 */
 function pruneOrphans(srcDir, distDir) {
@@ -107,7 +111,12 @@ if (fs.existsSync(WF)) {
   for (const f of fs.readdirSync(WF)) cp(path.join(WF, f), path.join(DIST, '.github', 'workflows', f));
 }
 /* 7. SEO 预渲染（问题 18/46）：dist/p/<id>.html + sitemap 重写 + feed.xml */
-require('child_process').spawnSync(process.execPath, [path.join(TOOLS, 'prerender.js')], { stdio: 'inherit' });
+/* 预渲染失败必须中断构建（问题 59）：否则部署包带着残缺 p/ 页发布 */
+const pr = require('child_process').spawnSync(process.execPath, [path.join(TOOLS, 'prerender.js')], { stdio: 'inherit' });
+if (pr.status !== 0) {
+  console.error('build-dist：prerender 失败（exit ' + pr.status + '），中止构建');
+  process.exit(1);
+}
 
 /* 统计 */
 let files = 0, bytes = 0;

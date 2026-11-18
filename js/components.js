@@ -85,8 +85,9 @@ function productImg(p, alt) {
   else if (DATA.online) src = 'api/image/' + encodeURIComponent(p.id);
   else src = posterURI(p);
   IMG_REGISTRY[String(p.id)] = p;
+  /* 问题 79：不再内联 onerror（阻碍严格 CSP），失败兜底走 document 级 error 委托（app.js） */
   return '<img loading="lazy" width="640" height="480" src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
-    'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />';
+    'data-pid="' + esc(String(p.id)) + '" />';
 }
 
 /* 产品图集渲染：主图 + 缩略图条（≥3 张），点击切换主图 */
@@ -96,15 +97,15 @@ function productGallery(p) {
   return '<div class="gallery" data-pid="' + esc(String(p.id)) + '">' +
     '<div class="gallery-main">' +
       '<img id="gallery-main-img" loading="lazy" width="640" height="480" src="' + esc(imgs[0]) + '" alt="' + esc(p.name) + '" ' +
-      'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />' +
+      'data-pid="' + esc(String(p.id)) + '" />' +
       '<span class="gallery-count">' + imgs.length + ' 图</span>' +
     '</div>' +
     '<div class="gallery-thumbs">' +
       imgs.map((src, i) =>
         '<img class="gallery-thumb' + (i === 0 ? ' active' : '') + '" loading="lazy" width="144" height="144" src="' + esc(src) + '" ' +
-        'role="button" tabindex="0" aria-label="查看第 ' + (i + 1) + ' 张图" ' +
+        'role="button" tabindex="0" aria-label="查看第 ' + (i + 1) + ' 张图"' + (i === 0 ? ' aria-current="true"' : '') + ' ' +
         'data-action="gallery-thumb" data-src="' + esc(src) + '" alt="' + esc(p.name) + ' 图' + (i + 1) + '" ' +
-        'onerror="window.__rlwjDiag&&window.__rlwjDiag.imgFail++;window.__imgFail&&window.__imgFail(this)" data-pid="' + esc(String(p.id)) + '" />').join('') +
+        'data-pid="' + esc(String(p.id)) + '" />').join('') +
     '</div>' +
   '</div>';
 }
@@ -144,8 +145,11 @@ function productCard(p) {
         '<div class="pc-foot">' +
           '<span class="pc-score"><b>' + fmtScore(p.score) + '</b><span>/10 编辑</span></span>' +
           '<span class="actions">' +
-            '<button class="icon-btn' + favOn + '" data-action="fav" data-id="' + esc(p.id) + '" title="收藏">♥</button>' +
-            '<button class="icon-btn' + cmpOn + '" data-action="cmp" data-id="' + esc(p.id) + '" title="加入对比">⇋</button>' +
+            /* 问题 37：可访问名称带产品名 + aria-pressed 开关语义 */
+            '<button class="icon-btn' + favOn + '" data-action="fav" data-id="' + esc(p.id) + '" title="收藏" ' +
+              'aria-label="收藏 ' + esc(p.name) + '" aria-pressed="' + (favOn ? 'true' : 'false') + '">♥</button>' +
+            '<button class="icon-btn' + cmpOn + '" data-action="cmp" data-id="' + esc(p.id) + '" title="加入对比" ' +
+              'aria-label="把 ' + esc(p.name) + ' 加入对比" aria-pressed="' + (cmpOn ? 'true' : 'false') + '">⇋</button>' +
           '</span>' +
         '</div>' +
       '</div>' +
@@ -174,9 +178,11 @@ function sectionHead(title, sub, moreHref, moreText) {
 
 function pagination(page, pages) {
   if (pages <= 1) return '';
-  const btn = (label, p, disabled, cls) =>
+  /* 问题 66：分页用命名 <nav>，当前页带 aria-current="page"，不只靠 disabled/样式 */
+  const btn = (label, p, disabled, cls, ariaLabel) =>
     '<button class="btn btn-sm ' + (cls || 'btn-ghost') + '" data-action="page" data-page="' + p + '"' +
-    (disabled ? ' disabled style="opacity:.45"' : '') + '>' + label + '</button>';
+    (disabled ? ' disabled style="opacity:.45"' : '') +
+    (ariaLabel ? ' aria-label="' + ariaLabel + '"' : '') + '>' + label + '</button>';
   /* 页码窗口 + 跳页（问题 26）：首尾 + 当前 ±2 + 省略号 */
   const nums = [];
   const push = (n) => { if (n >= 1 && n <= pages && nums.indexOf(n) === -1) nums.push(n); };
@@ -187,18 +193,18 @@ function pagination(page, pages) {
   let out = '';
   let prev = 0;
   nums.forEach((n) => {
-    if (n - prev > 1) out += '<span class="muted" style="font-size:12px;padding:0 3px">…</span>';
+    if (n - prev > 1) out += '<span class="muted" aria-hidden="true" style="font-size:12px;padding:0 3px">…</span>';
     out += (n === page)
-      ? '<button class="btn btn-sm btn-primary" disabled>' + n + '</button>'
-      : btn(String(n), n, false);
+      ? '<button class="btn btn-sm btn-primary" disabled aria-current="page" aria-label="第 ' + n + ' 页，当前页">' + n + '</button>'
+      : btn(String(n), n, false, '', '第 ' + n + ' 页');
     prev = n;
   });
-  return '<div class="pagination">' +
-    btn('« 上一页', page - 1, page <= 1) + out +
-    btn('下一页 »', page + 1, page >= pages) +
+  return '<nav class="pagination" aria-label="分页">' +
+    btn('« 上一页', page - 1, page <= 1, '', '上一页') + out +
+    btn('下一页 »', page + 1, page >= pages, '', '下一页') +
     '<span class="muted" style="font-size:13px">第 ' + page + ' / ' + pages + ' 页</span>' +
     '<input id="page-goto" type="number" min="1" max="' + pages + '" placeholder="跳页" ' +
-      'aria-label="跳到指定页" style="width:64px;height:30px;border-radius:8px;border:1px solid var(--border-strong);background:var(--card);color:var(--text);padding:0 8px;font-size:12.5px" />' +
-    '</div>';
+      'aria-label="跳到指定页" style="width:72px;height:44px;border-radius:8px;border:1px solid var(--border-strong);background:var(--card);color:var(--text);padding:0 10px;font-size:12.5px" />' +
+    '</nav>';
 }
 

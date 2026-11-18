@@ -17,9 +17,23 @@ const DATA = {
 
 const PAGE_SIZE = CONFIG.PAGE_SIZE;
 
+/* 排序器共用（问题 3/13/77）：搜索、品牌页、产品列表统一口径，勿再各自内联复制 */
+const SORTERS = {
+  score: (a, b) => (b.score || 0) - (a.score || 0) || (b.userScore || 0) - (a.userScore || 0),
+  user: (a, b) => (b.userScore || 0) - (a.userScore || 0),
+  new: (a, b) => (b.year || 0) - (a.year || 0),
+  old: (a, b) => (a.year || 0) - (b.year || 0),
+  priceDesc: (a, b) => (b.price || 0) - (a.price || 0),
+  priceAsc: (a, b) => (a.price || 0) - (b.price || 0),
+  name: (a, b) => String(a.name).localeCompare(String(b.name), 'zh-CN')
+};
+
 const api = {
   async get(path) {
-    const r = await fetch(path, { headers: { 'Accept': 'application/json' } });
+    /* 演示可见性透传（问题 42）：在线模式下服务端按 demo 参数过滤 */
+    const sep = path.indexOf('?') === -1 ? '?' : '&';
+    const url = path + sep + 'demo=' + (typeof demoVisible === 'function' && demoVisible() ? '1' : '0');
+    const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }
@@ -163,10 +177,18 @@ function buildStaticDB() {
 
 /* ---- 懒加载补全（问题 3）：轻索引产品首次进详情/对比时拉完整分片 ---- */
 const FULL_LOADED = new Set();
+const FULL_LOADING = new Map(); /* 分片加载中的 Promise（问题 71）：同分片并发补全不再重复注入脚本 */
 async function ensureFull(p) {
   if (!p || DATA.online || !p._lite) return p;
   const f = p._shard;
-  if (f && !FULL_LOADED.has(f) && (await loadShard(f))) FULL_LOADED.add(f);
+  if (f && !FULL_LOADED.has(f)) {
+    let lp = FULL_LOADING.get(f);
+    if (!lp) {
+      lp = loadShard(f).then((ok) => { if (ok) FULL_LOADED.add(f); FULL_LOADING.delete(f); return ok; });
+      FULL_LOADING.set(f, lp);
+    }
+    await lp;
+  }
   const chunks = window.DB_CHUNKS || [];
   for (const c of chunks) {
     for (const full of (c.products || [])) {
@@ -192,18 +214,26 @@ async function ensureFull(p) {
 }
 
 function loadShard(file) {
-  /* 失败自动重试 1 次 + 可观测（问题 6）：不再静默 resolve(false) */
+  /* 失败自动重试 1 次 + 超时兜底（问题 6/16）：stalled 请求不再让页面永远停在加载态 */
   return new Promise((resolve) => {
+    let done = false;
+    const finish = (ok) => { if (!done) { done = true; clearTimeout(timer); resolve(ok); } };
+    const timer = setTimeout(() => {
+      DIAG.shardFail++;
+      console.warn('[rlwj] 数据分片加载超时：' + file);
+      toast('数据分片加载超时：' + file + '（可刷新重试）');
+      finish(false);
+    }, 20000);
     const attempt = (left) => {
       const s = document.createElement('script');
       s.src = file;
-      s.onload = () => { DIAG.shardOk++; resolve(true); };
+      s.onload = () => { DIAG.shardOk++; finish(true); };
       s.onerror = () => {
         if (left > 0) { attempt(left - 1); return; }
         DIAG.shardFail++;
         console.warn('[rlwj] 数据分片加载失败：' + file);
         toast('数据分片加载失败：' + file + '（可刷新重试）');
-        resolve(false);
+        finish(false);
       };
       document.head.appendChild(s);
     };
@@ -216,7 +246,7 @@ async function loadStatic() {
   const manifest = window.DB_MANIFEST;
   if (!manifest || !Array.isArray(manifest.shards)) {
     app.innerHTML = '<div class="empty"><span class="big">⚠️</span>未找到数据清单（data/manifest.js）。</div>';
-    return;
+    return false; /* 清单缺失：中断启动（问题 16），提示不被后续渲染覆盖 */
   }
   const enrichFiles = (manifest.enrich && manifest.enrich.length)
     ? manifest.enrich
@@ -237,6 +267,7 @@ async function loadStatic() {
   /* 媒体/图片补充数据：清单由 build-manifest 写入 manifest.enrich（原硬编码 1..12，越界产生 404） */
   await Promise.all(enrichFiles.map((f) => loadShard(f).then(tickProgress)));
   buildStaticDB();
+  return true;
 }
 
 /* ---- 演示数据按需装载（N3）：开演示开关 / 访问演示产品时才拉轻索引 ---- */
@@ -246,14 +277,21 @@ function ensureBulk() {
   if (BULK_READY) return Promise.resolve(true);
   if (BULK_LOADING) return BULK_LOADING;
   const manifest = window.DB_MANIFEST;
-  const files = (manifest && manifest.index)
-    ? [manifest.index]
-    : ((manifest && manifest.bulk) || []).map((s) => s.file || s);
-  if (!files.length) return Promise.resolve(false);
-  BULK_LOADING = Promise.all(files.map((f) => loadShard(f))).then((rs) => {
-    BULK_READY = rs.every(Boolean);
-    if (BULK_READY) buildStaticDB();
-    return BULK_READY;
+  const indexFile = manifest && manifest.index;
+  const bulkFiles = ((manifest && manifest.bulk) || []).map((s) => s.file || s);
+  const primary = indexFile ? [indexFile] : bulkFiles;
+  if (!primary.length) return Promise.resolve(false);
+  const tryLoad = (files) => Promise.all(files.map((f) => loadShard(f)));
+  BULK_LOADING = tryLoad(primary).then((rs) => {
+    let ok = rs.every(Boolean);
+    /* 轻索引失败回退完整 bulk 分片（问题 16）：演示数据不因单文件失败整体归零 */
+    const finish = (good) => {
+      BULK_READY = good;
+      if (good) buildStaticDB();
+      return good;
+    };
+    if (!ok && indexFile && bulkFiles.length) return tryLoad(bulkFiles).then((rs2) => finish(rs2.every(Boolean)));
+    return finish(ok);
   }).finally(() => { BULK_LOADING = null; });
   return BULK_LOADING;
 }
@@ -315,7 +353,8 @@ const Q = {
       : params.source === 'curated' ? DATA.products.filter((p) => !isDemo(p))
         : visibleProducts();
     if (params.cat) list = list.filter((p) => p.category === params.cat);
-    if (params.leaf) list = list.filter((p) => p.catLeaf === params.leaf);
+    /* leaf 口径（问题 12）：精选产品无 catLeaf 时归入根叶子（= 基础品类），与品类页计数一致 */
+    if (params.leaf) list = list.filter((p) => (p.catLeaf || p.category) === params.leaf);
     if (params.brand) list = list.filter((p) => p.brand === params.brand);
     if (params.era) {
       list = list.filter((p) => {
@@ -355,6 +394,11 @@ const Q = {
       const parts = seg.match(/[一-龥]+|[a-z0-9][a-z0-9.\-]*/g) || [seg];
       parts.forEach((p) => { if (p && !(p.length === 1 && /[a-z0-9]/.test(p))) rawToks.push(QUERY_ALIAS[p] || p); });
     });
+    /* 单字符查询兜底（问题 14）：用户明确输入 "x"/"4" 时不被去噪规则吞成空查询 */
+    if (!rawToks.length && params.q && String(params.q).trim()) {
+      const only = String(params.q).trim().toLowerCase().replace(/[^一-龥a-z0-9.\-]+/g, '');
+      if (only) rawToks.push(only);
+    }
     const normToks = rawToks.join(' ').split(/\s+/).filter(Boolean);
     /* 中文滑动双字（「降噪耳机」→ 降噪/噪耳/耳机），2 字整词保留，拉丁整词不动 */
     const toks = [];
@@ -418,18 +462,11 @@ const Q = {
         or.sort((a, b) => b[1] - a[1] || String(a[0].name).length - String(b[0].name).length);
         list = or.map((x) => x[0]);
       }
-    } else {
-      const sorters = {
-        score: (a, b) => (b.score || 0) - (a.score || 0) || (b.userScore || 0) - (a.userScore || 0),
-        user: (a, b) => (b.userScore || 0) - (a.userScore || 0),
-        new: (a, b) => (b.year || 0) - (a.year || 0),
-        old: (a, b) => (a.year || 0) - (b.year || 0),
-        priceDesc: (a, b) => (b.price || 0) - (a.price || 0),
-        priceAsc: (a, b) => (a.price || 0) - (b.price || 0),
-        name: (a, b) => String(a.name).localeCompare(String(b.name), 'zh-CN')
-      };
-      list = list.slice().sort(sorters[params.sort] || sorters.score);
     }
+    /* 显式排序统一出口（问题 13）：带关键词且 sort=score 时保持相关度顺序，其余显式排序一律生效 */
+    const sorters = SORTERS;
+    const sk = params.sort || 'score';
+    if (!toks.length || sk !== 'score') list = list.slice().sort(sorters[sk] || sorters.score);
     const pageSize = params.pageSize || PAGE_SIZE;
     const total = list.length;
     const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -551,11 +588,15 @@ const Q = {
   async categories() {
     if (DATA.online) return api.get('api/categories');
     const tree = window.DB_CATEGORY_TREE;
-    if (!tree) return { stats: null, leafCounts: {}, groups: [] };
+    if (!tree) return { stats: null, leafCounts: {}, catCounts: {}, groups: [] };
     const leafCounts = {};
+    const catCounts = {};
     const catBrand = {};
-    DATA.products.forEach((p) => {
-      if (p.catLeaf) leafCounts[p.catLeaf] = (leafCounts[p.catLeaf] || 0) + 1;
+    /* 计数与列表页同池同口径（问题 12）：基础品类卡按 category 计数，细分叶子按 catLeaf（精选归根叶子） */
+    visibleProducts().forEach((p) => {
+      const leafKey = p.catLeaf || p.category;
+      if (leafKey) leafCounts[leafKey] = (leafCounts[leafKey] || 0) + 1;
+      if (p.category) catCounts[p.category] = (catCounts[p.category] || 0) + 1;
       const bm = catBrand[p.category] = catBrand[p.category] || {};
       bm[p.brand] = (bm[p.brand] || 0) + 1;
     });
@@ -564,13 +605,13 @@ const Q = {
       return Object.keys(bm).sort((x, y) => bm[y] - bm[x]).map((b) => ({ name: b, count: bm[b] }));
     };
     return {
-      stats: tree.stats, leafCounts: leafCounts,
+      stats: tree.stats, leafCounts: leafCounts, catCounts: catCounts,
       groups: tree.groups.map((g) => ({
         id: g.id, name: g.name, icon: g.icon,
         bases: g.bases.map((b) => ({
-          id: b.id, name: b.name, icon: b.icon, count: leafCounts[b.id] || 0,
+          id: b.id, name: b.name, icon: b.icon, count: catCounts[b.id] || 0,
           brands: brandsOf(b.id),
-          leaves: [{ id: b.id, name: b.name, count: leafCounts[b.id] || 0 }]
+          leaves: [{ id: b.id, name: b.name, count: catCounts[b.id] || 0 }]
             .concat((b.variants || []).map((v) => ({ id: b.id + '-' + v.slug, name: b.name + ' · ' + v.label, count: leafCounts[b.id + '-' + v.slug] || 0 })))
         }))
       }))
@@ -606,7 +647,8 @@ const Q = {
       ['sort', 'page', 'pageSize'].forEach((k) => { if (params && params[k] != null) q.set(k, params[k]); });
       return api.get('api/brand/' + encodeURIComponent(name) + (q.toString() ? '?' + q.toString() : ''));
     }
-    const list = DATA.products.filter((x) => x.brand === name);
+    /* 跟随演示开关（问题 3）：隐藏演示数据时品牌页同样只展示真实精选 */
+    const list = visibleProducts().filter((x) => x.brand === name);
     const catMap = {};
     let yMin = 9999, yMax = 0, scoreSum = 0, scoreN = 0;
     list.forEach((x) => {
@@ -620,12 +662,17 @@ const Q = {
       const c = catIndex.get(cid) || { id: cid, name: cid, icon: '📦' };
       return { id: c.id, name: c.name, icon: c.icon, count: catMap[cid] };
     }).sort((a, c) => c.count - a.count);
-    const sorted = list.slice().sort((a, c) => (c.score || 0) - (a.score || 0));
+    /* 排序 + 分页（问题 3）：sort 取 SORTERS，items 只回当前页 */
+    const sk = (params && params.sort) || 'score';
+    const sorted = list.slice().sort(SORTERS[sk] || SORTERS.score);
+    const pageSize = (params && params.pageSize) || PAGE_SIZE;
+    const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
+    const page = Math.min(pages, Math.max(1, parseInt((params && params.page) || 1, 10) || 1));
     return {
-      brand: name, total: sorted.length,
+      brand: name, total: sorted.length, page: page, pageSize: pageSize, pages: pages,
       score: scoreN ? Math.round((scoreSum / scoreN) * 10) / 10 : null,
       yearMin: yMin === 9999 ? null : yMin, yearMax: yMax || null,
-      cats, items: sorted
+      cats, items: sorted.slice((page - 1) * pageSize, page * pageSize)
     };
   }
 };

@@ -17,7 +17,9 @@
   r = await g('/api/search?q=' + encodeURIComponent('<script>alert(1)</script>'));
   check('XSS 查询不崩', r.status === 200, 'status=' + r.status);
   const xssItem = ((r.json || {}).items || [])[0];
-  if (xssItem && /<script>/.test(xssItem.name)) issues.push('XSS 查询回显未转义');
+  /* 问题 61：无结果不等于已转义，如实分开标注 */
+  if (!xssItem) ok.push('XSS 查询无回显（空结果）');
+  else if (/<script>/.test(xssItem.name)) issues.push('XSS 查询回显未转义');
   else ok.push('XSS 查询转义');
 
   r = await g('/api/search?q=' + encodeURIComponent('％％％'));
@@ -31,7 +33,7 @@
   r = await g('/api/product/' + encodeURIComponent("'; DROP TABLE--"));
   check('注入式 id 不崩', r.status === 200 || r.status === 404, 'status=' + r.status);
   r = await g('/api/product/' + encodeURIComponent('../etc/passwd'));
-  check('路径穿越 id 不泄露', r.status === 404 || r.status === 200, 'status=' + r.status);
+  check('路径穿越 id 不泄露', r.status === 404, 'status=' + r.status); /* 问题 61：200 不可接受 */
 
   /* 3. 分页边界 */
   r = await g('/api/search?q=a&page=0&pageSize=0');
@@ -93,5 +95,6 @@
   if (issues.length) {
     console.log('\n════ 发现问题 ' + issues.length + ' 项 ════');
     issues.forEach((x) => console.log('  ✗ ' + x));
+    process.exitCode = 1; /* 问题 61：发现问题必须以非零码退出，CI 才拦得住 */
   } else console.log('\n全部通过，无问题');
 })();
