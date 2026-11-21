@@ -30,6 +30,14 @@
   各增一步；`tools/audit-dist.js` 由四件套扩为五项（产物侧同跑）。
 - **教训沉淀**：README 明确「数据 → 重跑生成 → 一次性改文档 → 跑 docs-assert」的顺序，
   禁止在数据未定稿时并行写死统计数字。
+- **构建可复现性（真实缺陷）**：收录时间 `catalogDate()` 曾以构建时刻为锚，导致数据零变化时
+  每次构建 346 条 `pubDate` 全体漂移；`feed.lastBuildDate` 用 `new Date()`、`sitemap.lastmod`
+  用构建当天日期，同样产生无意义 diff 并让产物不可复现。改为固定纪元锚点 + 
+  `SOURCE_DATE_EPOCH → git HEAD 提交日期 → 内容纪元` 三级回退，实测连续两次构建
+  `feed.xml` / `sitemap.xml` 字节一致。
+- **发布链路**：新增 `tools/push-gitee.sh`（`npm run push:gitee` / `push:gitee:status`），
+  推送前自动体检本地/远端 HEAD 与 SSH 注册状态，凭证过期时给出 SSH 与 HTTPS 两条可操作修复路径；
+  DEPLOY 增补「OAuth token 过期」专节，说明「`ls-remote` 成功 ≠ 有写权限」的误判陷阱。
 
 ## v1.2.0 — 2026-11-16
 

@@ -221,7 +221,7 @@ DOCS.forEach((doc) => {
 if (!IS_DIST) {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-    const need = ['start', 'validate', 'test', 'audit:dist', 'docs:assert'];
+    const need = ['start', 'validate', 'test', 'audit:dist', 'docs:assert', 'push:gitee'];
     const miss = need.filter((k) => !pkg.scripts || !pkg.scripts[k]);
     if (miss.length) {
       console.log('  ✗ package.json 缺少脚本：' + miss.join(', '));

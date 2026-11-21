@@ -147,6 +147,34 @@ git push -u origin master
 **Gitee Pages 免费版不会自动发布**：首次启动后，每次向 `dist` 仓库 push 新产物，都必须再到
 仓库页「服务」→「Gitee Pages」手动点一次「更新」，线上才会刷新；GitHub Pages 随 push 自动发布。
 
+### Gitee 推送凭证过期（OAuth Access token is expired）
+
+Gitee 的 OAuth access token 会过期，过期后 `git push` 返回 **403** 并提示
+`remote: Oauth: Access token is expired`。注意一个容易误判的现象：
+`git ls-remote`（匿名只读）此时**仍然成功**，因为公开仓库读权限不校验 token——
+能读到远端不等于有写权限。
+
+先跑体检（不推送，只报告差异）：
+
+```bash
+node tools/docs-assert.js            # 推送前确认文档数字自洽
+npm run push:gitee:status            # 报告本地/远端 HEAD、SSH 是否已注册
+```
+
+再按脚本给出的路线修复（脚本 `tools/push-gitee.sh` 会自动依次尝试），二选一：
+
+- **推荐 · SSH（一次配置长期有效）**：把 `~/.ssh/id_ed25519.pub` 加到
+  <https://gitee.com/profile/sshkeys>，然后 `npm run push:gitee`。
+- **备选 · 重置 HTTPS 凭据**：到 <https://gitee.com/profile/personal_access_tokens>
+  生成新 token（勾选 projects 读写），清除旧缓存后重新 push（用户名填 Gitee 用户名，密码填 token）：
+
+  ```bash
+  git credential-manager erase <<< "protocol=https
+  host=gitee.com"
+  ```
+
+推送成功后仍须到「服务 → Gitee Pages」手动点「更新」。
+
 ### 双远程发布与 SEO 归属
 
 `dist/` 仓库同时配置了 GitHub（`github`）与 Gitee（`origin`）远程，但产物内的 canonical / OG / RSS /
@@ -159,7 +187,7 @@ robots 固化为构建时的**单一** `SITE_URL`（默认主站 `https://xuange
 - **10,346 个产品**：346 精选（真实图集 + 测评索引）+ 10,000 热门 SKU
 - 演示样本自身覆盖 **106 个品类 / 584 个品牌**（全库合计 106 个品类 / 657 个品牌），全功能可用（搜索/筛选/品牌细分/对比/收藏/时间线/排行榜）
 - 每产品 ≥3 图（真实图优先，SVG 海报变体补足）
-- 已适配 Gitee Pages 子路径部署（全相对路径，静态审计 5/5 通过）
+- 已适配 Gitee Pages 子路径部署（全相对路径，静态审计通过）
 - 限制：`tools/serve.js` 是开发/回归参考实现（多轮全库扫描、gzipSync 同步压缩、无请求频控），
   **不能直接等同于可承受 200 万 SKU 公网流量**；海量数据请按 README「规模化路径」
   迁移数据库 + 服务端检索（如 Meilisearch）。静态版为精选 + 热门快照
