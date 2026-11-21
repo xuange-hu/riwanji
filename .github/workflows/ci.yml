@@ -23,6 +23,8 @@ jobs:
       - run: node tools/validate.js
       # 统计口径单源校验（README 数字与实算一致，问题 12/37）
       - run: node tools/stats.js --check
+      # 文档数字一致性（多文档覆盖 + 过期数字黑名单，第五轮协作教训机制化）
+      - run: node tools/docs-assert.js
       # 渲染回归（沙箱加载 app.js 全量跑 17 项断言）
       - run: node tools/smoke-test.js
       # 静态托管就绪度审计（作用于 root 源码）

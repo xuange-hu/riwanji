@@ -3,7 +3,7 @@
 > 数码产品百科：静态版 10,346 个产品 / 657 品牌 / 106 品类（在线服务版规划中）。
 > 参数为公开资料编辑整理 · 每产品 ≥3 图 · 测评索引 · 品牌细分 · 横向对比 · 产品时间线。
 >
-> 统计口径以 `tools/stats.js` 实算为准（`node tools/stats.js --check` 校验本文数字一致）。
+> 统计口径以 `tools/stats.js` 实算为准；文档数字一致性由 `tools/docs-assert.js` 全文档校验（`node tools/docs-assert.js`）。
 
 ## 静态版（本仓库）
 

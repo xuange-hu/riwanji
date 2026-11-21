@@ -47,6 +47,8 @@ jobs:
         run: node tools/validate.js
       - name: 门禁 · 统计口径
         run: node tools/stats.js --check
+      - name: 门禁 · 文档数字一致性
+        run: node tools/docs-assert.js
       - name: 门禁 · 渲染回归
         run: node tools/smoke-test.js
       - name: 门禁 · 静态托管审计

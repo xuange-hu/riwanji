@@ -21,10 +21,37 @@ const DIST = path.join(ROOT, 'dist');
 /* 站点地址单源（问题 55）：可用 SITE_URL 环境变量改写（部署到 Gitee/自定义域名时，
    canonical/OG/RSS/sitemap/robots/返回首页链接全部跟随），默认官方 GitHub Pages */
 const SITE = (process.env.SITE_URL || 'https://xuange-hu.github.io/riwanji/').replace(/\/*$/, '/');
-/* P2-31/P3-42：以真实构建时间为基准生成「收录时间」与 sitemap lastmod */
+/* 构建可复现性（2026-11-21）：过去收录时间与 sitemap lastmod 都以 new Date() 为锚点，
+   导致「数据零变化」时每次构建仍会让 feed.xml / sitemap.xml 全量时间戳漂移，
+   git diff 噪音巨大且产物不可复现。
+   现在拆成两个概念：
+     BUILD_DATE/TODAY  —— 真实构建时刻，仅用于「今天」这类展示字段；
+     EPOCH_MS          —— 固定内容纪元锚点，收录时间 = 纪元 - id 哈希偏移，
+                          同一份数据任何时候构建结果完全一致。 */
 const BUILD_DATE = new Date();
 const BUILD_MS = BUILD_DATE.getTime();
-const TODAY = BUILD_DATE.toISOString().slice(0, 10);
+/* 内容纪元：2026-11-21T00:00:00Z。收录时间在此之前的近 90 天内按 id 稳定分布。 */
+const EPOCH_MS = Date.UTC(2026, 10, 21, 0, 0, 0);
+
+/* sitemap lastmod 的日期来源，按优先级：
+   1) SOURCE_DATE_EPOCH（reproducible-builds 标准，CI 可显式钉死）
+   2) git HEAD 提交日期（语义上就是「内容最后变更时间」）
+   3) 内容纪元（兜底，保证仍然可复现，不依赖 wall clock）
+   注意：不使用 new Date()，否则同一天构建两次结果相同、跨天就整体漂移。 */
+function resolveContentDate() {
+  const env = process.env.SOURCE_DATE_EPOCH;
+  if (env && /^\d+$/.test(env)) return new Date(Number(env) * 1000);
+  try {
+    const out = require('child_process')
+      .execSync('git log -1 --format=%cI', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString().trim();
+    const d = new Date(out);
+    if (!isNaN(d.getTime())) return d;
+  } catch (_) { /* 无 git / 权限不足：走兜底 */ }
+  return new Date(EPOCH_MS);
+}
+const CONTENT_DATE = resolveContentDate();
+const TODAY = CONTENT_DATE.toISOString().slice(0, 10);
 
 const THEME_COLOR = '#5b8cff'; /* 与 index.html 的 theme-color 一致 */
 const FAVICON = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='12'%20fill='%235b8cff'/%3E%3Ctext%20x='32'%20y='45'%20font-size='38'%20text-anchor='middle'%20fill='%23fff'%3ER%3C/text%3E%3C/svg%3E";
@@ -92,7 +119,8 @@ function catalogDate(id) {
   const h = stableHash(id);
   const daysAgo = h % 90;
   const hoursAgo = (h >>> 8) % 24;
-  return new Date(BUILD_MS - daysAgo * 86400000 - hoursAgo * 3600000);
+  /* 以固定纪元为锚（不再用 BUILD_MS），保证同一 id 永远得到同一收录时间 */
+  return new Date(EPOCH_MS - daysAgo * 86400000 - hoursAgo * 3600000);
 }
 
 function main() {
@@ -252,11 +280,18 @@ function main() {
      P2-31：pubDate 为「收录时间」，按 pubDate 倒序输出（最近的在前），
      彻底避开 new Date(year,0,1).toUTCString() 在 UTC+8 输出前一年 12/31 的时区错误。 */
   feedItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
+  /* 构建可复现性：lastBuildDate 曾用 BUILD_DATE（= new Date()），导致每次构建都改写
+     feed.xml 时间戳，产生「内容零变化但 git 有大段 diff」的噪音，也让构建非确定。
+     RSS 语义上 lastBuildDate 表示「内容最后变更时间」，故取最新收录条目的 pubDate；
+     无条目时退回 epoch，保证同一份数据任何时候构建产物字节一致。 */
+  const feedLastBuild = feedItems.length
+    ? feedItems[0].pubDate.toUTCString()
+    : new Date(0).toUTCString();
   const rss = '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>\n' +
     '  <title>日理万机 · 数码产品百科全书</title>\n' +
     '  <link>' + SITE + '</link>\n' +
     '  <description>产品更新与新增词条</description>\n' +
-    '  <lastBuildDate>' + BUILD_DATE.toUTCString() + '</lastBuildDate>\n' +
+    '  <lastBuildDate>' + feedLastBuild + '</lastBuildDate>\n' +
     feedItems.slice(0, 30).map((it) =>
       '  <item><title>' + esc(it.title) + '</title><link>' + esc(it.url) + '</link>' +
       '<guid isPermaLink="true">' + esc(it.url) + '</guid>' +

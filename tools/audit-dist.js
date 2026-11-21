@@ -24,6 +24,7 @@ if (!fs.existsSync(path.join(DIST, 'tools', 'validate.js'))) {
 const STEPS = [
   ['validate.js', '数据校验'],
   ['stats.js', '统计口径', ['--check']],
+  ['docs-assert.js', '文档数字一致性'],
   ['smoke-test.js', '渲染回归'],
   ['static-audit.js', '静态托管审计']
 ];
@@ -40,5 +41,5 @@ for (const [tool, label, extra = []] of STEPS) {
 
 console.log('\n' + (failed
   ? 'audit-dist：' + failed + ' 项失败'
-  : 'audit-dist：四件套全部通过（dist 产物）'));
+  : 'audit-dist：全部 ' + STEPS.length + ' 项通过（dist 产物）'));
 process.exit(failed ? 1 : 0);

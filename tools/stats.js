@@ -138,15 +138,25 @@ function checkReadme(stats) {
   return okAll;
 }
 
-const stats = compute();
-if (process.argv.indexOf('--check') !== -1) {
-  console.log('stats.js --check：README 统计一致性');
-  const okAll = checkReadme(stats);
-  if (!okAll) {
-    console.log('实算值：', JSON.stringify(stats));
-    process.exit(1);
+/* ============================================================
+   P3 协作教训（2026-11-21）：统计口径必须可被其它脚本导入复用。
+   过去本文件 require 时会直接执行 CLI 打印 JSON，导致 docs-assert.js
+   之类的门禁只能在进程内重复实现一套口径（两套口径即漂移温床）。
+   现在：作为模块被 require 时只导出 compute，CLI 逻辑仅在直接执行时运行。
+   ============================================================ */
+if (require.main === module) {
+  const stats = compute();
+  if (process.argv.indexOf('--check') !== -1) {
+    console.log('stats.js --check：README 统计一致性');
+    const okAll = checkReadme(stats);
+    if (!okAll) {
+      console.log('实算值：', JSON.stringify(stats));
+      process.exit(1);
+    }
+    console.log('全部一致');
+  } else {
+    console.log(JSON.stringify(stats, null, 2));
   }
-  console.log('全部一致');
-} else {
-  console.log(JSON.stringify(stats, null, 2));
 }
+
+module.exports = compute();
