@@ -1,6 +1,7 @@
 /* bug-hunt.js — 边缘用例全量实测，暴露小 bug */
 (async () => {
-  const B = 'http://127.0.0.1:8123';
+  /* P2-36：端口可配（CI 通过 BUG_HUNT_PORT 指定），默认 8123 */
+  const B = 'http://127.0.0.1:' + (process.env.BUG_HUNT_PORT || 8123);
   const g = async (u) => {
     try {
       const r = await fetch(B + u);
@@ -10,6 +11,15 @@
   const issues = [];
   const ok = [];
   const check = (name, cond, detail) => (cond ? ok.push(name) : issues.push(name + ' → ' + detail));
+
+  /* P2-36：动态取一个真实产品 id 作图片变体样本，避免硬编码 id 随数据更新失效 */
+  const home0 = await g('/api/home');
+  let sampleId = (((home0.json || {}).editors) || []).find((x) => x && x.id);
+  if (!sampleId) {
+    const s0 = await g('/api/search?pageSize=5');
+    sampleId = (((s0.json || {}).items) || []).find((x) => x && x.id);
+  }
+  sampleId = sampleId ? sampleId.id : '';
 
   /* 1. 空查询/特殊字符搜索 */
   let r = await g('/api/search?q=');
@@ -74,13 +84,15 @@
   r = await g('/api/timeline?cat=xyz');
   check('timeline 空类', r.status === 200, 'status=' + r.status);
 
-  /* 8. 图片接口 */
+  /* 8. 图片接口（P2-36：样本 id 改为动态获取，不再硬编码 b-phone-0008702） */
   r = await g('/api/image/不存在');
   check('image 不存在 404', r.status === 404, 'status=' + r.status);
-  r = await g('/api/image/b-phone-0008702?v=99');
-  check('v=99 变体不崩', r.status === 200, 'status=' + r.status);
-  r = await g('/api/image/b-phone-0008702?v=-3');
-  check('v=-3 变体不崩', r.status === 200, 'status=' + r.status);
+  if (sampleId) {
+    r = await g('/api/image/' + encodeURIComponent(sampleId) + '?v=99');
+    check('v=99 变体不崩', r.status === 200, 'status=' + r.status);
+    r = await g('/api/image/' + encodeURIComponent(sampleId) + '?v=-3');
+    check('v=-3 变体不崩', r.status === 200, 'status=' + r.status);
+  } else ok.push('image 变体样本跳过（API 无可用产品 id）');
 
   /* 9. 大小写/重复参数 */
   r = await g('/api/search?Q=Apple&q=');

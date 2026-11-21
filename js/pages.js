@@ -38,7 +38,7 @@ async function renderHome() {
 
   const catCards = (data.categories || []).slice(0, 12).map((c) =>
     '<a class="card cat-card" href="#/products?cat=' + esc(c.id) + '">' +
-      '<span class="cat-icon" aria-hidden="true">' + c.icon + '</span>' +
+      '<span class="cat-icon" aria-hidden="true">' + esc(c.icon) + '</span>' +
       '<h3>' + esc(c.name) + '</h3>' +
       '<p>' + esc(c.description) + '</p>' +
       '<span class="badge accent">' + fmtNum(c.count) + ' 款产品</span>' +
@@ -129,7 +129,8 @@ async function emptyWithSuggest(q) {
     const sugs = (await Q.suggest(first)).slice(0, 5);
     if (sugs.length) {
       extra += '<div class="empty-suggest"><p class="muted">换个词试试：</p>' +
-        sugs.map((s) => '<a class="chip" href="#/product/' + esc(s.id) + '">' + catIconOf(s) + ' ' + esc(s.name) + '</a>').join('') + '</div>';
+        /* P3-32：装饰 emoji 隔离读屏 */
+        sugs.map((s) => '<a class="chip" href="#/product/' + esc(s.id) + '"><span aria-hidden="true">' + catIconOf(s) + '</span> ' + esc(s.name) + '</a>').join('') + '</div>';
     }
     if (/[一-龥]/.test(q) && /[a-z0-9]/i.test(q)) {
       const splitQ = q.replace(/([一-龥])([a-z0-9])/gi, '$1 $2').replace(/([a-z0-9])([一-龥])/gi, '$1 $2');
@@ -159,7 +160,7 @@ async function renderProducts(query) {
   const catChips = ['<button class="chip' + (cat || leaf ? '' : ' on') + '" data-filter="cat" data-value="" aria-pressed="' + (cat || leaf ? 'false' : 'true') + '">全部品类</button>']
     .concat(cats.map((c) =>
       '<button class="chip' + (cat === c.id && !leaf ? ' on' : '') + '" data-filter="cat" data-value="' + esc(c.id) + '" aria-pressed="' + (cat === c.id && !leaf ? 'true' : 'false') + '">' +
-      c.icon + ' ' + esc(c.name) + '</button>')).join('');
+      esc(c.icon) + ' ' + esc(c.name) + '</button>')).join('');
 
   /* 当前品类下的细分叶子筛选 */
   let leafChips = '';
@@ -228,9 +229,11 @@ async function renderProducts(query) {
 async function renderProduct(id) {
   const p = await Q.product(id);
   if (!p || p.error) {
-    return '<div class="empty"><span class="big" aria-hidden="true">🔍</span>没有找到该产品。<br /><a class="btn btn-primary" href="#/products" style="margin-top:14px">返回全部产品</a></div>';
+    /* P2-25：空态补 h1，读屏标题导航不再空白 */
+    return '<div class="empty"><span class="big" aria-hidden="true">🔍</span><h1>没有找到该产品</h1><br /><a class="btn btn-primary" href="#/products" style="margin-top:14px">返回全部产品</a></div>';
   }
-  document.title = p.name + ' —— 日理万机';
+  /* P3-2：删除此处的 document.title 赋值——它在异步渲染内、token 校验前执行，
+     快切路由时会把标题改回旧产品。标题统一由 renderRoute 在 token 校验后设置。 */
 
   const related = await Q.related(id);
   /* N16 / 问题 64：规格行首列 th 声明 scope=row，读屏可建立行列关系 */
@@ -271,12 +274,16 @@ async function renderProduct(id) {
       '</div>' +
       '<aside class="detail-side">' +
         '<div class="score-panel">' +
-          '<h3>综合评分</h3>' +
+          '<h2>综合评分</h2>' +
           '<div class="big-scores">' +
             '<div class="big-score"><b>' + fmtScore(p.score) + '</b><span>编辑评分</span></div>' +
-            /* 问题 52：用户评分如实标注来源（编辑整理口碑，非本站用户打分） */
+            /* 问题 52 / P1-7：来源标注按产品类型区分——真实精选是口碑整理值，
+               合成演示样本的分数由生成器随机产出，绝不能归因为「公开网络口碑」 */
             '<div class="big-score"><b>' + fmtScore(p.userScore) + '</b><span>用户评分</span>' +
-            '<small class="score-src" title="来自公开网络口碑的编辑整理值，非本站用户打分；本机笔记不参与该分数">口碑整理值 · 非本站打分</small></div>' +
+            (isDemo(p)
+              ? '<small class="score-src" title="演示样本：该分数由生成器随机生成，无真实口碑来源；仅用于界面演示">演示样本随机值 · 无真实来源</small>'
+              : '<small class="score-src" title="来自公开网络口碑的编辑整理值，非本站用户打分；本机笔记不参与该分数">口碑整理值 · 非本站打分</small>') +
+            '</div>' +
           '</div>' +
           scoreBars(p.scores) +
         '</div>' +
@@ -284,8 +291,8 @@ async function renderProduct(id) {
     '</div>' +
 
     '<div class="review-grid">' +
-      '<div class="review-card"><h3><span class="pc-tag obj">客观</span>客观评测</h3><p>' + esc(p.review && p.review.objective) + '</p></div>' +
-      '<div class="review-card"><h3><span class="pc-tag sub">主观</span>主观点评</h3><p>' + esc(p.review && p.review.subjective) + '</p></div>' +
+      '<div class="review-card"><h2><span class="pc-tag obj">客观</span>客观评测</h2><p>' + esc(p.review && p.review.objective) + '</p></div>' +
+      '<div class="review-card"><h2><span class="pc-tag sub">主观</span>主观点评</h2><p>' + esc(p.review && p.review.subjective) + '</p></div>' +
     '</div>' +
 
     renderMedia(p) +
@@ -293,12 +300,13 @@ async function renderProduct(id) {
     '<section class="section">' +
       sectionHead('参数规格') +
       '<input id="spec-filter" class="spec-filter" type="search" placeholder="🔍 速查参数：输入关键词过滤（如 屏幕 / 电池 / 接口）" aria-label="过滤参数" />' +
-      '<table class="spec-table"><tbody id="spec-body">' + specRows + '</tbody></table>' +
+      /* P3-30：表格补 caption（读屏可识别表格用途），sr-only 不影响视觉 */
+      '<table class="spec-table"><caption class="sr-only">' + esc(p.name) + ' 参数规格</caption><tbody id="spec-body">' + specRows + '</tbody></table>' +
     '</section>' +
 
     '<div class="pros-cons">' +
-      '<div class="card"><h3 style="color:var(--good)">👍 优点</h3><ul class="pros">' + pros + '</ul></div>' +
-      '<div class="card"><h3 style="color:var(--bad)">👎 不足</h3><ul class="cons">' + cons + '</ul></div>' +
+      '<div class="card"><h2 style="color:var(--good)">👍 优点</h2><ul class="pros">' + pros + '</ul></div>' +
+      '<div class="card"><h2 style="color:var(--bad)">👎 不足</h2><ul class="cons">' + cons + '</ul></div>' +
     '</div>' +
 
     renderUserReviews(p) +
@@ -344,12 +352,16 @@ function renderMedia(p) {
     '<section class="section media-section">' +
       sectionHead('网络评测与口碑', onlySearch
         ? '本站暂未收录该产品的评测原文 · 以下为全网搜索直达入口'
-        : '视频博主、媒体与权威机构测评索引 · 点击跳转原文') +
+        /* P3-11：仅有官网/相关链接（无真实测评原文）时不再冒充「测评索引」 */
+        : (list.every((m) => m.kind === 'web')
+          ? '官方及相关链接 · 非本站收录的测评原文'
+          : '视频博主、媒体与权威机构测评索引 · 点击跳转原文')) +
       order.filter((k) => groups[k]).map((k) =>
         '<div class="media-group">' +
           '<h3 class="media-kind"><span aria-hidden="true">' + KIND_META[k][0] + '</span> ' + KIND_META[k][1] + '<i>' + groups[k].length + '</i></h3>' +
           '<div class="media-list">' + groups[k].map((m) =>
-            '<a class="media-item" href="' + esc(m.url) + '" target="_blank" rel="noopener noreferrer">' +
+            /* P2-14：协议白名单，防 javascript: 点击型注入 */
+            '<a class="media-item" href="' + esc(safeUrl(m.url)) + '" target="_blank" rel="noopener noreferrer">' +
               '<span class="media-title">' + esc(m.title) + '</span>' +
               '<span class="media-src">' + esc(m.source) + (m.author ? ' · ' + esc(m.author) : '') + '</span>' +
               '<span class="media-go">↗</span>' +
@@ -421,7 +433,9 @@ async function renderCompare(query) {
     for (const id of raw) {
       if (seen.has(id)) continue;
       seen.add(id);
-      if (DATA.byId[id]) ids.push(id);
+      /* P2-4/P2-5：不再用 DATA.byId[id] 预校验——在线模式 byId 为空、演示轻索引未加载时
+         会被误丢弃。直接接受 id，由 Q.byIds 后续加载并过滤不存在的条目。 */
+      ids.push(id);
       if (ids.length >= CONFIG.COMPARE_MAX) break;
     }
     state.compare = ids;
@@ -447,7 +461,7 @@ async function renderCompare(query) {
     return '' +
       '<div class="page-head"><h1>产品对比</h1><p>最多选择 3 款产品，逐项对比参数与评分</p></div>' +
       picker +
-      '<div class="empty"><span class="big">⚖️</span>还没有选择对比产品。<br />在产品卡片上点击 ⇋ 按钮，或用上方搜索框添加。</div>';
+      '<div class="empty"><span class="big" aria-hidden="true">⚖️</span>还没有选择对比产品。<br />在产品卡片上点击 ⇋ 按钮，或用上方搜索框添加。</div>';
   }
 
   const dimMap = new Map();
@@ -537,10 +551,10 @@ async function renderCompare(query) {
 
   return '' +
     '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / ' + CONFIG.COMPARE_MAX + ' 款产品（绿色为该项最优，淡黄底色为存在差异的参数项）' +
-    (crossCat ? ' · <b style="color:#eab308">跨品类对比：参数取并集，缺失项显示 –</b>' : '') + '</p></div>' +
+    (crossCat ? ' · <b style="color:var(--warn)">跨品类对比：参数取并集，缺失项显示 –</b>' : '') + '</p></div>' +
     picker + diffToggle +
     (state.cmpDiff && !shownRows.length ? '<div class="empty">所选产品参数完全一致</div>' : '') +
-    '<div class="table-scroll"><table class="compare-table"><thead>' + headerRow + '</thead><tbody>' +
+    '<div class="table-scroll"><table class="compare-table"><caption class="sr-only">产品参数对比表</caption><thead>' + headerRow + '</thead><tbody>' +
     shownRows.map((r) => r.html).join('') + '</tbody></table></div>';
 }
 
@@ -558,7 +572,7 @@ async function renderRanking(query) {
   /* 表头排序按钮化（问题 10）：th 内真实 button，键盘可 Tab 可回车 */
   const th = (label, k) => {
     const isSorted = sort === k;
-    return '<th class="' + (isSorted ? 'sorted' : '') + '"' +
+    return '<th scope="col" class="' + (isSorted ? 'sorted' : '') + '"' +
       (isSorted ? ' aria-sort="' + (dir === -1 ? 'descending' : 'ascending') + '"' : '') + '>' +
       '<button class="th-sort" data-action="rank-sort" data-key="' + k + '">' +
       label + (isSorted ? (dir === -1 ? ' ↓' : ' ↑') : '') + '</button></th>';
@@ -578,18 +592,20 @@ async function renderRanking(query) {
       '<td class="num">' + esc(p.priceText || '–') + '</td>' +
     '</tr>').join('');
 
-  const catChips = ['<button class="chip' + (cat ? '' : ' on') + '" data-filter="cat" data-value="">全部</button>']
+  const catChips = ['<button class="chip' + (cat ? '' : ' on') + '" data-filter="cat" data-value="" aria-pressed="' + (cat ? 'false' : 'true') + '">全部</button>']
     .concat((meta.categories || []).map((c) =>
-      '<button class="chip' + (cat === c.id ? ' on' : '') + '" data-filter="cat" data-value="' + esc(c.id) + '">' +
-      c.icon + ' ' + esc(c.name) + '</button>')).join('');
+      /* P3-28：排行榜品类 chip 补 aria-pressed（与产品页筛选 chip 一致）；P2-15：icon 转义 */
+      '<button class="chip' + (cat === c.id ? ' on' : '') + '" data-filter="cat" data-value="' + esc(c.id) + '" aria-pressed="' + (cat === c.id ? 'true' : 'false') + '">' +
+      esc(c.icon) + ' ' + esc(c.name) + '</button>')).join('');
 
   return '' +
     '<div class="page-head"><h1>排行榜</h1><p>点击表头切换排序维度，共 ' + fmtNum(res.total) + ' 款产品 · ' +
     '「用户评分」为公开口碑整理值（非本站用户打分），本机笔记不参与计分</p></div>' +
     '<div class="filter-bar">' + catChips + '</div>' +
     '<div class="table-scroll">' +
-    '<table class="rank-table"><thead><tr>' +
-      '<th style="width:56px">#</th>' +
+    '<table class="rank-table"><caption class="sr-only">产品排行榜</caption><thead><tr>' +
+      /* P3-31：排行榜表头补 scope=col */
+      '<th scope="col" style="width:56px">#</th>' +
       th('产品', 'name') +
       th('年份', 'year') +
       th('编辑评分', 'score') +
@@ -604,7 +620,8 @@ async function renderRanking(query) {
 async function renderTimeline() {
   const data = await Q.timeline();
   const years = data.years || [];
-  if (!years.length) return '<div class="empty"><span class="big">⏳</span>暂无时间线数据</div>';
+  /* P2-25 空态 h1；P3-32 emoji 隔离 */
+  if (!years.length) return '<div class="empty"><span class="big" aria-hidden="true">⏳</span><h1>暂无时间线数据</h1></div>';
   return '' +
     '<div class="page-head"><h1>产品时间线</h1><p>从 ' + years[years.length - 1].year + ' 年到 ' + years[0].year +
     ' 年，' + fmtNum(years.reduce((n, y) => n + (y.count || 0), 0)) + ' 款产品的诞生轨迹</p></div>' +
@@ -635,7 +652,9 @@ async function renderFavorites(query) {
     const ids = query.get('ids').split(',').map(safeDecode).filter(Boolean);
     let changed = false;
     ids.forEach((id) => {
-      if (DATA.byId[id] && state.favorites.indexOf(id) === -1) { state.favorites.push(id); changed = true; }
+      /* P2-5：不再用 DATA.byId[id] 预校验（在线/演示未加载时 byId 为空会误丢弃），
+         直接接受 id，Q.byIds 后续加载时会自动过滤不存在的条目 */
+      if (state.favorites.indexOf(id) === -1) { state.favorites.push(id); changed = true; }
     });
     if (changed) { saveState(); refreshFavButtons(); }
     try { history.replaceState(null, '', location.pathname + location.search + '#/favorites'); } catch (e) { /* file:// 降级 */ }
@@ -673,7 +692,7 @@ async function renderCategories() {
     '</p></div>' +
     groups.map((g) =>
       '<section class="cat-group">' +
-        '<h2 class="cat-group-title"><span class="cat-group-icon" aria-hidden="true">' + g.icon + '</span>' + esc(g.name) + '</h2>' +
+        '<h2 class="cat-group-title"><span class="cat-group-icon" aria-hidden="true">' + esc(g.icon) + '</span>' + esc(g.name) + '</h2>' +
         '<div class="cat-base-grid">' +
           g.bases.map((b) => {
             const leaves = (b.leaves || []).filter((l) => l.count > 0);
@@ -681,7 +700,7 @@ async function renderCategories() {
             const brands = (b.brands || []).slice(0, 10);
             return '<div class="cat-base-card">' +
               '<a class="cat-base-head" href="#/products?cat=' + esc(b.id) + '">' +
-                '<span class="cat-base-icon" aria-hidden="true">' + b.icon + '</span>' +
+                '<span class="cat-base-icon" aria-hidden="true">' + esc(b.icon) + '</span>' +
                 '<b>' + esc(b.name) + '</b>' +
                 '<span class="cat-base-count">' + fmtNum(b.count) + ' 款</span>' +
               '</a>' +
@@ -732,13 +751,15 @@ async function renderBrands(query) {
     fmtNum(items.length) + ' 个' + (demoVisible() ? '' : '真实') + '品牌，按收录型号数排序，覆盖 ' +
     fmtNum(DATA.meta.total) + ' 款产品档案。点击进入品牌专属档案。</p></div>' +
     '<div class="toolbar">' +
-      '<input id="brand-filter" type="search" placeholder="输入品牌名筛选，回车生效……" value="' + esc(bq) + '" ' +
+      /* P2-24：输入框补可访问名称 */
+      '<input id="brand-filter" type="search" placeholder="输入品牌名筛选，回车生效……" value="' + esc(bq) + '" aria-label="按品牌名筛选" ' +
         'style="height:42px;padding:0 15px;border-radius:12px;border:1px solid var(--border-strong);background:var(--card);color:var(--text);font-size:13.5px;max-width:320px" />' +
       '<span class="result-count">共 ' + fmtNum(items.length) + ' 个品牌 · 第 ' + page + ' / ' + pages + ' 页</span>' +
     '</div>' +
     '<div class="brand-grid">' +
       shown.map((b) =>
-        '<a class="brand-card reveal" href="#/brand/' + encodeURIComponent(b.name) + '">' +
+        /* P1-2：不在模板硬编码 reveal（观察器不可用时会导致永久透明）；由 revealOnScroll 统一添加 */
+        '<a class="brand-card" href="#/brand/' + encodeURIComponent(b.name) + '">' +
           '<div class="brand-card-head">' +
             '<span class="brand-logo">' + esc((b.name || '?').slice(0, 2).toUpperCase()) + '</span>' +
             '<div class="brand-card-meta">' +
@@ -756,7 +777,7 @@ async function renderBrands(query) {
               /* 兼容对象/字符串（问题 45）：在线模式返回 {id,name,icon}，静态模式返回 id */
               const c = (cid && typeof cid === 'object') ? cid
                 : (DATA.cats.find((z) => z.id === cid) || { name: cid, icon: '📦' });
-              return '<span class="badge">' + c.icon + ' ' + esc(c.name) + '</span>';
+              return '<span class="badge">' + esc(c.icon) + ' ' + esc(c.name) + '</span>';
             }).join('') +
           '</div>' +
         '</a>').join('') +
@@ -766,9 +787,11 @@ async function renderBrands(query) {
 async function renderBrand(name, query) {
   /* URLSearchParams 取参用 get（问题 3）：query.sort/query.page 恒 undefined，排序/翻页从未生效 */
   const sort = query.get('sort') || 'score';
-  const page = parseInt(query.get('page') || '1', 10) || 1;
-  const data = await Q.brand(name, { sort, page, pageSize: PAGE_SIZE });
-  if (data.error) return '<div class="empty"><span class="big">🔍</span>未找到该品牌。</div>';
+  const reqPage = parseInt(query.get('page') || '1', 10) || 1;
+  const data = await Q.brand(name, { sort, page: reqPage, pageSize: PAGE_SIZE });
+  if (data.error) return '<div class="empty"><span class="big" aria-hidden="true">🔍</span><h1>未找到该品牌</h1></div>';
+  /* P2-6：用 Q.brand 已 clamp 的 data.page，不再用未校验的请求页码（越界会显示「第999/5页」） */
+  const page = data.page || reqPage;
   const pages = data.pages || Math.max(1, Math.ceil((data.total || 0) / (data.pageSize || PAGE_SIZE)));
   return '' +
     '<div class="page-head">' +
@@ -782,7 +805,7 @@ async function renderBrand(name, query) {
           '<span class="cat-brand-label">按品类</span>' +
           data.cats.map((c) =>
             '<a class="cat-leaf-chip" href="#/products?cat=' + esc(c.id) + '&brand=' + encodeURIComponent(data.brand) + '">' +
-              c.icon + ' ' + esc(c.name) + '<i>' + fmtNum(c.count) + '</i></a>').join('') +
+              esc(c.icon) + ' ' + esc(c.name) + '<i>' + fmtNum(c.count) + '</i></a>').join('') +
         '</div>'
       : '') +
     '<div class="toolbar">' +
@@ -809,7 +832,7 @@ async function renderAbout() {
       '<div class="card"><h3><span aria-hidden="true">🩺</span> 诊断面板（本机会话）</h3>' +
         '<p>数据分片加载：成功 <b>' + DIAG.shardOk + '</b> / 失败 <b>' + DIAG.shardFail + '</b>；' +
         '图片加载失败降级为本地海报 <b>' + DIAG.imgFail + '</b> 次。' +
-        (DIAG.shardFail ? '<br /><b style="color:#eab308">存在分片加载失败，刷新可重试；失败文件名见浏览器控制台 warn。</b>' : '') +
+        (DIAG.shardFail ? '<br /><b style="color:var(--warn)">存在分片加载失败，刷新可重试；失败文件名见浏览器控制台 warn。</b>' : '') +
         '</p></div>' +
 
       '<div class="card"><h3><span aria-hidden="true">📖</span> 这是什么</h3>' +
@@ -856,7 +879,7 @@ function renderCompareTray() {
   /* 浮条占位（问题 25）：显示时给 body 留底部空间，不再遮挡页脚/正文 */
   if (document.body && document.body.classList) document.body.classList.toggle('cmp-tray-open', !!ids.length);
   const chipOf = (p) =>
-    '<span class="compare-chip">' + catIconOf(p) + ' ' + esc(p.name) +
+    '<span class="compare-chip"><span aria-hidden="true">' + catIconOf(p) + '</span> ' + esc(p.name) +
     '<button data-action="cmp" data-id="' + esc(p.id) + '" title="移出对比" aria-label="把 ' + esc(p.name) + ' 移出对比">✕</button></span>';
   if (DATA.online) {
     Q.byIds(ids).then((list) => {

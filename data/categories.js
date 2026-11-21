@@ -106,7 +106,10 @@
     B('kitchen', '厨房电器', '🍳', 'appliance', ['德龙', '美善品', '米家', '苏泊尔', '九阳', '美的', '松下', '飞利浦', 'Breville', '西门子', '博世', '老板', '方太'], '咖啡机:coffee|电饭煲:rice|空气炸锅:fryer|破壁机:blender|料理机:processor|蒸烤箱:oven|微波炉:microwave|净水器:purifier|电热水壶:kettle|油烟机:hood|洗碗机:dishwasher|电磁炉:induction|厨师机:mixer|面包机:bread|豆浆机:soy|绞肉机:mincer|电压力锅:pressure|电饼铛:griddle|酸奶机:yogurt|制冰机:ice|多士炉:toaster|电蒸锅:steamer|气泡水机:sparkling|炒菜机器人:robot|嵌入式一体机:builtin|母婴温奶器:warmer|冰淇淋机:gelato|真空封口机:sealer|食物烘干机:dehydrator|电动开罐器:opener', 16000, '台式:counter|嵌入式:builtin'),
     B('cleaning', '清洁电器', '🧹', 'appliance', ['戴森', '追觅', '必胜', '石头', '科沃斯', '小米', '美的', '莱克', '卡赫'], '洗地机:wetdry|吸尘器:vacuum|扫地机器人:robot|擦窗机器人:window|蒸汽清洁机:steam|除螨仪:mite|高压洗车机:wash|消毒柜:sterilize|超声波清洗机:ultrasonic', 9500, '无线:wireless|有线:corded'),
     B('climate', '环境电器', '🌬️', 'appliance', ['戴森', 'Blueair', '小米', '松下', '智米', '美的', '格力', '大金', '霍尼韦尔', '352'], '空气净化器:purifier|新风机:fresh|除湿机:dehumid|加湿器:humid|电风扇:fan|取暖器:heater|空调:ac|智能温控器:thermostat|甲醛检测仪:ch2o|循环扇:circulator|暖风机:warmfan|冷风扇:coolfan|冰柜:freezer|酒柜:winecooler|恒温箱:incubator', 11500, '家用:home|商用:biz'),
-    B('laundry', '洗护电器', '🫧', 'appliance', ['海尔', '小天鹅', '西门子', '博世', '松下', '美的', '石头', 'LG', '三星', '卡萨帝'], '洗衣机:washer|洗烘一体机:combo|烘干机:dryer|洗烘套装:set|挂烫机:steamer|电熨斗:iron|衣物护理机:care|缝纫机:sewing|锁边机:overlock|织物蒸汽护理:fabriccare|熨烫台:board', 7000, '滚筒:drum|波轮:pulse|迷你:mini')
+    B('laundry', '洗护电器', '🫧', 'appliance', ['海尔', '小天鹅', '西门子', '博世', '松下', '美的', '石头', 'LG', '三星', '卡萨帝'], '洗衣机:washer|洗烘一体机:combo|烘干机:dryer|洗烘套装:set|挂烫机:steamer|电熨斗:iron|衣物护理机:care|缝纫机:sewing|锁边机:overlock|织物蒸汽护理:fabriccare|熨烫台:board', 7000, '滚筒:drum|波轮:pulse|迷你:mini'),
+    /* P3-12：smart-misc.js 的精选分片使用 category:'appliance'，此前树中无对应 base，
+       成为唯一「树外品类」。补该 base 使 product categories=106 与品类树完全对齐。 */
+    B('appliance', '生活电器', '🍳', 'appliance', ['米家', '小米', '美的', '苏泊尔', '九阳', '戴森', '飞利浦', '松下', '海尔', '格力'], '电饭煲:rice|厨房小电:kitchen|清洁电器:clean|环境电器:climate', 1500)
   ]},
   { id: 'iot-diy', name: '物联网与电子 DIY', icon: '🔌', bases: [
     B('devboard', '开发板', '🧰', 'iot', ['Raspberry Pi', 'NVIDIA', 'Arduino', 'Seeed Studio', '乐鑫', 'BeagleBoard', 'Micro:bit', '香橙派', '全志', '瑞芯微'], '树莓派:rpi|Jetson 开发板:jetson|Arduino 开发板:arduino|RISC-V 开发板:riscv|FPGA 开发板:fpga|国产开发板:cn|工业开发板:industrial|AI 开发板:ai|多媒体开发板:media', 7000, '官方:official|兼容板:compatible'),

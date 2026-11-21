@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 问题 3/4：跨域图片请求不泄露完整 Referrer（静态托管无响应头时的 meta 兜底；与 file:// 双击兼容） -->
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="description" content="日理万机 —— 数码产品百科全书：手机、平板、耳机、相机、笔记本、智能手表、游戏机、音箱的详细参数、主客观评测、用户评价与性能评分。" />
   <meta name="theme-color" content="#5b8cff" />
   <!-- 分享卡片（微信/微博/Twitter/X） -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="日理万机" />
   <meta property="og:title" content="日理万机 · 数码产品百科全书" />
-  <meta property="og:description" content="收录 10,346 个数码产品档案（346 真实精选 + 10,000 条明确标注的演示样本）：参数、评测、口碑、对比一站查齐。" />
+  <meta property="og:description" content="收录上万个数码产品档案（真实精选 + 明确标注的演示样本）：参数、评测、口碑、对比一站查齐。具体数量见站内关于页。" />
   <meta property="og:locale" content="zh_CN" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="日理万机 · 数码产品百科全书" />
-  <meta name="twitter:description" content="收录 10,346 个数码产品档案（346 真实精选 + 10,000 条明确标注的演示样本）：参数、评测、口碑、对比一站查齐。" />
+  <meta name="twitter:description" content="收录上万个数码产品档案（真实精选 + 明确标注的演示样本）：参数、评测、口碑、对比一站查齐。具体数量见站内关于页。" />
   <meta property="og:image" content="https://opengraph.githubassets.com/1/xuange-hu/riwanji" />
   <meta name="twitter:image" content="https://opengraph.githubassets.com/1/xuange-hu/riwanji" />
   <link rel="canonical" href="https://xuange-hu.github.io/riwanji/" />
@@ -26,7 +28,8 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"日理万机 · 数码产品百科全书","url":"https://xuange-hu.github.io/riwanji/","potentialAction":{"@type":"SearchAction","target":"https://xuange-hu.github.io/riwanji/#/products?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
   <script src="js/boot-config.js"></script></head>
 <body>
-  <a class="skip-link" href="#app">跳到主内容</a>
+  <!-- 问题 P1-1：href 仅作无 JS 降级；有 JS 时拦截改为聚焦 #app，避免 #app 被当成路由落入 404 -->
+  <a class="skip-link" href="#app" data-skip="app">跳到主内容</a>
   <div id="route-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <header class="site-header">
     <div class="container header-inner">
@@ -35,7 +38,7 @@
         <span class="logo-text">日理万机<em>数码产品百科</em></span>
       </a>
 
-      <nav class="main-nav" id="main-nav">
+      <nav class="main-nav" id="main-nav" aria-label="主导航">
         <a href="#/" data-nav="home">首页</a>
         <a href="#/products" data-nav="products">全部产品</a>
         <a href="#/categories" data-nav="categories">品类大全</a>
@@ -51,8 +54,8 @@
         <span class="search-icon" aria-hidden="true">🔍</span>
         <input id="global-search" type="search" autocomplete="off"
                placeholder="搜索产品、品牌、参数……" aria-label="全站搜索"
-               role="combobox" aria-expanded="false" aria-controls="search-suggest" aria-autocomplete="list" />
-        <div class="suggest" id="search-suggest" hidden></div>
+               role="combobox" aria-expanded="false" aria-controls="search-suggest" aria-autocomplete="list" aria-haspopup="listbox" />
+        <div class="suggest" id="search-suggest" role="listbox" hidden></div>
       </div>
 
       <button class="theme-toggle" id="theme-toggle" title="切换深浅色主题" aria-label="切换主题"><span aria-hidden="true">🌙</span></button>

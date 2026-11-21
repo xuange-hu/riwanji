@@ -16,6 +16,7 @@ on:
       - 'sitemap.xml'
       - 'feed.xml'
       - 'robots.txt'
+      - 'tools/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -33,7 +34,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # P1-8：四件套门禁并入 Pages 的 build job——任一失败则 build 失败，
+      # 下游 deploy（needs: build）不会执行。与 ci.yml 同版本（checkout@v4 / setup-node@v4 / Node 20）。
+      - name: 门禁 · 数据校验
+        run: node tools/validate.js
+      - name: 门禁 · 统计口径
+        run: node tools/stats.js --check
+      - name: 门禁 · 渲染回归
+        run: node tools/smoke-test.js
+      - name: 门禁 · 静态托管审计
+        run: node tools/static-audit.js
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5

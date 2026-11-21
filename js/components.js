@@ -7,7 +7,9 @@
 function catIconOf(p) {
   const cats = DATA.online ? (DATA.meta ? DATA.meta.categories : []) : DATA.cats;
   const hit = (cats || []).filter((c) => c.id === p.category)[0];
-  return (hit && hit.icon) || '📦';
+  /* P2-15：icon 来自品类数据（import.js --icon 可写），转义后再进 innerHTML，
+     防 <img onerror>/<svg onload> 注入。当前 44 种全为 emoji（不可触发）。 */
+  return esc((hit && hit.icon) || '📦');
 }
 
 /* leaf id（如 sensor-th-zigbee）→ 可读名称 */

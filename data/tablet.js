@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥3700（2010 年上市价）",
       price: 3700,
+      source: "curated", synthetic: false,
       tags: ["开创品类", "大屏", "娱乐", "经典"],
       summary: "iPad 开山之作，重新定义了个人电脑的形态与触控体验。",
       specs: [
@@ -45,6 +46,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥3688（2011 年国行首发价）",
       price: 3688,
+      source: "curated", synthetic: false,
       tags: ["轻薄", "双核", "娱乐", "经典"],
       summary: "轻薄进化的双核经典，奠定平板电脑主流形态的里程碑。",
       specs: [
@@ -77,6 +79,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥1600（2012 年上市价，16GB）",
       price: 1600,
+      source: "curated", synthetic: false,
       tags: ["性价比", "便携", "原生安卓", "小屏"],
       summary: "原生安卓小钢炮，性价比与便携兼得的标杆之作。",
       specs: [
@@ -109,6 +112,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥5888（2015 年国行首发价，32GB）",
       price: 5888,
+      source: "curated", synthetic: false,
       tags: ["生产力", "大屏", "手写笔", "性能旗舰"],
       summary: "12.9 英寸大屏加 Apple Pencil，开启平板生产力时代。",
       specs: [
@@ -141,6 +145,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥3299（2019 年上市价，6GB+128GB Wi-Fi 版）",
       price: 3299,
+      source: "curated", synthetic: false,
       tags: ["安卓旗舰", "全面屏", "办公", "手写笔"],
       summary: "麒麟 990 安卓旗舰平板，对标 iPad Pro 的国产生产力之作。",
       specs: [

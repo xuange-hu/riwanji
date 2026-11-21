@@ -2,6 +2,15 @@ name: ci
 on:
   push:
   pull_request:
+
+# P3-53：最小权限 + 并发组（同一 ref 的新提交打断旧任务，避免互相踩踏）
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -9,12 +18,43 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20 # P3-61：与 pages.yml 统一 Node 20（package.json engines>=18；DEPLOY 文档由主代理同步）
       # 数据 schema / 分片完整性校验
       - run: node tools/validate.js
       # 统计口径单源校验（README 数字与实算一致，问题 12/37）
       - run: node tools/stats.js --check
       # 渲染回归（沙箱加载 app.js 全量跑 17 项断言）
       - run: node tools/smoke-test.js
-      # 静态托管就绪度审计
+      # 静态托管就绪度审计（作用于 root 源码）
       - run: node tools/static-audit.js
+      # P2-37：root 四件套全绿不代表 dist 产物正确。
+      # build-dist 后需对产物再跑一遍：`node tools/static-audit.js --dist`；
+      # 其余三件套从 root tools 指向 dist（npm run audit:dist 口径）由主代理在文档/脚本中协调。
+
+  # P2-36：把 bug-hunt 的 27 项边缘/XSS/注入断言纳入 CI 自动回归
+  bug-hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 启动参考服务器
+        run: |
+          nohup node tools/serve.js --port 8123 > /tmp/serve.log 2>&1 &
+          echo $! > /tmp/serve.pid
+      - name: 轮询 /api/meta 就绪
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8123/api/meta > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "serve 未就绪"; cat /tmp/serve.log; exit 1
+      - name: 运行边缘用例回归
+        env:
+          BUG_HUNT_PORT: 8123
+        run: node tools/bug-hunt.js
+      - name: 停止服务器
+        if: always()
+        run: |
+          if [ -f /tmp/serve.pid ]; then kill "$(cat /tmp/serve.pid)" 2>/dev/null || true; fi

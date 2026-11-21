@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥1250（2013 年上市价，美国 $199）",
       price: 1250,
+      source: "curated", synthetic: false,
       tags: ["便携蓝牙音箱", "被动辐射器", "小钢炮", "经典"],
       summary: "掌心大小却声压惊人的便携蓝牙音箱，重新定义了小音箱的音质标准。",
       specs: [
@@ -51,6 +52,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥1200（2014 年上市价，美国 $199）",
       price: 1200,
+      source: "curated", synthetic: false,
       tags: ["智能音箱", "语音助手", "开创品类"],
       summary: "用语音唤醒音乐与信息的智能音箱先驱，开创了整个智能音箱品类。",
       specs: [
@@ -89,6 +91,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥1350（2017 年上市价，美国 $199）",
       price: 1350,
+      source: "curated", synthetic: false,
       tags: ["智能音箱", "多房间", "Wi-Fi 音箱", "家用"],
       summary: "支持多房间组网与双语音助手的家用智能音箱，音质与生态兼备。",
       specs: [
@@ -127,6 +130,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥799（2019 年国行上市价）",
       price: 799,
+      source: "curated", synthetic: false,
       tags: ["便携蓝牙音箱", "三防", "户外", "派对"],
       summary: "20W 三单元的户外便携蓝牙音箱，IP67 防水、续航约 12 小时。",
       specs: [
@@ -166,6 +170,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥2287（2019 年国行上市价，美国 $349）",
       price: 2287,
+      source: "curated", synthetic: false,
       tags: ["智能音箱", "高保真", "空间感知", "苹果生态"],
       summary: "七单元阵列加 A8 芯片的智能音箱，以自适应调音的高音质取胜。",
       specs: [

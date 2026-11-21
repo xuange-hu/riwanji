@@ -214,6 +214,12 @@ async function ensureFull(p) {
 }
 
 function loadShard(file) {
+  /* P3-23：清单字段仅允许 data/ 下相对路径，防污染清单在无 CSP 时加载任意外部脚本 */
+  if (typeof file !== 'string' || !/^data\/[A-Za-z0-9_./-]+\.js$/.test(file)) {
+    DIAG.shardFail++;
+    console.warn('[rlwj] 拒绝加载非 data/ 分片：' + file);
+    return Promise.resolve(false);
+  }
   /* 失败自动重试 1 次 + 超时兜底（问题 6/16）：stalled 请求不再让页面永远停在加载态 */
   return new Promise((resolve) => {
     let done = false;
@@ -308,8 +314,10 @@ const Q = {
     if (demoVisible()) await ensureBulk(); /* 榜单要含演示时先补载（N3） */
     // 静态模式本地构造（默认不含演示数据，问题 4：榜单不被合成样本污染）
     const curated = visibleProducts();
-    const byScore = (a, b) => (b.score || 0) - (a.score || 0);
-    const byUser = (a, b) => (b.userScore || 0) - (a.userScore || 0);
+    /* P3-7：与 SORTERS.score 口径一致（主分相同按 userScore 次级排序），
+       旧实现只比 score，编辑精选/品类之王在不同页面排序不一致 */
+    const byScore = SORTERS.score;
+    const byUser = SORTERS.user;
     const byYear = (a, b) => (b.year || 0) - (a.year || 0);
     const editors = curated.slice().sort(byScore).slice(0, 8);
     const popular = curated.slice().sort(byUser).slice(0, 8);
@@ -542,11 +550,14 @@ const Q = {
     }
     let list = visibleProducts().slice(); /* 榜单默认剔除演示数据（问题 4） */
     if (params.cat) list = list.filter((p) => p.category === params.cat);
-    const key = params.sort || 'score';
+    /* P2-17：排序键白名单——旧实现用原始 sort 字符串直接作属性键，
+       非法值虽不崩溃但触发全库排序且不命中缓存；与服务端 ranking 对齐为固定字段集 */
+    const RANK_KEYS = { name: 1, year: 1, score: 1, userScore: 1, price: 1 };
+    const key = RANK_KEYS[params.sort] ? params.sort : 'score';
     const dir = parseInt(params.dir != null ? params.dir : -1, 10) || -1;
     list.sort((a, b) => {
       const va = a[key], vb = b[key];
-      if (typeof va === 'string') return dir * va.localeCompare(String(vb), 'zh-CN');
+      if (typeof va === 'string' || typeof vb === 'string') return dir * String(va || '').localeCompare(String(vb || ''), 'zh-CN');
       return dir * ((va || 0) - (vb || 0));
     });
     const pageSize = params.pageSize || 50;

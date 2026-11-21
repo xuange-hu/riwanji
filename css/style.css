@@ -1071,7 +1071,7 @@ button { font-family: inherit; }
   animation: rise 0.5s var(--ease) 0.06s both;
 }
 
-.score-panel h3 { margin: 0 0 16px; font-size: 15px; letter-spacing: 1px; }
+.score-panel h2, .score-panel h3 { margin: 0 0 16px; font-size: 15px; letter-spacing: 1px; }
 
 .big-scores { display: flex; gap: 26px; margin-bottom: 20px; }
 
@@ -1119,7 +1119,7 @@ button { font-family: inherit; }
 
 .review-card:nth-child(2)::before { background: linear-gradient(180deg, var(--warn), #f59e0b); }
 
-.review-card h3 { margin: 0 0 13px; font-size: 16px; display: flex; align-items: center; gap: 9px; }
+.review-card h2, .review-card h3 { margin: 0 0 13px; font-size: 16px; display: flex; align-items: center; gap: 9px; }
 .review-card p { margin: 0; color: var(--text-2); font-size: 14.2px; text-align: justify; }
 
 /* 网络评测与口碑索引 */
@@ -1203,7 +1203,7 @@ button { font-family: inherit; }
 .spec-table td { font-family: var(--mono); font-size: 13px; }
 
 .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 24px 0; }
-.pros-cons .card h3 { margin: 0 0 13px; font-size: 16px; }
+.pros-cons .card h2, .pros-cons .card h3 { margin: 0 0 13px; font-size: 16px; }
 .pros-cons ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .pros-cons li { display: flex; gap: 10px; font-size: 13.8px; color: var(--text-2); }
 .pros-cons li::before { flex-shrink: 0; font-weight: 800; }
@@ -1991,3 +1991,62 @@ html[data-theme="light"] .tl-year h3 {
 
 /* N16 表头产品列改 th scope=col 后保持原视觉（仅补语义，字重还原） */
 .compare-table thead th:not(:first-child) { font-weight: 400; }
+
+/* ===================== 第五轮审查修复补丁 ===================== */
+
+/* P2-21 正文内链可辨识度（WCAG 1.4.1）：全局 a 继承色 + 无下划线导致与正文 1:1，
+   给正文区的真实文字链接加下划线（导航/卡片/按钮/带边框 chip 本身可辨识，不动） */
+.rank-name a,
+.section-head .more,
+#app .empty a:not(.btn),
+.empty-suggest a:not(.chip),
+.footer-inner a,
+.site-footer a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.rank-name a { color: var(--accent); } /* 榜单项名称再给色差（对深色底 ≥4.5:1） */
+
+/* P2-26 hover 红对比度：硬编码 #ff7a7a（白底 2.52:1）/ #ef4444（3.23:1）→ 主题状态色 */
+.hot-clear:hover { color: var(--bad); }
+.review-del:hover { color: var(--bad); }
+
+/* P3-33 焦点可见：多处以更高特异性写 outline:none 覆盖了全局 :focus-visible，
+   这里用同等特异性 + 显式 outline 兜底，保证键盘焦点环始终可见 */
+input:focus-visible, select:focus-visible, textarea:focus-visible,
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* P3-35 占位符对比度： UA 默认占位符在深色主题对比度不可控，显式设定 */
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.9; }
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder { color: #6b7488; opacity: 1; }
+
+/* P3-36 触控目标（WCAG 2.5.5）：视觉尺寸不变，用 ::before 外扩命中区到 ≈44px。
+   带 ::before 已用于其他用途的元素不重复定义（brand-card 等）。 */
+.chip, .hot-chip, .th-sort { position: relative; }
+.chip::before, .hot-chip::before { content: ''; position: absolute; inset: -5px 0; }
+.th-sort::before { content: ''; position: absolute; inset: -10px -4px; }
+.filter-bar select, .filter-bar input[type="text"] { min-height: 44px; }
+#brand-filter { min-height: 44px; }
+
+/* P3-40 .pc-tag.obj 深色主题对比度 4.50:1 临界（11px 字），提亮一档留余量 */
+html[data-theme="dark"] .pc-tag.obj { color: #8fb0ff; }
+
+/* P3-5 撤销 Toast 与普通 Toast 分离后，错位显示避免相互遮挡 */
+.toast-undo-bar { bottom: 76px; }
+
+/* P3-37 ≤375px 窄屏：压缩页头间距给搜索框让位，避免文本区被挤至归零 */
+@media (max-width: 375px) {
+  .header-inner { gap: 6px; }
+  .logo-text em { display: none; }
+  .search-box { min-width: 0; }
+}
+
+/* P3-38 打印：清除图片计数角标的半透明背景（第四轮只清了 background-image） */
+@media print {
+  .gallery-count { background: transparent !important; color: #111 !important; backdrop-filter: none !important; }
+}

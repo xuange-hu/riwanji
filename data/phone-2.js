@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥5000（2011 年上市价）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["全键盘", "商务", "经典", "小众"],
       summary: "黑莓全键盘巅峰之作，触屏与实体键盘首次合体。",
       specs: [
@@ -60,6 +61,7 @@ window.DB_CHUNKS.push({
       year: 2009,
       priceText: "约 ¥3500（2009 年美国合约价折算）",
       price: 3500,
+      source: "curated", synthetic: false,
       tags: ["小众", "经典", "滑盖", "被遗忘"],
       summary: "webOS 开山鼻祖，卡片式多任务影响了整个行业。",
       specs: [
@@ -107,6 +109,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥4000（2010 年日本运营商合约价折算）",
       price: 4000,
+      source: "curated", synthetic: false,
       tags: ["日系", "翻盖", "拍照", "小众"],
       summary: "1210 万像素 CCD 翻盖机，日系功能机的华丽绝唱。",
       specs: [
@@ -154,6 +157,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥5000（2017 年美国售价折算）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["拍照", "原生安卓", "经典"],
       summary: "单摄拍出封神成像，计算摄影时代的开山之作。",
       specs: [
@@ -201,6 +205,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥1000（非洲市场售价折算）",
       price: 1000,
+      source: "curated", synthetic: false,
       tags: ["非洲之王", "拍照", "性价比", "小众"],
       summary: "为深色皮肤专门优化拍照，非洲市场销量冠军。",
       specs: [
@@ -248,6 +253,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥3400（欧洲售价折算）",
       price: 3400,
+      source: "curated", synthetic: false,
       tags: ["环保", "模块化", "小众", "欧洲"],
       summary: "模块化可维修设计，五年质保的环保主义手机。",
       specs: [
@@ -295,6 +301,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥70000（2014 年售价）",
       price: 70000,
+      source: "curated", synthetic: false,
       tags: ["奢侈品", "小众", "被遗忘", "皮革"],
       summary: "手工打造的奢华手机，蓝宝石屏幕配私人管家服务。",
       specs: [
@@ -343,6 +350,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥6200（2019 年国行首发价）",
       price: 6200,
+      source: "curated", synthetic: false,
       tags: ["影音", "4K 屏幕", "小众", "设计"],
       summary: "全球首款 4K OLED 手机，21:9 电影比例带鱼屏。",
       specs: [
@@ -391,6 +399,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥4500（2016 年国行首发价）",
       price: 4500,
+      source: "curated", synthetic: false,
       tags: ["模块化", "被遗忘", "创新", "悲情"],
       summary: "模块化尝试的先驱，抽拉换电池设计独具巧思。",
       specs: [
@@ -438,6 +447,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥4500（2012 年国行首发价）",
       price: 4500,
+      source: "curated", synthetic: false,
       tags: ["拍照", "Windows Phone", "经典", "被遗忘"],
       summary: "光学防抖夜景开山鼻祖，WP 阵营的悲情机皇。",
       specs: [
@@ -486,6 +496,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "¥1999.99（2014 年国行售价）",
       price: 2000,
+      source: "curated", synthetic: false,
       tags: ["性价比", "极客", "经典", "刷机"],
       summary: "「不将就」开山之作，旗舰配置仅售 1999。",
       specs: [
@@ -533,6 +544,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥3500（2010 年美国无合约价折算）",
       price: 3500,
+      source: "curated", synthetic: false,
       tags: ["亲儿子", "安卓鼻祖", "经典", "被遗忘"],
       summary: "安卓阵营初代「亲儿子」，开启原生系统标杆。",
       specs: [
@@ -580,6 +592,7 @@ window.DB_CHUNKS.push({
       year: 2009,
       priceText: "约 ¥4200（2010 年国行首发价）",
       price: 4200,
+      source: "curated", synthetic: false,
       tags: ["安卓", "侧滑全键盘", "经典", "被遗忘"],
       summary: "安卓崛起的功勋机型，侧滑全键盘一代机王。",
       specs: [
@@ -628,6 +641,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥4700（2013 年国行首发价）",
       price: 4700,
+      source: "curated", synthetic: false,
       tags: ["全金属", "经典", "被遗忘", "悲情"],
       summary: "全金属一体机身开山者，设计封神却销量惨淡。",
       specs: [
@@ -675,6 +689,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥5000（2011 年国行首发价）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["开创品类", "大屏", "手写笔", "经典"],
       summary: "5.3 英寸巨屏加手写笔，开创平板手机时代。",
       specs: [

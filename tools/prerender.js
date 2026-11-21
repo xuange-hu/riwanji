@@ -2,9 +2,14 @@
 /* ============================================================
    tools/prerender.js
    SEO 预渲染（问题 18）：为每条精选产品生成真实 HTML 路径
-   dist/p/<id>.html（含 JSON-LD Product + canonical + og 标签），
-   并重写 sitemap.xml（收录首页 + 全部预渲染页）与 feed.xml（RSS，
-   问题 46 更新日志通道）。hash 路由 SPA 保留为交互入口。
+   dist/p/<id>.html（含 JSON-LD Product + Review + BreadcrumbList、
+   canonical / OG / Twitter 标签），并重写 sitemap.xml（首页 + 全部预渲染页）
+   与 feed.xml（RSS 更新日志通道，问题 46）。hash 路由 SPA 保留为交互入口。
+
+   ⚠ P3-52：本工具重写的是 dist/ 下的 sitemap.xml / feed.xml / p/*.html，
+   必须从 dist 产物部署。root 源码的 sitemap.xml 仅 1 条 URL 且没有 feed.xml，
+   若误从 root 部署会退化为「1 条 sitemap + RSS 丢失」。
+
    用法： node tools/prerender.js
    ============================================================ */
 'use strict';
@@ -16,6 +21,14 @@ const DIST = path.join(ROOT, 'dist');
 /* 站点地址单源（问题 55）：可用 SITE_URL 环境变量改写（部署到 Gitee/自定义域名时，
    canonical/OG/RSS/sitemap/robots/返回首页链接全部跟随），默认官方 GitHub Pages */
 const SITE = (process.env.SITE_URL || 'https://xuange-hu.github.io/riwanji/').replace(/\/*$/, '/');
+/* P2-31/P3-42：以真实构建时间为基准生成「收录时间」与 sitemap lastmod */
+const BUILD_DATE = new Date();
+const BUILD_MS = BUILD_DATE.getTime();
+const TODAY = BUILD_DATE.toISOString().slice(0, 10);
+
+const THEME_COLOR = '#5b8cff'; /* 与 index.html 的 theme-color 一致 */
+const FAVICON = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='12'%20fill='%235b8cff'/%3E%3Ctext%20x='32'%20y='45'%20font-size='38'%20text-anchor='middle'%20fill='%23fff'%3ER%3C/text%3E%3C/svg%3E";
+const REVIEW_LIMIT = 260; /* P3-50：JSON-LD 与可见正文统一截断长度 */
 
 function loadChunks(file) {
   const w = {};
@@ -49,9 +62,42 @@ function imgSrcOf(u) {
   return IMG_LOCAL[u] ? SITE + IMG_LOCAL[u] : u;
 }
 
+/* P2-27：data/enrich/media-*.js → DB_MEDIA（按产品 id 索引的真实图片 URL）。
+   与 tools/serve.js 的 loadEnrich 同口径，用于给无 image 字段的精选产品回填图片，
+   再经 IMG_LOCAL 映射成本地图，使每个预渲染页都有 og:image / <img> / JSON-LD image。 */
+const DB_MEDIA = (function () {
+  const merged = {};
+  const dir = path.join(ROOT, 'data', 'enrich');
+  if (!fs.existsSync(dir)) return merged;
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.js')) continue;
+    try {
+      const w = {};
+      new Function('window', 'module', fs.readFileSync(path.join(dir, f), 'utf8'))(w, {});
+      Object.assign(merged, w.DB_MEDIA || {});
+    } catch (e) { /* 跳过损坏的分片 */ }
+  }
+  return merged;
+})();
+
+/* P2-31：由产品 id 稳定 hash 映射到「近 90 天」的收录时间（非上市年份），
+   带小时级错位避免大量条目同日并列；倒序输出后语义为「最近收录的产品」。 */
+function stableHash(s) {
+  let h = 0;
+  const str = String(s);
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+function catalogDate(id) {
+  const h = stableHash(id);
+  const daysAgo = h % 90;
+  const hoursAgo = (h >>> 8) % 24;
+  return new Date(BUILD_MS - daysAgo * 86400000 - hoursAgo * 3600000);
+}
+
 function main() {
   /* 只预渲染精选产品（真实数据）；演示数据不进搜索索引 */
-  const reserved = new Set(['manifest.js', 'categories.js', 'brand-alias.js', 'index.js']);
+  const reserved = new Set(['manifest.js', 'categories.js', 'brand-alias.js', 'index.js', 'enrich-local.js']);
   const products = [];
   const seen = new Set();
   for (const f of fs.readdirSync(path.join(ROOT, 'data'))) {
@@ -61,6 +107,12 @@ function main() {
         if (!p || !p.id || seen.has(p.id) || p.source === 'bulk') continue;
         seen.add(p.id);
         p.categoryName = p.categoryName || c.categoryName || c.category || '';
+        /* P2-27：按 id 回填真实图片（仅当产品本身没有时），交给 imgSrcOf 映射本地 */
+        const media = DB_MEDIA[p.id];
+        if (media) {
+          if (!p.image && media.image) p.image = media.image;
+          if ((!p.images || !p.images.length) && media.images && media.images.length) p.images = media.images;
+        }
         products.push(p);
       }
     }
@@ -69,16 +121,30 @@ function main() {
   const P = path.join(DIST, 'p');
   fs.mkdirSync(P, { recursive: true });
 
-  const urls = [SITE];
+  const urls = [{ loc: SITE, lastmod: TODAY }];
   const feedItems = [];
   const produced = new Set();
+  const usedFiles = new Set(); /* P3-60：safeFile 冲突检测 */
 
   products.forEach((p) => {
-    const file = safeFile(p.id) + '.html';
+    /* P3-60：非法字符统一替换 _ 可能让不同 id 撞名，冲突时追加 -2/-3… 序号，绝不覆盖 */
+    const base = safeFile(p.id) || 'item';
+    let file = base + '.html', seq = 2;
+    while (usedFiles.has(file)) file = base + '-' + (seq++) + '.html';
+    usedFiles.add(file);
     produced.add(file);
     const url = SITE + 'p/' + file;
-    urls.push(url);
+    urls.push({ loc: url, lastmod: TODAY });
+
     const img = imgSrcOf(p.image || (Array.isArray(p.images) && p.images[0]) || '');
+    const summary = p.summary ? String(p.summary).trim() : '';
+    /* P3-51：无 summary 时用品牌/型号/年份/品类拼出有语义的 description（≥16 字符） */
+    const desc = (summary || [p.brand, p.name, p.year, p.categoryName, '参数、评分与选购参考']
+      .filter((x) => x != null && x !== '').join(' ')).slice(0, 150);
+    const reviewObj = (p.review && p.review.objective) ? String(p.review.objective) : '';
+    /* P3-50：同一 summary 变量供 JSON-LD 与可见正文共用，截断长度一致 */
+    const reviewSummary = reviewObj.length > REVIEW_LIMIT ? reviewObj.slice(0, REVIEW_LIMIT) + '……' : reviewObj;
+
     const specs = (p.specs || []).slice(0, 16).map((s) =>
       '        <tr><th scope="row">' + esc(s[0]) + '</th><td>' + esc(s[1]) + '</td></tr>').join('\n');
     const ld = {
@@ -86,37 +152,58 @@ function main() {
       '@type': 'Product',
       name: p.name,
       brand: { '@type': 'Brand', name: p.brand },
-      description: p.summary || (p.name + ' 参数与评测'),
+      description: desc,
       image: img ? [img] : undefined,
       sku: p.id,
       category: p.categoryName || '',
       /* N5：不再用 aggregateRating(ratingCount:1) 把编辑评分冒充用户聚合
          （违反 Google 结构化数据政策）；改为如实的编辑部 Review */
-      review: (p.review && p.review.objective)
-        ? {
-            '@type': 'Review',
-            author: { '@type': 'Organization', name: '日理万机编辑部' },
-            reviewBody: String(p.review.objective).slice(0, 300),
-            reviewRating: (typeof p.score === 'number')
-              ? { '@type': 'Rating', ratingValue: p.score, bestRating: 10 }
-              : undefined
-          }
-        : undefined
+      review: reviewObj ? {
+        '@type': 'Review',
+        author: { '@type': 'Organization', name: '日理万机编辑部' },
+        reviewBody: reviewSummary,
+        reviewRating: (typeof p.score === 'number')
+          ? { '@type': 'Rating', ratingValue: p.score, bestRating: 10 }
+          : undefined
+      } : undefined
+    };
+    /* P3-46：面包屑结构化数据（首页 → 品类 → 产品） */
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '日理万机', item: SITE },
+        { '@type': 'ListItem', position: 2, name: p.categoryName || p.category || '产品',
+          item: SITE + '#/products?cat=' + encodeURIComponent(p.category || '') },
+        { '@type': 'ListItem', position: 3, name: p.name, item: url }
+      ]
     };
     const pros = (p.pros || []).map((x) => '          <li>' + esc(x) + '</li>').join('\n');
     const cons = (p.cons || []).map((x) => '          <li>' + esc(x) + '</li>').join('\n');
+
     const html = '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n' +
       '  <meta charset="utf-8" />\n' +
       '  <meta name="viewport" content="width=device-width, initial-scale=1" />\n' +
       '  <title>' + esc(p.name) + ' —— 日理万机</title>\n' +
-      '  <meta name="description" content="' + esc((p.summary || p.name).slice(0, 150)) + '" />\n' +
+      '  <meta name="description" content="' + esc(desc) + '" />\n' +
+      '  <meta name="theme-color" content="' + THEME_COLOR + '" />\n' +
+      '  <link rel="icon" href="' + FAVICON + '" />\n' +
       '  <link rel="canonical" href="' + esc(url) + '" />\n' +
+      /* P3-44/45：补齐 OG / Twitter 卡片标签 */
       '  <meta property="og:type" content="product" />\n' +
+      '  <meta property="og:site_name" content="日理万机" />\n' +
       '  <meta property="og:title" content="' + esc(p.name) + '" />\n' +
+      '  <meta property="og:description" content="' + esc(desc) + '" />\n' +
       '  <meta property="og:url" content="' + esc(url) + '" />\n' +
       (img ? '  <meta property="og:image" content="' + esc(img) + '" />\n' : '') +
+      '  <meta name="twitter:card" content="' + (img ? 'summary_large_image' : 'summary') + '" />\n' +
+      '  <meta name="twitter:title" content="' + esc(p.name) + '" />\n' +
+      '  <meta name="twitter:description" content="' + esc(desc) + '" />\n' +
+      (img ? '  <meta name="twitter:image" content="' + esc(img) + '" />\n' : '') +
       '  <script type="application/ld+json">' + safeJSON(ld) + '</script>\n' +
-      '  <style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:860px;margin:0 auto;padding:24px;line-height:1.7;color:#1a2233}h1{font-size:26px}h2{font-size:18px;margin:22px 0 8px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #dde3ee;padding:8px 12px;text-align:left;font-size:14px}th{width:34%;background:#f2f5fb}a{color:#345fd8}.meta{color:#55617a;font-size:13.5px}.hero-img{max-width:100%;max-height:380px;border-radius:12px;border:1px solid #dde3ee;display:block;margin:12px 0}.pc{columns:2;gap:24px;margin:8px 0 0;padding-left:20px}.pc li{margin:4px 0;font-size:14.5px}@media(max-width:640px){.pc{columns:1}}</style>\n' +
+      '  <script type="application/ld+json">' + safeJSON(breadcrumb) + '</script>\n' +
+      /* P3-18：内联样式外联为 css/prerender.css（build-dist 从 root 复制），严格 CSP 下生效 */
+      '  <link rel="stylesheet" href="../css/prerender.css" />\n' +
       '</head>\n<body>\n' +
       /* 问题 65：地标结构——预渲染页补 <main>，读屏可跳转主内容 */
       '  <main>\n' +
@@ -127,11 +214,8 @@ function main() {
       /* 问题 52：用户评分如实标注来源（口碑整理值，非本站用户打分） */
       (typeof p.userScore === 'number' ? ' · 用户评分 ' + esc(p.userScore) + '/10（公开口碑整理值，非本站打分）' : '') + '</p>\n' +
       (img ? '  <img class="hero-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" />\n' : '') +
-      (p.summary ? '  <p>' + esc(p.summary) + '</p>\n' : '') +
-      (p.review && p.review.objective
-        ? '  <h2>客观评测</h2>\n  <p>' + esc(String(p.review.objective).slice(0, 260)) +
-          (String(p.review.objective).length > 260 ? '……' : '') + '</p>\n'
-        : '') +
+      (summary ? '  <p>' + esc(summary) + '</p>\n' : '') +
+      (reviewObj ? '  <h2>客观评测</h2>\n  <p>' + esc(reviewSummary) + '</p>\n' : '') +
       (p.review && p.review.subjective
         ? '  <h2>主观点评</h2>\n  <p>' + esc(String(p.review.subjective).slice(0, 200)) +
           (String(p.review.subjective).length > 200 ? '……' : '') + '</p>\n'
@@ -147,7 +231,8 @@ function main() {
       '</body>\n</html>\n';
     fs.writeFileSync(path.join(P, file), html, 'utf8');
 
-    feedItems.push({ title: p.name, url: url, desc: p.summary || p.name, year: p.year });
+    /* P2-31：pubDate 取「收录时间」（按 id 稳定 hash 映射到近 90 天），不再用上市年份 */
+    feedItems.push({ title: p.name, url: url, desc: desc, pubDate: catalogDate(p.id) });
   });
 
   /* 孤儿页清理：产品下架/改名后的旧预渲染页删除（防 stale SEO 页混入索引） */
@@ -157,24 +242,25 @@ function main() {
     }
   }
 
-  /* sitemap.xml：首页 + 预渲染页 */
+  /* sitemap.xml：首页 + 预渲染页，P3-42 每条带 lastmod（构建日期 YYYY-MM-DD） */
   const sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map((u) => '  <url><loc>' + esc(u) + '</loc></url>').join('\n') +
+    urls.map((u) => '  <url><loc>' + esc(u.loc) + '</loc><lastmod>' + u.lastmod + '</lastmod></url>').join('\n') +
     '\n</urlset>\n';
   fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sm, 'utf8');
 
-  /* feed.xml：RSS 更新日志通道（问题 46），按预渲染批次生成
-     条目带 pubDate（上市年份）与 permalink guid（问题 72），阅读器可判断更新顺序 */
-  const now = new Date().toUTCString();
+  /* feed.xml：RSS 更新日志通道（问题 46），按预渲染批次生成。
+     P2-31：pubDate 为「收录时间」，按 pubDate 倒序输出（最近的在前），
+     彻底避开 new Date(year,0,1).toUTCString() 在 UTC+8 输出前一年 12/31 的时区错误。 */
+  feedItems.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
   const rss = '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel>\n' +
     '  <title>日理万机 · 数码产品百科全书</title>\n' +
     '  <link>' + SITE + '</link>\n' +
     '  <description>产品更新与新增词条</description>\n' +
-    '  <lastBuildDate>' + now + '</lastBuildDate>\n' +
+    '  <lastBuildDate>' + BUILD_DATE.toUTCString() + '</lastBuildDate>\n' +
     feedItems.slice(0, 30).map((it) =>
       '  <item><title>' + esc(it.title) + '</title><link>' + esc(it.url) + '</link>' +
       '<guid isPermaLink="true">' + esc(it.url) + '</guid>' +
-      (it.year ? '<pubDate>' + new Date(it.year, 0, 1).toUTCString() + '</pubDate>' : '') +
+      '<pubDate>' + it.pubDate.toUTCString() + '</pubDate>' +
       '<description>' + esc(it.desc) + '</description></item>').join('\n') +
     '\n</channel></rss>\n';
   fs.writeFileSync(path.join(DIST, 'feed.xml'), rss, 'utf8');

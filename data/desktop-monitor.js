@@ -14,6 +14,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥17999",
       price: 17999,
+      source: "curated", synthetic: false,
       tags: ["游戏整机", "旗舰性能", "RTX 4080", "360 水冷", "ARGB 灯效"],
       summary: "联想旗舰游戏台式机，酷睿 i9-13900KF 搭配 RTX 4080 旗舰显卡，32GB DDR5 内存与 1TB PCIe 4.0 固态保证流畅。360mm 一体水冷压制高功耗核心，全塔侧透机箱配幻夜 ARGB 灯效，接口与扩展位充足，适合追求 4K 高帧游戏与内容创作的高端玩家。",
       specs: [
@@ -50,6 +51,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥8999",
       price: 8999,
+      source: "curated", synthetic: false,
       tags: ["游戏整机", "主流高配", "光追显卡", "品牌售后", "侧透机箱"],
       summary: "惠普暗影精灵系列主流游戏整机，12 代酷睿 i7 搭配 RTX 30 系显卡，风道设计与侧透机箱兼顾散热与颜值。自带 OMEN 控制中心可调灯效与性能模式，接口布局合理，价格在品牌整机中较为亲民，适合想省心玩 2K 高帧游戏的用户。",
       specs: [
@@ -86,6 +88,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥12999",
       price: 12999,
+      source: "curated", synthetic: false,
       tags: ["创意设计", "静音主机", "简约外观", "扩展丰富", "商务质感"],
       summary: "戴尔 XPS 台式机家族的 2023 款，13 代酷睿与 RTX 40 系显卡可选，面向设计师与家庭高端用户。极简白色机箱内部风道优化，运行安静；接口与硬盘扩展位充足，支持内存与显卡后续升级，是兼顾颜值、静音与生产力的全能型整机。",
       specs: [
@@ -122,6 +125,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "¥10999 起",
       price: 10999,
+      source: "curated", synthetic: false,
       tags: ["一体机", "4.5K 视网膜屏", "M3 芯片", "超薄设计", "macOS"],
       summary: "iMac 24 英寸 2023 款升级 M3 芯片，8 核 CPU 与最高 10 核 GPU，性能较前代明显提升。24 英寸 4.5K 视网膜显示屏色彩出众，11.5 毫米超薄机身配多彩配色，六扬声器与三麦克风系统齐全，适合家庭、教育与轻创作用户一体式入手。",
       specs: [
@@ -158,6 +162,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "¥32999 起",
       price: 32999,
+      source: "curated", synthetic: false,
       tags: ["专业创作", "M2 Ultra", "小型主机", "视频剪辑", "静音"],
       summary: "Mac Studio 2023 款顶配搭载 M2 Ultra，24 核 CPU 与最高 76 核 GPU，统一内存最高 192GB，专为影视后期、3D 渲染与大型开发工程打造。巴掌大的机身塞满雷雳接口与万兆网口，能效出色、噪音极低，是专业工作室的静音性能怪兽。",
       specs: [
@@ -194,6 +199,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "¥4499 起",
       price: 4499,
+      source: "curated", synthetic: false,
       tags: ["迷你主机", "入门创作", "低功耗", "macOS", "静音"],
       summary: "2023 款 Mac mini 搭载 M2 芯片，8 核 CPU 与 10 核 GPU，性能足以覆盖办公、学习与轻度剪辑。巴掌大的银色机身接口齐全，运行安静且功耗极低，是体验 macOS 桌面生态门槛最低的选择之一，也常被用作家庭服务器与开发备用机。",
       specs: [
@@ -230,6 +236,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥14999",
       price: 14999,
+      source: "curated", synthetic: false,
       tags: ["游戏整机", "ROG 信仰", "电竞灯效", "高刷畅玩", "侧透机箱"],
       summary: "ROG 光魔 G35 是华硕旗舰游戏整机，12 代酷睿 i9 与 RTX 30 系显卡组合，专为高刷电竞与 3A 大作打造。机箱采用风刃散热设计与大面积侧透，ROG 神光同步灯效支持联动外设，自带奥创控制中心，适合看重品牌信仰与整机调校的玩家。",
       specs: [
@@ -266,6 +273,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥16999",
       price: 16999,
+      source: "curated", synthetic: false,
       tags: ["游戏整机", "外星人", "环形灯带", "13 代酷睿", "高效散热"],
       summary: "Aurora R16 采用全新 Legend 设计语言，机箱较前代更紧凑，环形尾灯与侧透兼顾颜值与散热风道。13 代酷睿与 RTX 40 系显卡组合，标配一体水冷，通过 Alienware 控制中心可精细调节灯效与性能，是追求品牌个性与整机体验的高端游戏主机。",
       specs: [
@@ -302,6 +310,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥3099",
       price: 3099,
+      source: "curated", synthetic: false,
       tags: ["迷你主机", "锐龙 7", "低功耗", "双网口", "高性价比"],
       summary: "零刻 SER7 搭载锐龙 7 7840HS 标压处理器与 Radeon 780M 核显，巴掌大机身可流畅办公、修图与轻度游戏。支持双 M.2 硬盘与双 2.5G 网口，USB4 接口可外接显卡坞，功耗低、噪音小，是家庭与办公桌面的高性价比迷你主机。",
       specs: [
@@ -338,6 +347,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2699",
       price: 2699,
+      source: "curated", synthetic: false,
       tags: ["迷你主机", "锐龙 9", "USB4", "静音", "高性价比"],
       summary: "铭凡 UM790 Pro 搭载锐龙 9 7940HS 处理器与 Radeon 780M 核显，性能在迷你主机中属第一梯队。全金属机身散热良好，双 USB4 接口支持显卡坞与高速存储，双 2.5G 网口适合软路由与虚拟化，是追求性能与体积平衡用户的热门选择。",
       specs: [
@@ -382,6 +392,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥5999",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["电竞显示器", "OLED", "240Hz", "2K", "0.03ms"],
       summary: "LG 27 英寸旗舰电竞 OLED 显示器，2K 分辨率配 240Hz 刷新率与 0.03ms 响应，原生 10bit 面板带来极致色彩与近乎无限对比度。HDR10 峰值亮度高，防眩光涂层实用，是追求极致响应速度与画质的电竞玩家的梦幻装备。",
       specs: [
@@ -417,6 +428,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥3999",
       price: 3999,
+      source: "curated", synthetic: false,
       tags: ["商务显示器", "4K", "IPS Black", "Type-C 90W", "扩展坞"],
       summary: "戴尔 UltraSharp 27 英寸 4K 商务旗舰，IPS Black 面板对比度翻倍至 2000:1，黑色更深邃。一根 Type-C 线完成 90W 供电、数据与视频传输，内置 RJ45 网口与 KVM 切换，接口丰富的它本身就是一台桌面扩展坞，办公创作皆宜。",
       specs: [
@@ -452,6 +464,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥7999",
       price: 7999,
+      source: "curated", synthetic: false,
       tags: ["电竞显示器", "QD-OLED", "34 英寸带鱼屏", "175Hz", "曲面"],
       summary: "三星玄龙骑士 OLED G8 采用 34 英寸 21:9 QD-OLED 曲面屏，3440×1440 分辨率配 175Hz 刷新率，1800R 曲率沉浸感强。1000 尼特峰值亮度与量子点色彩表现惊艳，机身仅 3.9mm 纤薄，还内置智能系统，是带鱼屏电竞的颜值与画质担当。",
       specs: [
@@ -487,6 +500,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥4999",
       price: 4999,
+      source: "curated", synthetic: false,
       tags: ["电竞显示器", "240Hz", "2K", "G-Sync", "Fast IPS"],
       summary: "ROG 旗舰电竞显示器，27 英寸 2K Fast IPS 面板配 240Hz 刷新率与 1ms 响应，内置 G-Sync 专用处理器与 NVIDIA Reflex 延迟分析器。出厂预校色 ΔE<2，95% DCI-P3 色域兼顾画质与速度，是 FPS 硬核玩家的经典之选。",
       specs: [
@@ -522,6 +536,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥2999",
       price: 2999,
+      source: "curated", synthetic: false,
       tags: ["专业显示器", "4K", "设计制图", "出厂校色", "Type-C 65W"],
       summary: "明基专为设计师打造的 27 英寸 4K 显示器，99% sRGB 与 Rec.709 色域并附出厂校色报告，色彩准确可靠。支持 M-Book 苹果色彩模式、CAD/CAM 与动画设计模式，Type-C 65W 供电与 KVM 功能贴心，是平面设计与影像创作者的务实之选。",
       specs: [
@@ -557,6 +572,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥999",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["电竞显示器", "入门电竞", "144Hz", "IPS", "高性价比"],
       summary: "AOC 千元级电竞常青树，23.8 英寸 IPS 面板配 144Hz 刷新率与 1ms MPRT 响应，126% sRGB 色域色彩饱满。支持 FreeSync 兼容 G-Sync，窄边框设计适合组双屏，花小钱就能获得流畅高刷体验，是入门电竞玩家的性价比首选。",
       specs: [
@@ -592,6 +608,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥1299",
       price: 1299,
+      source: "curated", synthetic: false,
       tags: ["电竞显示器", "2K", "165Hz", "IPS", "高性价比"],
       summary: "小米 27 英寸 2K 电竞显示器，IPS 面板配 165Hz 高刷新率与 1ms 响应，95% DCI-P3 色域与 HDR10 让画面更鲜活。支持 Adaptive-Sync 防撕裂，Type-C 接口可反向供电（约），价格亲民，是主流玩家升级 2K 高刷的高性价比之选。",
       specs: [
@@ -627,6 +644,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "¥11499 起",
       price: 11499,
+      source: "curated", synthetic: false,
       tags: ["专业显示器", "5K", "macOS 生态", "内置摄像头音箱", "全铝机身"],
       summary: "苹果 27 英寸 5K 视网膜显示屏，5120×2880 分辨率与 600 尼特亮度，P3 广色域原彩显示，macOS 像素级完美适配。内置 A13 芯片、1200 万像素人物居中摄像头与六扬声器系统，一根雷雳线连接 Mac，是 Mac 用户梦寐以求的桌面搭档。",
       specs: [
@@ -662,6 +680,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥1899",
       price: 1899,
+      source: "curated", synthetic: false,
       tags: ["商务显示器", "4K", "Type-C 65W", "人体工学", "护眼"],
       summary: "飞利浦 27 英寸 4K 商务显示器，IPS 面板覆盖 100% sRGB 并出厂校色，画面细腻色彩准确。Type-C 65W 单线连接笔记本，人体工学支架支持多向调节，低蓝光不闪屏护眼技术齐全，价格在 4K 商务屏中十分亲民，适合办公与家用。",
       specs: [
@@ -697,6 +716,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1499",
       price: 1499,
+      source: "curated", synthetic: false,
       tags: ["专业显示器", "4K", "广色域", "Type-C 65W", "高性价比"],
       summary: "联合创新主打性价比的 27 英寸 4K 创作显示器，IPS 面板覆盖约 100% sRGB 与 97% DCI-P3，出厂校色 ΔE<2。400 尼特亮度支持 HDR400，Type-C 65W 单线直连笔记本，是预算有限的摄影后期与设计用户的高性价比之选。",
       specs: [

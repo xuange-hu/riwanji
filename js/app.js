@@ -36,6 +36,17 @@ async function renderRoute(keepScroll) {
   /* keepScroll：局部刷新（收藏/对比态变更）保留滚动位置，不把用户甩回页首（问题 9） */
   const savedY = keepScroll ? (window.scrollY || window.pageYOffset || 0) : 0;
 
+  /* 问题 P2-23：局部刷新会整块替换 app.innerHTML，销毁当前焦点元素。
+     渲染前记录焦点元素签名，渲染后按签名恢复，避免焦点掉回 body。 */
+  let focusSig = null;
+  if (keepScroll && document.activeElement && document.activeElement !== document.body && document.activeElement !== app) {
+    const ae = document.activeElement;
+    if (ae.id) focusSig = { id: ae.id };
+    else if (ae.getAttribute && ae.getAttribute('data-action')) {
+      focusSig = { action: ae.getAttribute('data-action'), id: ae.getAttribute('data-id') };
+    }
+  }
+
   /* 路由切换：滚动复位 + 轻量加载骨架，避免白屏闪烁 */
   if (!keepScroll && window.scrollTo) window.scrollTo(0, 0);
   app.classList.remove('page-enter');
@@ -48,13 +59,19 @@ async function renderRoute(keepScroll) {
     timeline: '产品时间线', favorites: '我的收藏', categories: '品类大全',
     brands: '品牌专区', about: '关于本站'
   };
-  document.title = (head === 'product' ? (safeDecode(r.parts[1]) + ' —— 日理万机')
+  const shortTitle = head === 'product' ? safeDecode(r.parts[1])
+    : head === 'brand' ? (safeDecode(r.parts[1]) + ' 品牌馆')
+      : (TITLES[head] || '页面不存在');
+  const newTitle = (head === 'product' ? (safeDecode(r.parts[1]) + ' —— 日理万机')
     : head === 'brand' ? (safeDecode(r.parts[1]) + ' 品牌馆 —— 日理万机')
       : (TITLES[head] || '页面不存在') + (TITLES[head] ? ' —— 日理万机' : ''));
 
-  /* 路由播报（问题 17）：aria-live 告知读屏用户页面已切换 */
+  /* 问题 P3-2：先过竞态校验再写标题，防止旧异步请求晚到把标题改回旧路由；
+     问题 P3-41：路由播报用短标题，避免与 document.title 完全重复造成冗余播报。 */
+  if (tk !== ROUTE_TOKEN) return;
+  document.title = newTitle;
   const live = document.getElementById('route-live');
-  if (live) live.textContent = document.title;
+  if (live) live.textContent = shortTitle;
 
   try {
     let html = '';
@@ -71,7 +88,8 @@ async function renderRoute(keepScroll) {
     else if (head === 'brand') { html = await renderBrand(safeDecode(r.parts[1]), r.query); navKey = 'brands'; }
     else if (head === 'about') { html = await renderAbout(); navKey = 'about'; }
     else {
-      html = '<div class="empty"><span class="big">🧭</span>页面不存在。<br />' +
+      /* P3-32：装饰 emoji 隔离读屏；P2-25：空态补语义化 h1 */
+      html = '<div class="empty"><span class="big" aria-hidden="true">🧭</span><h1>页面不存在</h1>' +
         '<a class="btn btn-primary" href="#/" style="margin-top:14px">回到首页</a></div>';
       navKey = '';
     }
@@ -80,7 +98,8 @@ async function renderRoute(keepScroll) {
     setActiveNav(navKey);
   } catch (e) {
     if (tk !== ROUTE_TOKEN) return;
-    app.innerHTML = '<div class="empty"><span class="big">⚠️</span>页面加载失败：' + esc(e.message) + '</div>';
+    /* P3-32 emoji 隔离；P2-25 空态补 h1 */
+    app.innerHTML = '<div class="empty"><span class="big" aria-hidden="true">⚠️</span><h1>页面加载失败</h1>' + esc(e.message) + '</div>';
   }
   if (tk !== ROUTE_TOKEN) return;
 
@@ -93,6 +112,21 @@ async function renderRoute(keepScroll) {
      键盘/读屏用户不必每次重穿页头；局部刷新（keepScroll）不抢焦点 */
   if (!keepScroll && !ROUTE_FIRST && app.focus) {
     try { app.focus({ preventScroll: true }); } catch (e) { app.focus(); }
+  }
+  /* P2-23：局部刷新后按签名恢复焦点（收藏/对比/笔记删除/发布等按钮），
+     焦点元素被 innerHTML 销毁时兜底回到 #app，不再掉到 body 丢失键盘位置 */
+  if (keepScroll && focusSig) {
+    let target = null;
+    if (focusSig.id) target = document.getElementById(focusSig.id);
+    if (!target && focusSig.action) {
+      target = $$('[data-action="' + focusSig.action + '"]').filter((el) =>
+        el.getAttribute('data-id') === focusSig.id)[0] || null;
+    }
+    if (target && target.focus) {
+      try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+    } else if (app.focus) {
+      try { app.focus({ preventScroll: true }); } catch (e) { app.focus(); }
+    }
   }
   ROUTE_FIRST = false;
   refreshFavButtons();
@@ -114,7 +148,9 @@ function revealOnScroll() {
       }
     });
   }, { rootMargin: '60px 0px' });
-  $$('#app .card, #app .tl-item, #app .review-card').forEach((el, i) => {
+  /* P1-2：品牌专区卡片（.brand-card）模板自带 reveal 但旧选择器未包含，
+     导致 revealed 永不添加、24 张卡片永久透明。这里纳入观察范围。 */
+  $$('#app .card, #app .tl-item, #app .review-card, #app .brand-card').forEach((el, i) => {
     el.classList.add('reveal');
     el.style.transitionDelay = Math.min(i % 8, 7) * 40 + 'ms';
     revealObserver.observe(el);
@@ -158,9 +194,11 @@ async function exportProducts(ids, kind) {
 window.__imgFail = function (img) {
   const p = IMG_REGISTRY[img.getAttribute('data-pid')];
   if (!p) return;
+  /* P2-3：若当前 src 已是海报仍失败，直接停止，避免 data: URI 反复触发死循环。
+     不再永久摘除 data-pid（旧实现摘标后图集切换主图二次失败就无兜底）。 */
+  if (img.getAttribute('data-fallback') === '1') return;
   if (window.__rlwjDiag) window.__rlwjDiag.imgFail++;
-  /* 防止海报也失败时死循环：先摘掉 data-pid（委托监听按它识别目标，摘掉后不再受理） */
-  img.removeAttribute('data-pid');
+  img.setAttribute('data-fallback', '1');
   const poster = posterOf(p);
   img.src = poster;
   /* 同步 data-src：图集缩略图回退后，点击切换不再带出失效 URL */
@@ -217,22 +255,49 @@ function bindGlobalEvents() {
     };
     if (mq.addEventListener) mq.addEventListener('change', (e) => applySys(e.matches));
   }
-  /* 多标签同步（问题 28）：其他标签页改收藏/对比/主题/笔记时本页跟随 */
+  /* 问题 P3-2：document.title 更新 + aria-live 双重播报已改为短标题（见 renderRoute） */
+
+  /* 多标签同步（问题 28）：其他标签页改收藏/对比/主题/笔记时本页跟随。
+     P2-2：主题类变化只更新外观不重绘 DOM（旧实现无条件 renderRoute 打断输入、
+     销毁未提交笔记）；P3-6：补同步 showDemo/recent。 */
+  const dirtyForm = () => {
+    const f = $('#review-form');
+    if (!f) return false;
+    return !!(f.querySelector('[name="name"]').value.trim() ||
+      f.querySelector('[name="text"]').value.trim() || f.querySelector('[name="score"]').value);
+  };
   window.addEventListener('storage', (e) => {
     if (!e.key || e.key.indexOf('rlwj:') !== 0) return;
     try {
       const v = e.newValue == null ? null : JSON.parse(e.newValue);
       const k = e.key.slice(5);
-      if (k === 'theme' && v) {
-        state.theme = v;
-        document.documentElement.setAttribute('data-theme', v);
+      /* 主题类：只同步外观，绝不重绘（避免打断输入 / 丢失未提交笔记） */
+      if (k === 'theme') {
+        if (typeof v === 'string' && (v === 'light' || v === 'dark')) {
+          state.theme = v;
+          document.documentElement.setAttribute('data-theme', v);
+        }
         syncThemeBtn();
-      } else if (k === 'themeAuto') {
-        syncThemeBtn(); /* 问题 68：跨标签同步自动/手动模式 */
-      } else if (k === 'favorites' && v) { state.favorites = v; refreshFavButtons(); }
+        return;
+      }
+      if (k === 'themeAuto') { syncThemeBtn(); return; }
+      if (k === 'recent') return; /* 最近搜索只在首页展示，交给下次导航读取，不打断当前输入 */
+
+      if (k === 'showDemo' && typeof v === 'boolean') {
+        state.showDemo = v;
+        if (v) ensureBulk().then(() => renderRoute(true), () => renderRoute(true));
+        else renderRoute(true);
+        return;
+      }
+      if (k === 'favorites' && v) { state.favorites = v; refreshFavButtons(); }
       else if (k === 'compare' && v) { state.compare = v; refreshCmpButtons(); renderCompareTray(); }
       else if (k === 'reviews' && v) { state.reviews = v; }
       else return;
+
+      /* P2-2：仅收藏/对比/笔记页需要重绘列表；脏表单存在时跳过，保护未提交内容 */
+      const head = currentRoute().parts[0];
+      if (['favorites', 'compare', 'product'].indexOf(head) === -1) return;
+      if (dirtyForm()) return;
       renderRoute(true);
     } catch (err) { /* 忽略坏数据 */ }
   });
@@ -271,6 +336,9 @@ function bindGlobalEvents() {
 
   function renderSuggest(items, q) {
     box.setAttribute('role', 'listbox');
+    /* P2-8：重新渲染建议列表时统一清掉上一次的 aria-activedescendant，
+       否则读屏会把键盘焦点播报成已不存在的旧选项 */
+    if (input.removeAttribute) input.removeAttribute('aria-activedescendant');
     box.innerHTML = items.map((p, i) =>
       '<div class="suggest-item" role="option" id="sug-opt-' + i + '" aria-selected="false" data-goto="#/product/' + esc(p.id) + '">' +
         '<span aria-hidden="true">' + catIconOf(p) + '</span>' +
@@ -311,7 +379,13 @@ function bindGlobalEvents() {
       renderSuggest(hits, q);
     }, 120);
   });
-  input.addEventListener('blur', () => { setTimeout(hideSuggest, 180); });
+  /* P3-8：保存 blur 定时器 id，重复 focus/blur 时先清除，避免叠加冗余调度 */
+  let blurTimer = null;
+  input.addEventListener('focus', () => { if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; } });
+  input.addEventListener('blur', () => {
+    if (blurTimer) clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => { hideSuggest(); blurTimer = null; }, 180);
+  });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); moveSuggest(1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); moveSuggest(-1); }
@@ -320,9 +394,12 @@ function bindGlobalEvents() {
       const items = box.querySelectorAll('.suggest-item');
       if (sugIndex >= 0 && items[sugIndex]) {
         e.preventDefault();
+        const gh = items[sugIndex].getAttribute('data-goto') || '';
+        /* P3-3：键盘选中「查看全部结果」同样写入最近搜索，与鼠标点击行为一致 */
+        if (gh.indexOf('#/products?q=') === 0) pushRecent(safeDecode(gh.slice('#/products?q='.length)));
         hideSuggest();
         input.blur();
-        location.hash = items[sugIndex].getAttribute('data-goto');
+        location.hash = gh;
       } else if (input.value.trim()) {
         hideSuggest();
         pushRecent(input.value.trim());
@@ -344,6 +421,18 @@ function bindGlobalEvents() {
 
   // 全局委托点击
   document.addEventListener('click', (e) => {
+    /* P1-1：skip-link 的 href="#app" 会被 hashchange 当成路由 'app' 落入 404。
+       拦截后直接聚焦 #app（已有 tabindex=-1），不污染 URL。 */
+    const skip = e.target.closest('[data-skip]');
+    if (skip) {
+      e.preventDefault();
+      const target = document.getElementById(skip.getAttribute('data-skip')) || $('#app');
+      if (target && target.focus) {
+        try { target.focus({ preventScroll: true }); } catch (err) { target.focus(); }
+      }
+      return;
+    }
+
     const goto = e.target.closest('[data-goto]');
     if (goto) {
       const gh = goto.getAttribute('data-goto');
@@ -417,6 +506,8 @@ function bindGlobalEvents() {
         const src = act.getAttribute('data-src');
         const main = document.getElementById('gallery-main-img');
         if (main && src) {
+          /* P2-3：切换主图 src 时清除兜底标记，让新图失败后能再次回退海报 */
+          main.removeAttribute('data-fallback');
           main.src = src;
           (act.parentNode || document).querySelectorAll('.gallery-thumb').forEach((t) => {
             t.classList.remove('active');
@@ -506,7 +597,8 @@ function bindGlobalEvents() {
         return;
       }
       if (action === 'copy-link') {
-        const url = shareBase() + '#/product/' + id;
+        /* P3-4：product id 编码，避免特殊字符破坏 hash 结构 */
+        const url = shareBase() + '#/product/' + encodeURIComponent(id);
         const done = () => toast('已复制产品链接');
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(done, () => fallbackCopy(url, done));
@@ -587,6 +679,7 @@ function bindGlobalEvents() {
 
   // 对比页搜索框（输入即建议，点选加入）+ 参数速查过滤
   let cmpTimer = null;
+  let cmpSeq = 0; /* P2-7：与全局搜索 sugSeq 同理，防旧请求晚返回覆盖新建议 */
   document.addEventListener('input', (e) => {
     if (e.target.id === 'spec-filter') {
       const t = e.target.value.trim().toLowerCase();
@@ -616,10 +709,12 @@ function bindGlobalEvents() {
     const q = e.target.value.trim();
     const box = $('#cmp-suggest');
     if (!box) return;
-    if (!q) { box.innerHTML = ''; return; }
+    if (!q) { cmpSeq++; box.innerHTML = ''; return; }
+    const seq = ++cmpSeq;
     cmpTimer = setTimeout(async () => {
       let hits = [];
       try { hits = await Q.suggest(q); } catch (err) { box.innerHTML = ''; return; } /* 问题 18：失败不留旧联想 */
+      if (seq !== cmpSeq) return; /* P2-7：丢弃过期响应，防误加入产品 */
       box.innerHTML = hits.length
         ? '<div class="suggest" style="position:static;max-width:560px;margin-bottom:14px">' + hits.map((p) =>
             /* 问题 32：建议项可聚焦（role=button + tabindex），Enter/Space 走全局动作委托 */
@@ -683,9 +778,10 @@ function bindGlobalEvents() {
 
 async function boot() {
   // 1) 先探测在线 API
-  /* API 探测：静态托管包（build-dist 注入 RLWJ_API=false）直接跳过，避免每次启动一个必现 404。
-     问题 2：部署包可用 ?api=1 强制开启在线模式（本机跑 tools/serve.js 时验证双模） */
-  if (window.RLWJ_API !== false || /[?&]api=1/.test(location.search || '')) {
+  /* API 探测：静态托管包（build-dist 注入 RLWJ_API=false）彻底跳过，避免每次启动一个必现 404。
+     P2-19：移除 ?api=1 强制开启分支——旧实现任何访客加参数即可探测 API，
+     静态托管多一次 404、双模部署可被强制切到联网模式。需要验证在线模式请用源码版（RLWJ_API 未冻结）。 */
+  if (window.RLWJ_API !== false) {
     try {
       const meta = await api.get('api/meta');
       if (meta && typeof meta.total === 'number') {

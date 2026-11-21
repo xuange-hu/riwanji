@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥4,499 起（12GB+256GB）",
       price: 4499,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "天玑9200", "潜望长焦", "哈苏影像", "三主摄"],
       summary: "OPPO 2023 年标准版旗舰，天玑 9200 平台，后置三摄全用 5000 万像素索尼 IMX890，主摄、超广角、潜望长焦齐备，把 Pro 级的全主摄影像体验下放到标准版。",
       specs: [
@@ -75,6 +76,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥5,999 起（12GB+256GB）",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "骁龙8Gen2", "1英寸主摄", "哈苏影像", "2K屏"],
       summary: "OPPO 2023 年影像机皇，骁龙 8 Gen 2 配 1 英寸大底 IMX989 主摄与双 IMX890 副摄，2K 高亮屏、100W+50W 双快充、IP68 齐全，是当年综合实力最强的安卓旗舰之一。",
       specs: [
@@ -157,6 +159,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥5,999 起（12GB+256GB）",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "骁龙8Gen2", "1英寸主摄", "徕卡影像", "四摄"],
       summary: "小米与徕卡深度合作的影像旗舰，骁龙 8 Gen 2 配 1 英寸可变光圈主摄加三颗 IMX858 副摄，覆盖 12–120mm 全焦段，专为移动摄影爱好者打造的口袋相机。",
       specs: [
@@ -220,6 +223,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥8,999 起（8GB+256GB，国行）",
       price: 8999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "骁龙8Gen2", "2亿像素", "S Pen", "10倍光变"],
       summary: "三星 2023 年安卓机皇，骁龙 8 Gen 2 for Galaxy 加 2 亿像素主摄，独享 10 倍光学潜望与内置 S Pen，屏幕、影像、生产力无短板的全能旗舰。",
       specs: [
@@ -310,6 +314,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥9,999 起（256GB，国行）",
       price: 9999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "A17 Pro", "钛金属", "5倍光变", "USB-C"],
       summary: "苹果 2023 年顶级旗舰，首款 3nm 芯片 A17 Pro 加钛金属机身，换装 USB-C 与 5 倍四重反射棱镜长焦，是影像、性能、生态最完整的 iPhone。",
       specs: [
@@ -372,6 +377,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥6,999（12GB+512GB）",
       price: 6999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "麒麟9000S", "卫星通信", "鸿蒙", "可变光圈"],
       summary: "华为回归 5G 的里程碑之作，麒麟 9000S 加鸿蒙 4.0，支持天通卫星通话与北斗卫星消息，十档可变光圈主摄配潜望长焦，通信与影像俱强。",
       specs: [
@@ -434,6 +440,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥4,999 起（12GB+256GB）",
       price: 4999,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "天玑9300", "蔡司影像", "APO长焦", "蓝海电池"],
       summary: "vivo 与蔡司联名的影像旗舰，天玑 9300 全大核平台，蔡司 APO 浮动长焦加自研 V3 影像芯片，5400mAh 蓝海电池续航突出，综合体验均衡。",
       specs: [
@@ -496,6 +503,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "首发约 ¥4,299 起（12GB+256GB）",
       price: 4299,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "骁龙8Gen3", "2K东方屏", "哈苏影像", "潜望长焦"],
       summary: "一加十周年旗舰，骁龙 8 Gen 3 配 2K 东方屏与 5400mAh 大电池，哈苏全焦段三摄含 6400 万潜望长焦，配置全面无短板，性价比突出的水桶旗舰。",
       specs: [
@@ -558,6 +566,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "首发约 ¥5,699 起（12GB+256GB）",
       price: 5699,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "骁龙8Gen3", "鹰眼相机", "卫星通信", "青海湖电池"],
       summary: "荣耀 2024 年开年旗舰，骁龙 8 Gen 3 配 1.8 亿像素潜望长焦与可变光圈主摄，第二代青海湖电池 5600mAh，护眼屏与卫星通信加持，综合体验扎实。",
       specs: [
@@ -620,6 +629,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "海外首发约 $999 起（约合 ¥7,200，未在大陆正式发售）",
       price: 7200,
+      source: "curated", synthetic: false,
       tags: ["旗舰", "Tensor G3", "计算摄影", "原生Android", "AI"],
       summary: "谷歌 2023 年亲儿子旗舰，Tensor G3 加计算摄影调校，5000 万主摄配 5 倍潜望长焦，内置温度传感器，承诺 7 年系统更新，原生 Android 标杆。",
       specs: [

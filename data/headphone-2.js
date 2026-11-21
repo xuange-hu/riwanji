@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1985,
       priceText: "约 ¥999（参考价）",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["监听", "封闭式", "经典", "头戴"],
       summary: "录音棚常青监听标杆，低频扎实声场宽广",
       specs: [
@@ -53,6 +54,7 @@ window.DB_CHUNKS.push({
       year: 1988,
       priceText: "约 ¥1399（参考价）",
       price: 1399,
+      source: "curated", synthetic: false,
       tags: ["监听", "专业", "轻量", "DJ"],
       summary: "行业级轻量监听，新闻采集与 DJ 的标配",
       specs: [
@@ -93,6 +95,7 @@ window.DB_CHUNKS.push({
       year: 2005,
       priceText: "约 ¥1999（参考价）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["HiFi", "开放式", "头戴", "古典"],
       summary: "开放式动圈旗舰，开阔细腻的古典利器",
       specs: [
@@ -133,6 +136,7 @@ window.DB_CHUNKS.push({
       year: 2009,
       priceText: "约 ¥799（参考价）",
       price: 799,
+      source: "curated", synthetic: false,
       tags: ["监听", "封闭式", "录音室", "混音"],
       summary: "平直耐听的录音室监听，混音工作务实之选",
       specs: [
@@ -173,6 +177,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥1698（参考价）",
       price: 1698,
+      source: "curated", synthetic: false,
       tags: ["潮流", "封闭式", "头戴", "坚固"],
       summary: "军规耐用的潮流头戴，低频冲击力十足",
       specs: [
@@ -213,6 +218,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥999（参考价）",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["监听", "封闭式", "可换线", "畅销"],
       summary: "千元级监听常青树，出街录音两相宜",
       specs: [
@@ -253,6 +259,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥899（参考价）",
       price: 899,
+      source: "curated", synthetic: false,
       tags: ["HiFi", "开放式", "美系声", "人声"],
       summary: "热情洋溢的美式开放耳机，人声感染力强",
       specs: [
@@ -293,6 +300,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥3498（首发参考价）",
       price: 3498,
+      source: "curated", synthetic: false,
       tags: ["无线降噪", "北欧设计", "头戴", "时尚"],
       summary: "北欧设计的优雅降噪头戴，质感至上",
       specs: [
@@ -333,6 +341,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥499（参考价）",
       price: 499,
+      source: "curated", synthetic: false,
       tags: ["圈铁", "入耳式", "国产之光", "Hi-Res"],
       summary: "五百元级一圈二铁，国产耳机国际化标杆",
       specs: [
@@ -373,6 +382,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥399（参考价）",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["日系", "入耳式", "温润", "轻量"],
       summary: "四百元日系小钢炮，温润宽松的舒适之声",
       specs: [
@@ -413,6 +423,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥1999（首发参考价）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["真无线", "主动降噪", "半开放", "通话"],
       summary: "半开放降噪真无线，舒适与技术的平衡之作",
       specs: [
@@ -453,6 +464,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "¥4399（国行首发价）",
       price: 4399,
+      source: "curated", synthetic: false,
       tags: ["无线降噪", "计算音频", "头戴", "生态"],
       summary: "计算音频的头戴旗舰，生态体验无缝流转",
       specs: [
@@ -493,6 +505,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥1699（参考价）",
       price: 1699,
+      source: "curated", synthetic: false,
       tags: ["国产HiFi", "圈铁", "入耳式", "可换线"],
       summary: "千元级一圈四铁，国产科学调音代表作",
       specs: [
@@ -533,6 +546,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥699（参考价）",
       price: 699,
+      source: "curated", synthetic: false,
       tags: ["平板振膜", "开放式", "HiFi", "入门"],
       summary: "七百元平板振膜，入门体验平板声的捷径",
       specs: [
@@ -573,6 +587,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2499（参考价）",
       price: 2499,
+      source: "curated", synthetic: false,
       tags: ["真无线", "旗舰", "日系", "音质优先"],
       summary: "音质优先的日系旗舰真无线，声场罕见",
       specs: [

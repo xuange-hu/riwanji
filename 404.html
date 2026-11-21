@@ -3,21 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- P1-3：静态托管无承载层安全头时的 meta 兜底；404 页无需任何脚本，script-src 'none' 最严格且 file:// 兼容 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <!-- P3-49：错误页不被索引，避免 /404.html 返回 200 收进结果 -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://xuange-hu.github.io/riwanji/" />
   <title>页面不存在 —— 日理万机</title>
-  <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: #0b1020; color: #e8ecf6; text-align: center; }
-    a { color: #5b8cff; }
-    .box { padding: 40px 24px; }
-    .big { font-size: 56px; line-height: 1; }
-    h1 { font-size: 22px; margin: 16px 0 8px; }
-    p { color: #9aa7bd; margin: 0 0 22px; }
-    .btn { display: inline-block; padding: 10px 22px; border-radius: 12px;
-      /* 问题 39：白字承载面换深端渐变（对白字 ≥4.5:1），原 #5b8cff→#22d3ee 仅 3.16:1/1.81:1 */
-      background: linear-gradient(120deg, #2f5fd0 0%, #0e7490 100%); color: #fff;
-      text-decoration: none; font-weight: 700; }
-  </style>
+  <!-- P3-18：内联样式外联，严格 CSP 下 404 页样式仍生效 -->
+  <link rel="stylesheet" href="css/404.css" />
 </head>
 <body>
   <!-- 问题 65：内容包进 <main> 地标；问题 78：装饰 emoji 对读屏隐藏 -->

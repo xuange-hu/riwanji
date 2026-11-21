@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1984,
       priceText: "约 ¥12000（当年机身价估算）",
       price: 12000,
+      source: "curated", synthetic: false,
       tags: ["旁轴", "胶片", "经典", "手动"],
       summary: "徕卡旁轴里程碑，内置测光的经典 M 机身。",
       specs: [
@@ -46,6 +47,7 @@ window.DB_CHUNKS.push({
       year: 1960,
       priceText: "约 ¥3500（当年售价估算）",
       price: 3500,
+      source: "curated", synthetic: false,
       tags: ["双反", "胶片", "中画幅", "经典"],
       summary: "6×6 双反传世之作，腰平取景的仪式感标杆。",
       specs: [
@@ -79,6 +81,7 @@ window.DB_CHUNKS.push({
       year: 1972,
       priceText: "约 ¥1500（当年机身价估算）",
       price: 1500,
+      source: "curated", synthetic: false,
       tags: ["单反", "胶片", "轻巧", "经典"],
       summary: "开启轻量单反时代的 35mm 经典机型。",
       specs: [
@@ -112,6 +115,7 @@ window.DB_CHUNKS.push({
       year: 1969,
       priceText: "约 ¥3000（当年机身价估算）",
       price: 3000,
+      source: "curated", synthetic: false,
       tags: ["中画幅", "胶片", "单反", "人像"],
       summary: "巨型 6×7 单反，人像虚化的胶片神器。",
       specs: [
@@ -145,6 +149,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥5000（上市价估算）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["卡片机", "便携", "黑卡", "大底"],
       summary: "1 英寸口袋黑卡，卡片机的画质标杆。",
       specs: [
@@ -178,6 +183,7 @@ window.DB_CHUNKS.push({
       year: 1982,
       priceText: "约 ¥2500（当年机身价估算）",
       price: 2500,
+      source: "curated", synthetic: false,
       tags: ["单反", "胶片", "机械", "经典"],
       summary: "1/4000 秒机械快门，胶片单反的可靠代表。",
       specs: [
@@ -211,6 +217,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥11700（上市机身价）",
       price: 11700,
+      source: "curated", synthetic: false,
       tags: ["微单", "APS-C", "防抖", "复古"],
       summary: "带五轴防抖的复古旗舰，照片视频双修。",
       specs: [
@@ -245,6 +252,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥6300（上市价估算）",
       price: 6300,
+      source: "curated", synthetic: false,
       tags: ["随身机", "APS-C", "街拍", "定焦"],
       summary: "口袋级 APS-C 定焦，街拍摄影师的挚爱。",
       specs: [
@@ -279,6 +287,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥7500（上市价估算）",
       price: 7500,
+      source: "curated", synthetic: false,
       tags: ["小众", "Foveon", "画质", "冷门"],
       summary: "Foveon 三层感光小众机身，色彩独特的偏科生。",
       specs: [
@@ -312,6 +321,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥12000（上市机身价）",
       price: 12000,
+      source: "curated", synthetic: false,
       tags: ["微单", "视频", "M4/3", "Vlog"],
       summary: "视频机常青树，4K 10-bit 内录先驱。",
       specs: [
@@ -346,6 +356,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥17500（上市价估算）",
       price: 17500,
+      source: "curated", synthetic: false,
       tags: ["电影机", "6K", "视频", "性价比"],
       summary: "消费价位的 6K 电影机，独立制作利器。",
       specs: [
@@ -380,6 +391,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥3400（参考价估算）",
       price: 3400,
+      source: "curated", synthetic: false,
       tags: ["运动相机", "防水", "5.3K", "防抖"],
       summary: "5.3K 加 GP2 芯片，全能运动相机代表。",
       specs: [
@@ -413,6 +425,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥2500（上市价）",
       price: 2500,
+      source: "curated", synthetic: false,
       tags: ["云台相机", "口袋", "防抖", "Vlog"],
       summary: "三轴云台塞进口袋，随手拍也稳如滑轨。",
       specs: [
@@ -447,6 +460,7 @@ window.DB_CHUNKS.push({
       year: 1990,
       priceText: "约 ¥4500（当年售价估算）",
       price: 4500,
+      source: "curated", synthetic: false,
       tags: ["便携", "胶片", "旁轴", "奢华"],
       summary: "钛壳蔡司口袋胶片机，便携机的奢华巅峰。",
       specs: [
@@ -481,6 +495,7 @@ window.DB_CHUNKS.push({
       year: 1974,
       priceText: "约 ¥5000（当年机身价估算）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["中画幅", "胶片", "模块化", "经典"],
       summary: "6×6 模块化中画幅系统，登月同门的传奇。",
       specs: [

@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥529（4GB 版）",
       price: 529,
+      source: "curated", synthetic: false,
       tags: ["树莓派", "单板计算机", "4K", "PCIe", "Linux"],
       summary: "树莓派第五代旗舰单板机，Broadcom BCM2712 四核 Cortex-A76 主频 2.4GHz，性能较上代翻倍，首次提供 PCIe 2.0 x3 接口与双 4K HDMI，是创客与轻量服务器的标杆之作。",
       specs: [
@@ -54,6 +55,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥359（4GB 版）",
       price: 359,
+      source: "curated", synthetic: false,
       tags: ["树莓派", "单板计算机", "经典", "Linux", "4K"],
       summary: "树莓派最经典的量产型号，四核 Cortex-A72 主频 1.5GHz，双 micro-HDMI 支持双屏 4K，USB-C 供电，长期供货且二手流通极广，至今仍是入门学习与软路由的热门选择。",
       specs: [
@@ -95,6 +97,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥3499（8GB 版）",
       price: 3499,
+      source: "curated", synthetic: false,
       tags: ["边缘AI", "Jetson", "CUDA", "机器人", "Linux"],
       summary: "面向边缘 AI 与机器人的开发套件，Ampere 架构 GPU 提供约 40 TOPS 算力（Super 版更高），8GB LPDDR5 与 M.2 NVMe 扩展，是入门 Jetson 生态、跑视觉推理的首选平台。",
       specs: [
@@ -136,6 +139,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥369",
       price: 369,
+      source: "curated", synthetic: false,
       tags: ["开源硬件", "工业", "PRU", "Linux", "实时控制"],
       summary: "开源社区老牌开发板，TI AM3358 单核 Cortex-A8 主频 1GHz，最大特色是双 PRU 实时协处理器与两排 92 个扩展引脚，在工业控制、实时 IO 场景中至今占有一席之地。",
       specs: [
@@ -177,6 +181,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥139",
       price: 139,
+      source: "curated", synthetic: false,
       tags: ["教育", "少儿编程", "传感器", "蓝牙", "图形化"],
       summary: "面向青少年的口袋编程板，5×5 LED 点阵与两颗按键开箱即用，内置加速度计、罗盘、麦克风、扬声器与温度传感器，支持 MakeCode 图形化与 Python，是全球课堂最流行的编程教具之一。",
       specs: [
@@ -218,6 +223,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥215",
       price: 215,
+      source: "curated", synthetic: false,
       tags: ["Arduino", "入门", "Wi-Fi", "12位ADC", "USB-C"],
       summary: "UNO 家族的现代化升级，Renesas RA4M1 主控（Cortex-M4 48MHz）加 ESP32-S3 无线模组，12 位 ADC、12×8 LED 矩阵与 Qwiic 接口齐备，经典扩展板兼容，兼顾新手友好与联网需求。",
       specs: [
@@ -259,6 +265,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥49",
       price: 49,
+      source: "curated", synthetic: false,
       tags: ["超小尺寸", "ESP32-S3", "可穿戴", "低功耗", "Wi-Fi"],
       summary: "拇指大小的 ESP32-S3 微型开发板，双核 LX7 主频 240MHz，板载 8MB Flash 与 8MB PSRAM，自带锂电池充电管理，11 个 GPIO，是可穿戴与小型物联网原型的性价比之选。",
       specs: [
@@ -308,6 +315,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥199（原厂）",
       price: 199,
+      source: "curated", synthetic: false,
       tags: ["AVR", "多IO", "3D打印", "入门", "经典"],
       summary: "IO 资源最丰富的经典 Arduino，ATmega2560 提供 54 路数字 IO、16 路模拟输入与 4 个硬件串口，是 3D 打印机固件、多舵机与多传感器项目的常青选择，兼容老扩展板。",
       specs: [
@@ -349,6 +357,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥18（模组）",
       price: 18,
+      source: "curated", synthetic: false,
       tags: ["Wi-Fi", "蓝牙", "双核", "物联网", "高性价比"],
       summary: "物联网时代的国民级 Wi-Fi/蓝牙双模模组，双核 Xtensa LX6 主频 240MHz，内置 4MB Flash，引出约 38 个引脚，是无数智能插座、传感器与自制设备的心脏。",
       specs: [
@@ -390,6 +399,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥59",
       price: 59,
+      source: "curated", synthetic: false,
       tags: ["ESP32-S3", "AI指令", "USB-OTG", "向量指令", "物联网"],
       summary: "ESP32-S3 官方开发板，双核 LX7 主频 240MHz，新增向量指令可加速神经网络与信号处理，支持 USB-OTG 与摄像头接口，GPIO 多达 45 个，是新一代语音与视觉物联网原型的首选。",
       specs: [
@@ -431,6 +441,7 @@ window.DB_CHUNKS.push({
       year: 2007,
       priceText: "约 ¥16",
       price: 16,
+      source: "curated", synthetic: false,
       tags: ["STM32", "Cortex-M3", "蓝丸", "工业", "高性价比"],
       summary: "俗称“蓝丸”的经典最小系统板，STM32F103C8T6 为 Cortex-M3 内核主频 72MHz，64KB Flash、20KB RAM，引出全部 IO 与 USB/CAN，是国内高校教学与工控原型的国民级选择。",
       specs: [
@@ -472,6 +483,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥119",
       price: 119,
+      source: "curated", synthetic: false,
       tags: ["STM32", "Cortex-M4F", "FPU", "ST-LINK", "官方原厂"],
       summary: "ST 官方 Nucleo-64 系列开发板，STM32F446RE 为 Cortex-M4F 内核主频 180MHz，板载 ST-LINK 调试器与 Arduino Uno V3 接口，支持 mbed 在线开发，是学习 HAL 库与 DSP 的可靠平台。",
       specs: [
@@ -513,6 +525,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥55",
       price: 55,
+      source: "curated", synthetic: false,
       tags: ["RP2040", "双核M0+", "Wi-Fi", "MicroPython", "PIO"],
       summary: "树莓派自研 RP2040 双核 Cortex-M0+ 加 Wi-Fi 的微控制器板，133MHz、264KB SRAM、2MB Flash，独特的 PIO 状态机可自定义接口，MicroPython 体验极佳，是极客桌上的万金油。",
       specs: [
@@ -554,6 +567,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥15",
       price: 15,
+      source: "curated", synthetic: false,
       tags: ["LuatOS", "Wi-Fi", "国产", "低功耗", "高性价比"],
       summary: "合宙推出的超低价 Wi-Fi MCU 核心板，基于联盛德 W800 系 32 位内核，主频约 240MHz，支持 LuatOS（Lua）与 C 开发，内置 Wi-Fi，是做智能插座与传感器节点的国产平价方案。",
       specs: [
@@ -602,6 +616,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥3499",
       price: 3499,
+      source: "curated", synthetic: false,
       tags: ["教育机器人", "麦克纳姆轮", "编程", "竞技", "视觉"],
       summary: "大疆面向教育市场的模块化竞技机器人，麦克纳姆轮全向移动，云台可发射水晶弹并支持视觉识别，内置多种传感器，支持 Scratch 与 Python 编程，把游戏感与工程学习融为一体。",
       specs: [
@@ -642,6 +657,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥9999 起（Air 版）",
       price: 9999,
+      source: "curated", synthetic: false,
       tags: ["四足机器人", "机器狗", "具身智能", "二次开发", "激光雷达"],
       summary: "宇树科技消费级四足机器人，12 个自研关节电机实现奔跑、跳跃与自平衡恢复，可选配 4D 激光雷达与高算力模组，支持语音、App 控制与 SDK 二次开发，把消费级机器狗价格拉进万元级。",
       specs: [
@@ -682,6 +698,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥2999",
       price: 2999,
+      source: "curated", synthetic: false,
       tags: ["人形机器人", "舵机", "教育", "舞蹈", "App控制"],
       summary: "曾登上央视春晚舞台的桌面人形机器人，16 个伺服舵机实现类人动作，手机 App 拖拽即可编排动作与舞蹈，支持 3D 可视化编程，是消费级人形机器人的早期代表作。",
       specs: [
@@ -722,6 +739,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥3199",
       price: 3199,
+      source: "curated", synthetic: false,
       tags: ["乐高", "教育机器人", "Python", "积木", "STEM"],
       summary: "乐高 MINDSTORMS 系列收官之作，智能集线器搭配角度电机与传感器，支持 Scratch 积木与 Python 编程，可搭建从人形到机械臂的多种形态，是积木与代码结合的集大成者。",
       specs: [
@@ -762,6 +780,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥2799",
       price: 2799,
+      source: "curated", synthetic: false,
       tags: ["乐高", "STEM教育", "课堂", "Scratch", "竞赛"],
       summary: "乐高 Education 面向中学课堂的 STEM 套装，智能集线器配角度电机与颜色、力、距离传感器，SPIKE App 积木编程直观易用，是全球机器人竞赛与课堂教学的主力套装之一。",
       specs: [
@@ -802,6 +821,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥5999（Pi 版）",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["机械臂", "协作机器人", "ROS", "教育", "桌面级"],
       summary: "大象机器人出品的桌面级六轴协作机械臂，臂展约 280mm、负载约 250g，有 M5、树莓派、Jetson 等多个控制版本，支持 ROS 与 Python 二次开发，是科研教学的热门入门机械臂。",
       specs: [
@@ -842,6 +862,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥899",
       price: 899,
+      source: "curated", synthetic: false,
       tags: ["智能小车", "树莓派", "视觉", "循迹", "STEM"],
       summary: "基于树莓派的四驱智能小车套件，2 自由度摄像头云台、超声波与循迹传感器齐备，支持 Python 与图形化 App 控制，可做避障、循迹、视觉识别等项目，是树莓派机器人入门的经典套件。",
       specs: [

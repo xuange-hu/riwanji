@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1990,
       priceText: "约 ¥4500（1990 年售价折算）",
       price: 4500,
+      source: "curated", synthetic: false,
       tags: ["街机", "16位", "硬核", "收藏"],
       summary: "把街机搬回家的天价主机，格斗游戏黄金时代的顶点。",
       specs: [
@@ -50,6 +51,7 @@ window.DB_CHUNKS.push({
       year: 1994,
       priceText: "约 ¥2400（1994 年售价折算）",
       price: 2400,
+      source: "curated", synthetic: false,
       tags: ["32位", "光盘", "经典", "3D先驱"],
       summary: "以光盘与 3D 图形终结卡带时代的家用主机里程碑。",
       specs: [
@@ -88,6 +90,7 @@ window.DB_CHUNKS.push({
       year: 2001,
       priceText: "约 ¥2500（2001 年售价折算）",
       price: 2500,
+      source: "curated", synthetic: false,
       tags: ["128位", "微软", "硬核", "网络对战"],
       summary: "微软入局之作，以奔腾芯片与内置硬盘重定义主机性能。",
       specs: [
@@ -126,6 +129,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥2800 起（2022 年海外首发价折算）",
       price: 2800,
+      source: "curated", synthetic: false,
       tags: ["PC掌机", "SteamOS", "开源", "便携"],
       summary: "把整个 Steam 库装进口袋的开源 PC 掌机标杆。",
       specs: [
@@ -164,6 +168,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥5000（2021 年首发价）",
       price: 5000,
+      source: "curated", synthetic: false,
       tags: ["PC掌机", "国产", "Windows", "小众"],
       summary: "国产 Windows 掌机先行者，7 英寸屏配摇杆握把设计。",
       specs: [
@@ -202,6 +207,7 @@ window.DB_CHUNKS.push({
       year: 1996,
       priceText: "约 ¥1700（1996 年售价折算）",
       price: 1700,
+      source: "curated", synthetic: false,
       tags: ["64位", "3D", "任天堂", "经典"],
       summary: "64 位 3D 先驱，类比摇杆与四手柄接口的聚会神器。",
       specs: [
@@ -240,6 +246,7 @@ window.DB_CHUNKS.push({
       year: 1990,
       priceText: "约 ¥1200（1990 年售价折算）",
       price: 1200,
+      source: "curated", synthetic: false,
       tags: ["掌机", "彩色屏", "世嘉", "复古"],
       summary: "背光彩色大屏掌机先驱，代价是惊人的电池消耗。",
       specs: [
@@ -279,6 +286,7 @@ window.DB_CHUNKS.push({
       year: 1999,
       priceText: "约 ¥900（1999 年售价折算）",
       price: 900,
+      source: "curated", synthetic: false,
       tags: ["掌机", "彩屏", "SNK", "小众"],
       summary: "摇杆式十字键与格斗神作加持的硬核彩屏掌机。",
       specs: [
@@ -317,6 +325,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥1250（2022 年海外售价折算）",
       price: 1250,
+      source: "curated", synthetic: false,
       tags: ["掌机", "独立游戏", "黑白屏", "小众"],
       summary: "带手摇曲柄的黑白掌机，独立创意游戏的试验场。",
       specs: [
@@ -355,6 +364,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥1400（2015 年售价折算）",
       price: 1400,
+      source: "curated", synthetic: false,
       tags: ["云游戏", "机顶盒", "安卓", "小众"],
       summary: "Tegra X1 加持的云游戏机顶盒，客厅流媒体全能手。",
       specs: [
@@ -392,6 +402,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥2000（2012 年售价折算）",
       price: 2000,
+      source: "curated", synthetic: false,
       tags: ["双屏", "触控", "任天堂", "小众"],
       summary: "带平板手柄的双屏主机，被低估的创意过渡之作。",
       specs: [
@@ -430,6 +441,7 @@ window.DB_CHUNKS.push({
       year: 1993,
       priceText: "约 ¥5500（1993 年售价折算）",
       price: 5500,
+      source: "curated", synthetic: false,
       tags: ["32位", "冷门", "光盘", "收藏"],
       summary: "规格领先却因天价陨落的 32 位光盘主机先行者。",
       specs: [

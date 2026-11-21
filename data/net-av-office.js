@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥1599（上市价）",
       price: 1599,
+      source: "curated", synthetic: false,
       tags: ["Wi-Fi 6", "电竞路由", "2.5G 网口", "AiMesh", "刷机资源丰富"],
       summary: "AX5700 双频 Wi-Fi 6 电竞路由器，配 2.5G 网口与强悍固件，长期被视为中高端家用路由的标杆之作，性能、稳定性与可玩性兼顾，二手市场也极受欢迎。",
       specs: [
@@ -51,6 +52,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥799",
       price: 799,
+      source: "curated", synthetic: false,
       tags: ["Wi-Fi 7", "2.5G 网口", "高性价比", "小米生态", "Mesh"],
       summary: "小米首款 Wi-Fi 7 旗舰路由器之一，BE7000 无线速率、2.5G 网口与高通平台的组合，把 Wi-Fi 7 的价格拉进主流区间，适合想低成本尝鲜新协议的家庭用户。",
       specs: [
@@ -89,6 +91,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥549（上市价）",
       price: 549,
+      source: "curated", synthetic: false,
       tags: ["Wi-Fi 6", "AX5400", "易展 Mesh", "家用主流", "稳定"],
       summary: "AX5400 双频 Wi-Fi 6 路由器，凭借稳定的信号表现和易展 Mesh 组网能力，长期是 500 元档家用路由的热门选择，口碑扎实，适合大户型平价组网。",
       specs: [
@@ -127,6 +130,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥4999（三只装）",
       price: 4999,
+      source: "curated", synthetic: false,
       tags: ["Mesh 套装", "三频", "10G 网口", "大户型", "高端组网"],
       summary: "Orbi 860 系列三只装 Mesh 套装，三频回程与 10G WAN 口面向别墅与大平层用户，无线覆盖与吞吐表现属于消费级 Mesh 第一梯队，价格也高高在上。",
       specs: [
@@ -165,6 +169,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥399",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["Wi-Fi 7", "鸿蒙生态", "2.5G 网口", "入门旗舰", "组网"],
       summary: "华为面向主流市场的 Wi-Fi 7 路由器，以亲民价格提供 2.5G 网口与鸿蒙 Mesh 组网，适合华为手机与全屋智能用户低成本升级新协议的实用之选，设置简单、覆盖可靠，日常使用省心。",
       specs: [
@@ -211,6 +216,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥4580（单机不含硬盘）",
       price: 4580,
+      source: "curated", synthetic: false,
       tags: ["4 盘位", "NAS 标杆", "DSM 系统", "可扩展", "办公协作"],
       summary: "群晖 4 盘位主力机型，AMD 双核与 DSM 系统的组合主打稳定可靠，可加内存、加 SSD 缓存、接扩展柜，是中小企业与家庭进阶用户的经典之选，也是许多人的第一台正经 NAS。",
       specs: [
@@ -249,6 +255,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥2999（单机不含硬盘）",
       price: 2999,
+      source: "curated", synthetic: false,
       tags: ["4 盘位", "2.5G 网口", "x86 平台", "HDMI 输出", "高性价比"],
       summary: "威联通 4 盘位 x86 NAS，N5095 处理器加双 2.5G 网口，还带 HDMI 4K 输出，硬件规格在同价位突出，适合看重内网速度与多媒体玩法的用户。",
       specs: [
@@ -287,6 +294,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2999（单机不含硬盘）",
       price: 2999,
+      source: "curated", synthetic: false,
       tags: ["4 盘位", "国产 NAS", "家庭影音", "易用", "双 2.5G"],
       summary: "国产家用 NAS 代表机型之一，主打开箱即用的影音与相册体验，影视刮削、海报墙、极影视等功能对小白友好，硬件上提供双 2.5G 网口与四盘位，整机体验贴近普通家庭的真实需求。",
       specs: [
@@ -325,6 +333,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥1999（单机不含硬盘）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["4 盘位", "双 2.5G", "N5105", "私有云", "高性价比"],
       summary: "绿联私有云 DX4600，四盘位加 N5105 处理器与双 2.5G 网口，价格亲民，主打家庭备份与网盘替代，是两千档位颇具竞争力的 x86 NAS，适合预算有限的私有云入门用户。",
       specs: [
@@ -371,6 +380,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥14999（55 英寸）",
       price: 14999,
+      source: "curated", synthetic: false,
       tags: ["QD-OLED", "XR 芯片", "画质旗舰", "4K 120Hz", "PS5 搭档"],
       summary: "索尼第二代 QD-OLED 旗舰电视，XR 认知芯片调校下色彩与亮度俱佳，被许多发烧友视为画质天花板之一，搭配 PS5 与家庭影院都有顶级体验，是高端客厅的标杆之选。",
       specs: [
@@ -409,6 +419,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥9999（55 英寸）",
       price: 9999,
+      source: "curated", synthetic: false,
       tags: ["OLED", "4×HDMI 2.1", "游戏电视", "webOS", "杜比视界"],
       summary: "LG C 系列 OLED 常青树第三代，四路 HDMI 2.1 与完善的游戏兼容性让它成为主机玩家首选，画质均衡、价格比旗舰亲民，长期霸榜各类推荐榜单，综合体验成熟均衡，几乎没有明显短板。",
       specs: [
@@ -447,6 +458,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥12999（65 英寸）",
       price: 12999,
+      source: "curated", synthetic: false,
       tags: ["QD-OLED", "超薄设计", "高亮度", "144Hz", "Tizen"],
       summary: "三星旗舰 QD-OLED 电视，亮度表现激进，机身超薄几乎贴墙，游戏模式支持 144Hz，色彩与冲击力俱佳，是明亮客厅高端用户的重要候选，适合追求颜值与画质兼得的人。",
       specs: [
@@ -485,6 +497,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥5999（75 英寸）",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["Mini LED", "高亮度", "144Hz", "性价比", "大屏"],
       summary: "小米走量级 Mini LED 电视，75 英寸千级分区与高峰值亮度把大屏体验拉到主流价位，配置厚道、系统本土化好，是预算有限追求大屏画质的热门选择，也是同价位大屏的销量常客。",
       specs: [
@@ -531,6 +544,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥6299",
       price: 6299,
+      source: "curated", synthetic: false,
       tags: ["4K 投影", "光学变焦", "LED 光源", "家用旗舰", "哈曼卡顿"],
       summary: "极米家用旗舰投影，4K 分辨率配光学变焦镜头，画面调整灵活不损失画质，哈曼卡顿音响与成熟系统兼顾观影与易用，是客厅大屏方案的稳妥之选，适合追求省心、不爱折腾的大屏玩家。",
       specs: [
@@ -569,6 +583,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥8999",
       price: 8999,
+      source: "curated", synthetic: false,
       tags: ["激光投影", "高亮度", "4K", "当贝 OS", "客厅影院"],
       summary: "当贝旗舰激光投影，标称高亮度面向客厅不遮光场景，4K 画面与当贝 OS 的内容生态兼得，接口与配置齐全，适合想要白天也能看的大屏用户，高光冲击力强，家庭影音体验完整。",
       specs: [
@@ -607,6 +622,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥5299",
       price: 5299,
+      source: "curated", synthetic: false,
       tags: ["3LCD", "激光光源", "便携", "Android TV", "雅马哈音响"],
       summary: "爱普生激光便携投影，3LCD 技术色彩自然无散斑，机身小巧内置雅马哈音响与 Android TV，适合卧室、租房与随身大屏，品牌可靠性高，移动使用灵活，随手可投大画面。",
       specs: [
@@ -653,6 +669,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥6499（单条）",
       price: 6499,
+      source: "curated", synthetic: false,
       tags: ["7.1.2 声道", "全景声", "360 Reality Audio", "家庭影院", "可扩展"],
       summary: "索尼旗舰回音壁，7.1.2 声道与天空声道单元营造环绕感，可搭配索尼后环绕与低音炮组成完整影院，配合 BRAVIA 电视还有协同功能，是中高端家庭影院之选，扩展潜力大，可按预算逐步升级。",
       specs: [
@@ -691,6 +708,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥8399（含后环绕与低音炮套装）",
       price: 8399,
+      source: "curated", synthetic: false,
       tags: ["11.1.4 声道", "套装", "全景声", "Q-Symphony", "无线后环绕"],
       summary: "三星旗舰回音壁套装，11.1.4 声道含无线后环绕与低音炮，开箱即成完整环绕影院，Q-Symphony 与三星电视协同发声，空间自适应调校省去繁琐设置，是一步到位的客厅影院方案。",
       specs: [
@@ -737,6 +755,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥399",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["电视盒子", "4K", "MIUI for TV", "语音遥控", "高性价比"],
       summary: "小米经典电视盒子续作，四核平台加 2GB 内存流畅运行 MIUI for TV，语音遥控找片方便，把老电视升级成智能电视最经济的方案之一，销量口碑俱佳，是老电视焕新升级的高性价比方案。",
       specs: [
@@ -775,6 +794,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥999（64GB）/ ¥1299（128GB 网线版）",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["tvOS", "A15 芯片", "杜比视界", "AirPlay", "家庭中枢"],
       summary: "苹果第三代 Apple TV 4K，A15 芯片性能充沛，tvOS 与杜比视界/全景声体验精致流畅，兼任 HomeKit 家庭中枢，是苹果生态用户的客厅标配，做工与软件体验都精致。",
       specs: [
@@ -821,6 +841,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1599",
       price: 1599,
+      source: "curated", synthetic: false,
       tags: ["黑白激光", "一体机", "自动双面", "Wi-Fi", "小型办公"],
       summary: "惠普紧凑型黑白激光多功能一体机，打印复印扫描加自动双面，约 29 页每分钟的输出速度应对家用与小型办公游刃有余，无线连接与手机打印方便省心，家用与小型办公两相宜。",
       specs: [
@@ -859,6 +880,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1099",
       price: 1099,
+      source: "curated", synthetic: false,
       tags: ["墨仓式", "彩色喷墨", "一体机", "微信打印", "低打印成本"],
       summary: "爱普生经典墨仓式彩色一体机，大墨仓一套墨水可打数千页，单页成本极低，微压电打印头寿命长，是家庭孩子作业与低成本打印的长期主义者之选，家用打印越用越省、经济实惠。",
       specs: [
@@ -897,6 +919,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥1099（单色版，AMS lite 套装另计）",
       price: 1099,
+      source: "curated", synthetic: false,
       tags: ["3D 打印机", "FDM", "静音", "自动调平", "多色打印"],
       summary: "拓竹入门级 FDM 3D 打印机，继承旗舰机型的高速与静音特性，开箱即用、自动调平校准简单，可加装 AMS lite 实现多色打印，是桌面制造入门的口碑之作，适合新手与家庭玩家轻松上手。",
       specs: [

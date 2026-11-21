@@ -7,12 +7,13 @@ window.DB_CHUNKS.push({
   products: [
     {
       id: "game-boy-1989",
-      name: "任天堂 Game Boy",
+      name: "任天堂 Game Boy（初代 · 国内上市价口径）",
       brand: "任天堂",
       category: "console",
       year: 1989,
-      priceText: "约 ¥700（1989 年上市价）",
+      priceText: "约 ¥700（初代 DMG-01 · 1989 年国内上市价口径，与美版首发价口径不可直接比较）",
       price: 700,
+      source: "curated", synthetic: false,
       tags: ["掌机", "经典", "开创品类", "长续航"],
       summary: "8 位掌机鼻祖，四节电池续航数十小时，奠定掌上游戏格局。",
       specs: [
@@ -51,6 +52,7 @@ window.DB_CHUNKS.push({
       year: 2000,
       priceText: "约 ¥2500（2000 年上市价，日本 ¥39800）",
       price: 2500,
+      source: "curated", synthetic: false,
       tags: ["家用机", "销量冠军", "DVD 影音", "一代神机"],
       summary: "全球销量超 1.55 亿台的第六世代霸主，游戏阵容史级豪华。",
       specs: [
@@ -89,6 +91,7 @@ window.DB_CHUNKS.push({
       year: 2006,
       priceText: "约 ¥1800（2006 年上市价，海外定价 249.99 美元）",
       price: 1800,
+      source: "curated", synthetic: false,
       tags: ["家用机", "体感革命", "蓝海市场", "合家欢"],
       summary: "以体感操控开辟蓝海市场，让老人小孩都拿起手柄的主机。",
       specs: [
@@ -127,6 +130,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥2100（2017 年上市价，海外定价 299.99 美元）",
       price: 2100,
+      source: "curated", synthetic: false,
       tags: ["掌机", "家用机", "二合一", "全民爆款"],
       summary: "主机掌机随时切换的形态革命，护航《旷野之息》的爆款。",
       specs: [
@@ -165,6 +169,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥3899（2020 年上市价，国行光驱版）",
       price: 3899,
+      source: "curated", synthetic: false,
       tags: ["家用机", "次世代", "高速 SSD", "4K 光追"],
       summary: "以定制 SSD 与 3D 音频重新定义次世代体验的高性能主机。",
       specs: [

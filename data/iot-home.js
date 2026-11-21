@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥299",
       price: 299,
+      source: "curated", synthetic: false,
       tags: ["小爱同学", "DTS 调音", "蓝牙 Mesh 网关", "红外遥控", "米家生态"],
       summary: "小米面向家庭场景的中高端无屏音箱，采用全频扬声器并支持 DTS 专业调音，音质在同价位中表现稳健。内置红外遥控与蓝牙 Mesh 网关，可直接控制电视、空调等传统家电并联动米家设备，是米家生态用户的实用语音中枢。",
       specs: [
@@ -53,6 +54,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥1999（上市价）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["帝瓦雷联名", "Hi-Res", "小艺", "HiLink", "重低音"],
       summary: "华为与法国帝瓦雷联合设计的高保真智能音箱，双低音单元对称布局，低频下潜与量感在智能音箱中出类拔萃，通过 Hi-Res 音频认证。支持小艺语音助手与 HiLink 智能家居联动，适合对音质有要求的华为生态用户。",
       specs: [
@@ -93,6 +95,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥399（渠道价）",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["Alexa", "紧凑机身", "入门首选", "智能家居", "环保材质"],
       summary: "亚马逊最畅销的入门级智能音箱，球形小巧机身内扬声器较上代有提升，主打 Alexa 语音助手的海量技能与智能家居控制。适合想低成本体验海外语音生态、或作为多房间分布式语音入口的用户。",
       specs: [
@@ -133,6 +136,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "¥2299",
       price: 2299,
+      source: "curated", synthetic: false,
       tags: ["Siri", "空间音频", "Matter 中枢", "高保真", "苹果生态"],
       summary: "苹果回归的高端智能音箱，高振幅低音单元加波束成形高音阵列，配合房间声学自适应与空间音频，音质在智能音箱中属旗舰水准。内置 Thread 边界路由器与 Matter 支持，是苹果家庭生态的核心中枢。",
       specs: [
@@ -173,6 +177,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥299",
       price: 299,
+      source: "curated", synthetic: false,
       tags: ["AliGenie", "蓝牙 Mesh", "大音量", "内容资源", "声纹识别"],
       summary: "天猫精灵系列中主打音量与音质的无屏音箱，全频单元功率在同价位中偏大，适合客厅等较大空间。依托阿里生态，语音购物、有声内容与支付宝相关服务丰富，蓝牙 Mesh 网关可联动大量天猫精灵生态设备。",
       specs: [
@@ -222,6 +227,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥5499",
       price: 5499,
+      source: "curated", synthetic: false,
       tags: ["双机械臂", "自动集尘", "热水洗拖布", "激光导航", "全能基站"],
       summary: "石头 2024 年旗舰扫拖机器人，主打机械臂结构，边刷与拖布可外扩以贴边清洁，配合高吸力与全能基站，实现扫、拖、洗、烘、集尘全流程自动化。适合大户型与地板占比高的家庭，是追求省心旗舰体验的选择。",
       specs: [
@@ -262,6 +268,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥3999",
       price: 3999,
+      source: "curated", synthetic: false,
       tags: ["TruEdge 沿边", "自动集尘", "旋转加压拖地", "全能基站", "语音助手"],
       summary: "科沃斯中高端全能扫拖机型，拖布支持外扩沿边清洁，配合高吸力与 OMNI 全能基站，洗拖布、烘干、集尘一站完成。YIKO 语音助手可免 App 直接操控，综合价格与能力在旗舰级产品中较为均衡。",
       specs: [
@@ -302,6 +309,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥4699",
       price: 4699,
+      source: "curated", synthetic: false,
       tags: ["仿生机械臂", "拖布外扩", "热水洗拖布", "自动集尘", "高吸力"],
       summary: "追觅旗舰扫拖机器人，边刷带仿生机械臂可外扩，配合拖布外扩机构覆盖墙角死角，吸力标称在同代产品中领先。基站支持热水洗拖布与热风烘干，主打高参数与强清洁能力，适合参数党和养宠家庭。",
       specs: [
@@ -342,6 +350,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥5999（渠道价）",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["自动集尘", "视觉导航", "双效胶刷", "地毯增压", "宠物家庭"],
       summary: "iRobot 旗舰纯扫机器人，主打双效橡胶胶刷的防缠绕与地毯清洁能力，配 Clean Base 自动集尘基站，可长时间免手动倒尘。不支持拖地，适合以地毯清洁与毛发处理为主的海外品牌偏好用户。",
       specs: [
@@ -391,6 +400,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1999",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["全自动锁体", "半导体指纹", "NFC", "C 级锁芯", "米家联动"],
       summary: "小米中高端全自动智能门锁，指纹、密码、NFC 等多种开锁方式齐全，关门自动上锁省去反锁步骤。可联动米家设备实现回家自动开灯等场景，适合追求性价比与米家生态联动的家庭用户。",
       specs: [
@@ -431,6 +441,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2499",
       price: 2499,
+      source: "curated", synthetic: false,
       tags: ["3D 人脸识别", "鸿蒙智联", "半导体指纹", "C 级锁芯", "双电池"],
       summary: "华为中高端智能门锁，主打 3D 人脸识别开锁，配合指纹、密码等方式覆盖全家使用场景，可与华为手机、手表、智慧屏等鸿蒙设备联动。适合华为生态用户与希望无感开门的家庭。",
       specs: [
@@ -471,6 +482,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2899",
       price: 2899,
+      source: "curated", synthetic: false,
       tags: ["3D 人脸识别", "半导体指纹", "全自动锁体", "C 级锁芯", "Wi-Fi 直连"],
       summary: "德施曼旗舰级全自动智能门锁，3D 人脸识别配合大容量锂电池，Wi-Fi 直连无需额外网关即可远程管理。德施曼在门锁领域积累深厚，机械结构与安全性口碑扎实，适合看重锁体品质与人脸开锁的家庭。",
       specs: [
@@ -520,6 +532,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥249",
       price: 249,
+      source: "curated", synthetic: false,
       tags: ["3K 分辨率", "双云台", "人形侦测", "微光全彩", "米家联动"],
       summary: "小米家用云台摄像机的主力型号，500 万像素 3K 画面细节清晰，支持人形与宠物侦测、哭声识别，可与米家设备联动。物理镜头遮蔽兼顾隐私，性价比突出，适合看家、看娃、看宠物的多场景使用。",
       specs: [
@@ -560,6 +573,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥199",
       price: 199,
+      source: "curated", synthetic: false,
       tags: ["2K 画质", "鸿蒙智联", "本地 AI", "微光全彩", "云台"],
       summary: "华为智选生态的家用云台摄像机，2K 画质配合本地 AI 人形过滤，减少无效报警推送。接入 HarmonyOS Connect 后可与华为设备联动，手机一碰查看画面方便，适合华为生态家庭的基础看家需求。",
       specs: [
@@ -600,6 +614,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥169",
       price: 169,
+      source: "curated", synthetic: false,
       tags: ["2K 画质", "360° 云台", "人形检测", "暖光全彩", "萤石云"],
       summary: "萤石入门级家用云台摄像机，海康威视旗下品牌在安防领域经验丰富，2K 画质与移动追踪功能齐全，价格亲民。支持萤石云服务与本地存储双方案，适合预算有限、看重稳定性的家庭用户。",
       specs: [
@@ -640,6 +655,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥569",
       price: 569,
+      source: "curated", synthetic: false,
       tags: ["HomeKit", "Zigbee 网关", "手势识别", "红外遥控", "本地 AI"],
       summary: "Aqara 旗舰摄像机，内置 Zigbee 3.0 网关与红外遥控，一台设备同时承担看家、智能家居中枢与传统家电控制。支持 Apple HomeKit 与本地手势识别，是苹果家庭生态用户的多功能之选。",
       specs: [
@@ -689,6 +705,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥99",
       price: 99,
+      source: "curated", synthetic: false,
       tags: ["1600 万色彩光", "色温调节", "蓝牙 Mesh", "米家联动", "无极调光"],
       summary: "Yeelight 彩光智能灯泡，支持 RGB 彩光与冷暖色温调节，Wi-Fi 与蓝牙 Mesh 双模连接，接入米家后可语音控制与场景联动。百元内即可把普通灯具换成智能彩光，是体验智能灯光氛围的低门槛选择。",
       specs: [
@@ -729,6 +746,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥599（2 米套装）",
       price: 599,
+      source: "curated", synthetic: false,
       tags: ["灯带", "1600 万色", "Zigbee", "可扩展", "Hue 生态"],
       summary: "飞利浦 Hue 旗舰灯带，色彩还原与均匀度在智能灯带中口碑领先，支持 Zigbee 接入 Hue Bridge，可扩展延长并融入完整 Hue 生态。适合电视柜、吊顶等氛围照明的高预算方案。",
       specs: [
@@ -769,6 +787,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥349",
       price: 349,
+      source: "curated", synthetic: false,
       tags: ["国 AA 级照度", "高显色", "无极调光", "米家联动", "护眼"],
       summary: "米家高端台灯，达到国 AA 级照度标准并具备约 Ra90 显色指数，长条形灯头提供宽广而均匀的照明范围。旋钮无极调光调色并接入米家生态，支持语音控制与自动化，适合书桌学习与办公照明。",
       specs: [
@@ -818,6 +837,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥39",
       price: 39,
+      source: "curated", synthetic: false,
       tags: ["温湿度", "电子墨水屏", "蓝牙 Mesh", "低功耗", "米家联动"],
       summary: "米家入门级温湿度传感器，电子墨水屏直接显示温湿度读数，CR2032 纽扣电池续航约一年。配合蓝牙网关可联动空调、加湿器做自动化，是智能家居环境感知的基础传感器。",
       specs: [
@@ -858,6 +878,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥399",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["毫米波雷达", "存在检测", "静止检测", "区域划分", "HomeKit"],
       summary: "Aqara 毫米波存在传感器，可检测静止人体存在，解决传统红外人体传感器「人不动灯就灭」的痛点。支持多区域划分与跌倒检测，适合卫生间、书房等空间做精细化灯光与空调自动化。",
       specs: [
@@ -907,6 +928,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥49",
       price: 49,
+      source: "curated", synthetic: false,
       tags: ["电量统计", "过载保护", "蓝牙 Mesh", "定时", "米家联动"],
       summary: "米家智能插座主力型号，支持功率与电量统计，可远程开关、定时并联动米家设备。Wi-Fi 与蓝牙 Mesh 双模连接稳定，把普通电器变智能的成本极低，适合鱼缸、热水器、台灯等设备。",
       specs: [
@@ -947,6 +969,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥79（单开单控）",
       price: 79,
+      source: "curated", synthetic: false,
       tags: ["单火线", "蓝牙 Mesh", "免布线改造", "定时", "米家联动"],
       summary: "小米智能墙壁开关单火线版，可直接替换传统 86 型墙壁开关，无需改动布线即可让普通灯具智能化。支持定时、场景联动与语音控制，保留实体按键，是低成本改造全屋灯光智能的常见方案。",
       specs: [

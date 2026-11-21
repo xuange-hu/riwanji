@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2008,
       priceText: "约 ¥12000（2008 年上市价）",
       price: 12000,
+      source: "curated", synthetic: false,
       tags: ["轻薄本", "超薄", "设计标杆"],
       summary: "从文件信封中抽出的超薄传奇，定义了轻薄本时代。",
       specs: [
@@ -45,6 +46,7 @@ window.DB_CHUNKS.push({
       year: 2008,
       priceText: "约 ¥20000（2008 年上市价）",
       price: 20000,
+      source: "curated", synthetic: false,
       tags: ["商务本", "经典", "工程师文化"],
       summary: "不计成本的工程师旗舰，接口齐全的 1.33kg 全能轻薄本。",
       specs: [
@@ -77,6 +79,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥16488 起（2012 年上市价）",
       price: 16488,
+      source: "curated", synthetic: false,
       tags: ["专业本", "Retina 屏", "创作利器"],
       summary: "Retina 屏幕的开山之作，专业创作笔记本的分水岭。",
       specs: [
@@ -109,6 +112,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥6999 起（2015 年上市价）",
       price: 6999,
+      source: "curated", synthetic: false,
       tags: ["轻薄本", "微边框", "超极本"],
       summary: "微边框设计的开创者，Windows 阵营的精致轻薄标杆。",
       specs: [
@@ -141,6 +145,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥19999（2013 年上市价）",
       price: 19999,
+      source: "curated", synthetic: false,
       tags: ["游戏本", "性能怪兽", "玩家国度"],
       summary: "17 英寸性能怪兽，玩家国度的旗舰游戏本代表。",
       specs: [

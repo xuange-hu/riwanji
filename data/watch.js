@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥79（2014 年上市价）",
       price: 79,
+      source: "curated", synthetic: false,
       tags: ["智能手环", "运动", "健康", "入门"],
       summary: "79 元的国民手环，让计步与睡眠监测走进大众市场。",
       specs: [
@@ -52,6 +53,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥1298（2015 年上市价，海外定价 199 美元）",
       price: 1298,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "电子纸", "长续航", "极客"],
       summary: "彩色电子纸屏幕加七天续航，极客心中的智能手表经典。",
       specs: [
@@ -91,6 +93,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥2688（2015 年上市价）",
       price: 2688,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "穿戴", "健康", "苹果生态"],
       summary: "苹果首款智能手表，重新定义了腕上通知与腕上支付。",
       specs: [
@@ -130,6 +133,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥1288（2018 年上市价，运动版）",
       price: 1288,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "长续航", "运动", "健康"],
       summary: "两周续航加双星定位，重新定义了安卓智能手表的续航标准。",
       specs: [
@@ -169,6 +173,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥6299（2022 年上市价）",
       price: 6299,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "户外", "极限运动", "健康", "旗舰"],
       summary: "钛金属巨兽，为越野、潜水与极限户外而生的专业腕表。",
       specs: [

@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1984,
       priceText: "首发 $2,495",
       price: 5800,
+      source: "curated", synthetic: false,
       tags: ["个人电脑", "图形界面", "鼠标操作", "68000", "1984"],
       summary: "1984 年 1 月发布的初代 Macintosh，128KB 内存配 9 英寸黑白屏与鼠标图形界面，是第一款商业上成功的图形界面个人电脑。配合著名的「1984」广告与 MacWrite、MacPaint，大众第一次用上窗口、图标、菜单操作，奠定了现代桌面计算的范式。",
       specs: [
@@ -78,6 +79,7 @@ window.DB_CHUNKS.push({
       year: 1981,
       priceText: "首发 $1,565 起",
       price: 2700,
+      source: "curated", synthetic: false,
       tags: ["个人电脑", "开放架构", "8088", "PC兼容机", "1981"],
       summary: "1981 年 8 月问世的 IBM 5150 个人电脑，用现成零件与开放架构闯入消费市场，公开技术参考手册让第三方随意开发兼容软硬件。它定义了「PC」这个词的标准形态，催生了庞大的兼容机产业与微软-英特尔生态，是当代台式电脑的直系祖先。",
       specs: [
@@ -142,6 +144,7 @@ window.DB_CHUNKS.push({
       year: 1982,
       priceText: "首发 $595",
       price: 1100,
+      source: "curated", synthetic: false,
       tags: ["家用电脑", "8位机", "6510", "SID芯片", "1982"],
       summary: "1982 年上市的 Commodore 64，以 64KB 内存、VIC-II 图形芯片与传奇的 SID 三声道音源横扫家用市场，累计销量约一千数百万台，是 8 位机黄金年代的代表作。海量游戏与演示文化让它至今仍是复古计算圈最活跃的平台之一。",
       specs: [
@@ -197,6 +200,7 @@ window.DB_CHUNKS.push({
       year: 1977,
       priceText: "首发 $1,298（4KB 版）",
       price: 2100,
+      source: "curated", synthetic: false,
       tags: ["个人电脑", "彩色图形", "6502", "VisiCalc", "1977"],
       summary: "1977 年 6 月上市的 Apple II，是第一批「开箱即用」的家用电脑之一：内置键盘与 BASIC、彩色图形、8 个扩展槽。1979 年 VisiCalc 电子表格在它上面诞生，成为史上第一款杀手级应用，直接把个人电脑从玩具推进商业世界。",
       specs: [
@@ -254,12 +258,13 @@ window.DB_CHUNKS.push({
     },
     {
       id: "nintendo-game-boy",
-      name: "任天堂 Game Boy",
+      name: "任天堂 Game Boy（初代 · 海外首发价口径）",
       brand: "Nintendo",
       category: "retro-computer",
       year: 1989,
-      priceText: "首发 ¥12,500（日本）／$89.99（美国）",
+      priceText: "约 ¥340（按 $89.99 美版首发价折算；日本首发 ¥12,500。与国内上市价口径不可直接比较）",
       price: 340,
+      source: "curated", synthetic: false,
       tags: ["掌机", "4色液晶", "俄罗斯方块", "超长续航", "1989"],
       summary: "1989 年上市的初代 Game Boy（DMG-01），以 4 级灰阶反射屏、4 节电池约一二十小时的续航和《俄罗斯方块》捆绑神话击败一众彩屏对手。家族累计销量超过一亿台，把「掌上游戏」变成全球性的文化现象，是掌机史上最重要的里程碑。",
       specs: [
@@ -316,6 +321,7 @@ window.DB_CHUNKS.push({
       year: 1979,
       priceText: "首发 ¥33,000（日本）",
       price: 240,
+      source: "curated", synthetic: false,
       tags: ["随身听", "磁带", "个人音响", "便携音乐", "1979"],
       summary: "1979 年 7 月上市的初代 Walkman TPS-L2，把立体声磁带播放机塞进蓝银色小盒，配一对轻型耳机，只做播放不做录音。它开启了「随时随地听自己的音乐」的私人听音时代，Walkman 一词从此成为便携音响的代名词。",
       specs: [
@@ -372,6 +378,7 @@ window.DB_CHUNKS.push({
       year: 2000,
       priceText: "首发约 €150（欧洲）",
       price: 1350,
+      source: "curated", synthetic: false,
       tags: ["功能手机", "耐用", "贪吃蛇", "Xpress-on", "2000"],
       summary: "2000 年上市的诺基亚 3310，以皮实耐用、超长待机和可换彩壳风靡全球，内置《贪吃蛇 II》等游戏成为一代人的手机游戏启蒙。累计销量约 1.26 亿台，是功能手机黄金年代最具代表性的机型，至今仍是「耐用」的文化符号。",
       specs: [
@@ -430,6 +437,7 @@ window.DB_CHUNKS.push({
       year: 1996,
       priceText: "首发约 $1,000（美国）",
       price: 8300,
+      source: "curated", synthetic: false,
       tags: ["翻盖手机", "超轻", "折叠设计", "模拟网", "1996"],
       summary: "1996 年初上市的摩托罗拉 StarTAC，是第一款折叠翻盖手机，约 88 克的轻盈机身把手机从「砖头」带入可穿戴时代，首创的来电振动提醒也是它的重要贡献。它是 90 年代移动通讯的时尚图腾，翻盖形态影响手机设计二十余年。",
       specs: [
@@ -486,6 +494,7 @@ window.DB_CHUNKS.push({
       year: 1995,
       priceText: "首发约 $2,499",
       price: 20700,
+      source: "curated", synthetic: false,
       tags: ["笔记本电脑", "蝴蝶键盘", "486", "工业设计", "1995"],
       summary: "1995 年上市的 ThinkPad 701C，以「蝴蝶键盘」闻名：合盖时键盘收拢折叠，开盖时滑开铺满整幅机身，是笔记本工程史上的神来之笔。486 平台、约 10.4 英寸屏幕与全尺寸键盘的组合，让它成为收藏市场公认的 ThinkPad 圣杯。",
       specs: [
@@ -543,6 +552,7 @@ window.DB_CHUNKS.push({
       year: 1957,
       priceText: "首发约 $40（出口定价，各资料记载不一）",
       price: 105,
+      source: "curated", synthetic: false,
       tags: ["晶体管收音机", "袖珍", "半导体", "消费电子", "1957"],
       summary: "1957 年上市的索尼 TR-63，是第一款取得商业成功的量产袖珍晶体管收音机，六只晶体管、AM 调幅收音，能放进衬衫口袋。它证明了半导体可以做成大众消费品，为日本消费电子走向世界拉开序幕，是整个便携电子产业的源头活水。",
       specs: [
@@ -599,6 +609,7 @@ window.DB_CHUNKS.push({
       year: 1972,
       priceText: "首发 $180",
       price: 400,
+      source: "curated", synthetic: false,
       tags: ["即时成像", "折叠SLR", "拍立得", "胶片", "1972"],
       summary: "1972 年上市的宝丽来 SX-70，是第一款使用整合式胶片、拍后自动吐片的折叠式单反即时相机。皮革与镀铬的折叠机身、116mm 镜头与电动出片，把即时摄影从玩具变成了创作工具，是设计史上被反复致敬的相机经典。",
       specs: [
@@ -656,6 +667,7 @@ window.DB_CHUNKS.push({
       year: 1977,
       priceText: "首发 $199（含双手柄与《Combat》卡带）",
       price: 310,
+      source: "curated", synthetic: false,
       tags: ["家用主机", "卡带", "8位", "游戏史", "1977"],
       summary: "1977 年上市的雅达利 2600（VCS），以可换卡带设计确立了家用游戏机的商业模式，《Space Invaders》等大作让它红遍全球，累计销量数千万台。它开创了第三方发行、主机战争等游戏产业规则，是家用游戏机产业的奠基者。",
       specs: [
@@ -712,6 +724,7 @@ window.DB_CHUNKS.push({
       year: 1983,
       priceText: "首发 ¥14,800（日本）",
       price: 125,
+      source: "curated", synthetic: false,
       tags: ["家用主机", "8位", "十字键", "游戏文化", "1983"],
       summary: "1983 年在日本上市的 Family Computer（红白机），以十字键手柄、廉价卡带与《超级马里奥兄弟》等神作重振游戏市场，欧美版 NES 更是 1983 年大崩盘后重建行业秩序的功臣。全球累计销量约 6191 万台，是电子游戏文化最重要的奠基机型。",
       specs: [
@@ -768,6 +781,7 @@ window.DB_CHUNKS.push({
       year: 1988,
       priceText: "首发约 ¥21,000（日本）／$189.99（北美）",
       price: 610,
+      source: "curated", synthetic: false,
       tags: ["家用主机", "16位", "68000", "索尼克", "1988"],
       summary: "1988 年在日本上市的世嘉 Mega Drive（北美称 Genesis），以摩托罗拉 68000 加 Z80 双处理器、强劲的 FM 音源与《索尼克》等硬派大作开启 16 位机时代，与超级任天堂的「主机大战」至今被津津乐道，是 90 年代初游戏文化的旗帜。",
       specs: [
@@ -824,6 +838,7 @@ window.DB_CHUNKS.push({
       year: 1984,
       priceText: "首发 ¥49,800（日本）",
       price: 490,
+      source: "curated", synthetic: false,
       tags: ["便携CD机", "光盘", "Discman", "随身听", "1984"],
       summary: "1984 年上市的索尼 D-50（出口型号 D-5）是世界上第一款便携式 CD 播放机，只有四张 CD 盒叠起来大小、约 590 克，把家用 CD 音质带出家门。它与 Walkman 一同构成索尼随身音响的双子星，也是 Discman 时代的开山之作。",
       specs: [
@@ -880,6 +895,7 @@ window.DB_CHUNKS.push({
       year: 1997,
       priceText: "首发 $299（Pilot 1000）／$399（Pilot 5000）",
       price: 2500,
+      source: "curated", synthetic: false,
       tags: ["PDA", "掌上电脑", "Graffiti", "手写", "1997"],
       summary: "1997 年上市的 Palm Pilot 1000/5000，以轻巧机身、单粒电池供电与「够用就好」的 PIM 功能重新定义掌上电脑，Graffiti 手写输入与 HotSync 同步成为行业范本。上市一年余即售出百万台量级，是 PDA 黄金年代的开创者。",
       specs: [
@@ -938,6 +954,7 @@ window.DB_CHUNKS.push({
       year: 2001,
       priceText: "首发 $399",
       price: 3300,
+      source: "curated", synthetic: false,
       tags: ["MP3", "硬盘随身听", "滚轮", "FireWire", "2001"],
       summary: "2001 年 11 月上市的初代 iPod，以 5GB 硬盘装下「1000 首歌」、FireWire 十秒传一首的极速与机械滚轮操作，重新定义了数字音乐播放器。它与 iTunes 的软硬一体策略终结了盗版混乱年代，开启了数字音乐消费的新纪元。",
       specs: [
@@ -1002,6 +1019,7 @@ window.DB_CHUNKS.push({
       year: 2007,
       priceText: "首发约 €550（欧洲无合约价）",
       price: 5700,
+      source: "curated", synthetic: false,
       tags: ["智能手机", "Symbian", "500万像素", "GPS", "双向滑盖"],
       summary: "2007 年上市的诺基亚 N95，以双向滑盖、500 万像素蔡司镜头、GPS 与 Wi-Fi 集于一身，是塞班时代的「多媒体电脑」巅峰。在 iPhone 问世的同一年，它代表了功能手机哲学的最高完成度，也是诺基亚王朝最后的辉煌。",
       specs: [
@@ -1060,6 +1078,7 @@ window.DB_CHUNKS.push({
       year: 1984,
       priceText: "首发约 $1,300（各资料记载不一）",
       price: 3000,
+      source: "curated", synthetic: false,
       tags: ["摄录机", "VHS-C", "摄像机", "家用录像", "1984"],
       summary: "1984 年上市的 JVC GR-C 系列，是最早把摄像机与录像机合为一体的家用摄录机之一，采用 VHS-C 小型磁带，让家庭录像摆脱「摄影机+录像机」的连线组合。它是家用摄像机大众化的先驱，为后来的 Handycam 时代铺平了道路。",
       specs: [
@@ -1117,6 +1136,7 @@ window.DB_CHUNKS.push({
       year: 1980,
       priceText: "首发约 ¥5,800（日本）",
       price: 40,
+      source: "curated", synthetic: false,
       tags: ["电子游戏机", "掌机", "段码液晶", "电子表", "1980"],
       summary: "1980 年上市的 Game & Watch（首款《Ball》）把电子游戏塞进电子表大小的机身，段码液晶与游戏、时钟、闹钟三合一的设计风靡全球，全系列累计销量约 4340 万台。它是任天堂掌机帝国的起点，十字键也在此萌芽。",
       specs: [

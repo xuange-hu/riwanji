@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1997,
       priceText: "约 ¥1999（上市价估算）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["有线", "开放式", "头戴", "Hi-Fi", "经典"],
       summary: "开放式动圈经典，均衡耐听的发烧入门标杆",
       specs: [
@@ -53,6 +54,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥2888（2016 年上市价）",
       price: 2888,
+      source: "curated", synthetic: false,
       tags: ["无线降噪", "头戴", "差旅", "蓝牙"],
       summary: "主动降噪头戴的普及者，差旅降噪标杆",
       specs: [
@@ -92,6 +94,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥1288（2016 年上市价）",
       price: 1288,
+      source: "curated", synthetic: false,
       tags: ["真无线", "开创品类", "半入耳", "便携"],
       summary: "真无线耳机开创者，即连即用的生态标杆",
       specs: [
@@ -131,6 +134,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥2599（2018 年上市价）",
       price: 2599,
+      source: "curated", synthetic: false,
       tags: ["无线降噪", "头戴", "旗舰", "LDAC"],
       summary: "QN1 降噪加持的旗舰头戴，可折叠长续航",
       specs: [
@@ -171,6 +175,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥1999（2019 年上市价）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["真无线", "主动降噪", "通透模式", "便携"],
       summary: "带降噪的入耳真无线，通透模式自然流畅",
       specs: [

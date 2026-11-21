@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2004,
       priceText: "约 ¥6500（2004 年上市价）",
       price: 6500,
+      source: "curated", synthetic: false,
       tags: ["翻盖", "超薄设计", "金属机身", "时尚"],
       summary: "13.9 毫米超薄金属翻盖，重新定义手机的时尚设计。",
       specs: [
@@ -55,6 +56,7 @@ window.DB_CHUNKS.push({
       year: 2007,
       priceText: "约 ¥4800（2007 年水货参考价，美国上市价 499 美元起）",
       price: 4800,
+      source: "curated", synthetic: false,
       tags: ["触屏", "智能手机", "划时代", "iOS"],
       summary: "多点触控重新发明手机，智能手机时代的开端。",
       specs: [
@@ -97,6 +99,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥4999（2010 年联通 16GB 版）",
       price: 4999,
+      source: "curated", synthetic: false,
       tags: ["视网膜屏", "双面玻璃", "iOS", "经典旗舰"],
       summary: "Retina 视网膜屏与双面玻璃设计，iPhone 的颜值巅峰。",
       specs: [
@@ -139,6 +142,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥1999（2011 年上市价）",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["性价比", "MIUI", "双核", "国民手机"],
       summary: "1999 元买到双核旗舰配置，性价比时代的开创者。",
       specs: [

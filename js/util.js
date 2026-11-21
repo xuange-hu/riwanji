@@ -20,6 +20,15 @@ function shareBase() {
 }
 /* 安全解码：非法百分号编码（如 %E0%A4%A）不抛 URIError 导致白屏 */
 const safeDecode = (s) => { try { return decodeURIComponent(s || ''); } catch (e) { return String(s || ''); } };
+/* P2-14：外链协议白名单——只放行 http/https，阻断 javascript:/data:/vbscript: 等点击型注入。
+   当前 27 条 media 全为 https（不可触发），此处为第三方导入/数据污染提供纵深。 */
+const safeUrl = (u) => {
+  try {
+    const s = String(u || '').trim();
+    if (/^https?:\/\//i.test(s)) return s;
+    return '#';
+  } catch (e) { return '#'; }
+};
 const fmtScore = (n) => (typeof n === 'number' ? n.toFixed(1) : '–');
 const fmtNum = (n) => (typeof n === 'number' ? n.toLocaleString('en-US') : String(n));
 /* 本地日期 YYYY-MM-DD（问题 69）：toISOString 是 UTC，中国凌晨 0–8 点会显示前一天 */
@@ -28,18 +37,24 @@ function localDate(d) {
   return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
 }
 
-/* 可撤销 Toast（问题 31）：5 秒内点「撤销」回滚快照 */
-function toastUndo(msg, undoFn) {
-  let el = $('#toast');
+/* Toast 元素工厂（问题 P3-5）：撤销 Toast 与普通 Toast 用独立元素 + 独立定时器，
+   避免撤销期内的普通提示清空撤销按钮、吞掉撤销机会 */
+function toastEl(id) {
+  let el = document.getElementById(id);
   if (!el) {
     el = document.createElement('div');
-    el.id = 'toast';
-    el.className = 'toast';
-    /* 问题 10：读屏播报 + 撤销按钮可点（toast 容器 pointer-events:none 需对按钮恢复） */
+    el.id = id;
+    el.className = 'toast' + (id === 'toast-undo' ? ' toast-undo-bar' : '');
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
     document.body.appendChild(el);
   }
+  return el;
+}
+
+/* 可撤销 Toast（问题 31）：5 秒内点「撤销」回滚快照 */
+function toastUndo(msg, undoFn) {
+  const el = toastEl('toast-undo');
   el.innerHTML = '';
   el.appendChild(document.createTextNode(msg + ' '));
   const b = document.createElement('button');
@@ -52,21 +67,13 @@ function toastUndo(msg, undoFn) {
   });
   el.appendChild(b);
   el.classList.add('show');
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => el.classList.remove('show'), 5000);
+  clearTimeout(toastUndo._t);
+  toastUndo._t = setTimeout(() => el.classList.remove('show'), 5000);
 }
 
 /* 轻量 Toast 提示 */
 function toast(msg) {
-  let el = $('#toast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'toast';
-    el.className = 'toast';
-    el.setAttribute('role', 'status');
-    el.setAttribute('aria-live', 'polite');
-    document.body.appendChild(el);
-  }
+  const el = toastEl('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toast._t);

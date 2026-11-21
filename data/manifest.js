@@ -38,6 +38,11 @@ window.DB_MANIFEST = {
       "count": 21
     },
     {
+      "file": "data/enrich-local.js",
+      "category": "unknown",
+      "count": 0
+    },
+    {
       "file": "data/headphone-2.js",
       "category": "headphone",
       "count": 15
@@ -156,7 +161,7 @@ window.DB_MANIFEST = {
     },
     {
       "file": "data/gen/bulk-static-05.js",
-      "category": "satellite-phone",
+      "category": "laptop",
       "count": 200
     },
     {
@@ -266,7 +271,7 @@ window.DB_MANIFEST = {
     },
     {
       "file": "data/gen/bulk-static-27.js",
-      "category": "smart-light",
+      "category": "smart-plug",
       "count": 200
     },
     {
@@ -404,9 +409,9 @@ window.DB_MANIFEST = {
     "brands": 657,
     "brandsCurated": 192,
     "categories": 106,
-    "leavesWithProducts": 1035,
+    "leavesWithProducts": 1646,
     "groups": 16,
-    "leaves": 2279,
+    "leaves": 2284,
     "yearMin": 1954,
     "yearMax": 2024
   }

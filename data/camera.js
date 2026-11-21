@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1954,
       priceText: "约 ¥950（1954 年上市价，约 385 美元按当时汇率折算）",
       price: 950,
+      source: "curated", synthetic: false,
       tags: ["旁轴", "胶片", "德系经典", "黄斑对焦"],
       summary: "1954 年诞生的德系旁轴胶片机，黄斑联动对焦与静音快门成为传奇。",
       specs: [
@@ -52,6 +53,7 @@ window.DB_CHUNKS.push({
       year: 2008,
       priceText: "约 ¥17000（2008 年机身上市价）",
       price: 17000,
+      source: "curated", synthetic: false,
       tags: ["全画幅", "单反", "视频革命"],
       summary: "开启单反视频革命的全画幅机型，2110 万像素画质扎实耐看。",
       specs: [
@@ -91,6 +93,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥7000（2011 年机身上市价）",
       price: 7000,
+      source: "curated", synthetic: false,
       tags: ["复古旁轴", "定焦", "随身机", "混合取景器"],
       summary: "复古旁轴造型的 APS-C 定焦随身机，混合取景器的开山之作。",
       specs: [
@@ -131,6 +134,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥22600（2017 年机身上市价）",
       price: 22600,
+      source: "curated", synthetic: false,
       tags: ["高像素", "单反", "全画幅", "全能旗舰"],
       summary: "4575 万像素的全能单反旗舰，画质、速度与视频样样顶尖。",
       specs: [
@@ -170,6 +174,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥14500（2018 年机身上市价）",
       price: 14500,
+      source: "curated", synthetic: false,
       tags: ["全画幅", "微单", "五轴防抖", "均衡水桶机"],
       summary: "2420 万像素全画幅微单，对焦、续航、视频全面均衡的水桶机。",
       specs: [

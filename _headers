@@ -1,0 +1,8 @@
+# 由 tools/build-dist.js 生成：供 Nginx / Cloudflare 等承载层读取
+# GitHub Pages / Gitee Pages 不识别本文件，需在 HTML 中用 meta CSP 兜底
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+

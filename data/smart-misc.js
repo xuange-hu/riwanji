@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥399",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["AMOLED 大屏", "独立 GPS", "NFC", "轻薄", "长续航"],
       summary: "小米手环 8 Pro 换上 1.74 英寸 AMOLED 大方屏，显示面积较标准版明显提升，机身依然轻至约 22.5 克。内置独立 GNSS 可脱离手机记录跑步轨迹，支持 NFC 门禁与公交、血氧心率监测，典型续航约两周，是大屏轻智能手环的代表作。",
       specs: [
@@ -54,6 +55,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥269",
       price: 269,
+      source: "curated", synthetic: false,
       tags: ["轻薄", "睡眠监测", "TruSeen", "长续航", "快充"],
       summary: "华为手环 9 主打轻薄与睡眠健康，机身约 14 克、厚度不到 10 毫米，佩戴近乎无感。搭载 TruSeen 5.5 心率监测与升级的睡眠分期、呼吸健康研究功能，典型续航约两周，充电 5 分钟可用一整天，是入门健康手环的稳妥选择。",
       specs: [
@@ -95,6 +97,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥999",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["健康追踪", "GPS", "ECG", "Google 服务", "运动手环"],
       summary: "Fitbit Charge 6 是 Fitbit 并入 Google 后的主力运动手环，心率算法回归更高准确度，支持 ECG 心电图、皮肤温度与血氧监测。内置 GPS 与 40+ 运动模式，并整合 Google 钱包与 YouTube Music 控制，是偏重健康数据的进阶手环。",
       specs: [
@@ -143,6 +146,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥899",
       price: 899,
+      source: "curated", synthetic: false,
       tags: ["电动牙刷", "iO 微震", "压力感应", "智能引导", "圆头刷头"],
       summary: "欧乐B iO5 搭载 iO 微震技术，将线性马达能量直接传至刷毛，配合标志性小圆头逐颗包裹清洁。内置智能压力感应可防止用力过猛，彩色环与刷牙计时引导 2 分钟清洁，5 种模式覆盖日常、柔护、美白等需求，App 蓝牙连接可生成刷牙报告。",
       specs: [
@@ -182,6 +186,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥2299",
       price: 2299,
+      source: "curated", synthetic: false,
       tags: ["旋转式剃须", "SkinIQ", "干湿两用", "三刀头", "旗舰理容"],
       summary: "飞利浦 S9935 属 9000 系列高端旋转剃须刀，SkinIQ 智能科技可根据胡须密度自动调节动力，微珠舒适圈减少摩擦刺激。360 度灵活刀头贴合面部轮廓，支持干湿两用与全身水洗，配合清洁舱使用可维持刀头卫生，适合追求剃净与舒适兼顾的用户。",
       specs: [
@@ -221,6 +226,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥129",
       price: 129,
+      source: "curated", synthetic: false,
       tags: ["体脂秤", "BIA 测脂", "家庭健康", "App 联动", "入门"],
       summary: "云麦体脂秤 3 采用 BIA 生物电阻抗技术，赤脚上秤即可测出体重、体脂率、肌肉量等十余项身体数据。钢化玻璃秤面配隐藏式 LED 屏，App 蓝牙同步可记录家庭多位成员的历史曲线，百元出头的价格是入门家庭健康监测的实惠之选。",
       specs: [
@@ -269,6 +275,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥799",
       price: 799,
+      source: "curated", synthetic: false,
       tags: ["4K 行车记录", "STARVIS 2", "ADAS", "停车监控", "语音控制"],
       summary: "70 迈 A810 主打 4K 超清记录，搭载索尼 STARVIS 2 图像传感器，夜间车牌辨识能力突出。支持 ADAS 驾驶辅助、24 小时停车监控与语音控制，紧急情况自动锁定录像，3 英寸屏回放直观，是进阶车主的高清单记录仪选择。",
       specs: [
@@ -309,6 +316,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥1099",
       price: 1099,
+      source: "curated", synthetic: false,
       tags: ["车载导航", "GPS", "离线地图", "车道引导", "驾驶警示"],
       summary: "Garmin Drive 52 是佳明面向家用车的 5 英寸专用导航仪，离线地图不依赖手机信号，隧道山区也能稳定导航。提供车道引导、路口实景放大与前方测速/学校路段等警示，操作简单开机即用，适合不想用手机导航的车主与长途自驾。",
       specs: [
@@ -349,6 +357,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥199",
       price: 199,
+      source: "curated", synthetic: false,
       tags: ["无线充电", "车载支架", "50W 快充", "自动夹臂", "散热"],
       summary: "小米 50W 车载无线充电器把无线充与手机支架合二为一，红外感应自动开合夹臂，放上即充。对小米机型最高 50W 无线快充，兼容 Qi 协议设备，内置散热风扇与多重安全保护，是米系手机车主的顺手配件。",
       specs: [
@@ -395,6 +404,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥8999",
       price: 8999,
+      source: "curated", synthetic: false,
       tags: ["学习机", "AI 精准学", "护眼屏", "作文批改", "口语评测"],
       summary: "讯飞 AI 学习机 T20 定位高端，依托讯飞语音与 AI 技术提供 AI 精准学、作文批改与口语评测等辅导功能。大尺寸护眼屏配坐姿提醒，覆盖小初高多学科同步学与查漏补缺，主打让家长少操心、孩子少刷无效题。",
       specs: [
@@ -435,6 +445,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥1299",
       price: 1299,
+      source: "curated", synthetic: false,
       tags: ["词典笔", "离线翻译", "语法分析", "口语练习", "查词快"],
       summary: "有道词典笔 X6 Pro 扫一扫即查词翻译，内置权威词典与海量词库，离线也能用。新增语法分析、作文批改与 AI 口语练习，支持整句翻译与语音查词，是英语学习与阅读提速的高效工具，学生与外语阅读者都适用。",
       specs: [
@@ -475,6 +486,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥2298",
       price: 2298,
+      source: "curated", synthetic: false,
       tags: ["电话手表", "儿童定位", "视频通话", "防水", "社交"],
       summary: "小天才 Z9 是儿童电话手表的旗舰，支持 4G 全网通通话与视频，多重定位（GPS、基站、Wi-Fi 等）让家长随时掌握孩子位置。配备可旋转摄像头便于视频与拍照，高等级防水耐用，碰一碰加好友的社交生态是孩子圈的硬通货。",
       specs: [
@@ -523,6 +535,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥799",
       price: 799,
+      source: "curated", synthetic: false,
       tags: ["生产力鼠标", "电磁滚轮", "静音", "多设备", "人体工学"],
       summary: "MX Master 3S 延续经典人体工学模具，升级 8000 DPI 传感器与约 -90% 降噪的静音微动。MagSpeed 电磁滚轮一秒千行、精准逐格两相宜，支持蓝牙与 Bolt 接收器三设备切换，Flow 跨屏传输文件，是办公效率鼠标的标杆。",
       specs: [
@@ -563,6 +576,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥2180",
       price: 2180,
+      source: "curated", synthetic: false,
       tags: ["静电容", "60% 配列", "程序员", "蓝牙", "经典"],
       summary: "HHKB Professional HYBRID 延续 60 键紧凑配列与静电容无触点结构，键感柔和安静、经久耐用。支持蓝牙与有线双模连接、多设备记忆，经典键位布局把 Ctrl 放在黄金位置，是程序员与文字工作者奉为信仰的生产力工具。",
       specs: [
@@ -603,6 +617,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1099",
       price: 1099,
+      source: "curated", synthetic: false,
       tags: ["直播工具", "可编程按键", "LCD 按键", "创作者", "效率"],
       summary: "Elgato Stream Deck MK.2 拥有 15 个可自定义 LCD 按键，一键触发直播切换、场景控制、音效与宏命令。插件生态覆盖 OBS、Discord、Spotify 等主流软件，可换式面框与可调支架，是主播、UP 主与效率党的可编程控制台。",
       specs: [
@@ -651,6 +666,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥899",
       price: 899,
+      source: "curated", synthetic: false,
       tags: ["移动电源", "140W", "PD 3.1", "大容量", "数显"],
       summary: "Anker 737 内置约 24000mAh 大容量电芯，支持最高 140W 双向快充，可为 MacBook Pro 级笔记本满速供电。三口设计配智能数显屏实时显示功率，PD 3.1 协议覆盖手机、平板、笔记本全场景，是长途出行的移动电站。",
       specs: [
@@ -691,6 +707,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥129",
       price: 129,
+      source: "curated", synthetic: false,
       tags: ["氮化镓", "67W", "快充", "多口", "便携"],
       summary: "小米 67W 氮化镓充电器用 GaN 功率器件把 67W 大功率塞进小巧机身，一个充电器兼顾手机、平板与轻薄本。支持 PD 等主流快充协议、多口同时输出（功率智能分配），折叠插脚方便收纳，是性价比路线的多面手。",
       specs: [
@@ -739,6 +756,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥3599",
       price: 3599,
+      source: "curated", synthetic: false,
       tags: ["VR 一体机", "混合现实", "Pancake", "XR2 Gen 2", "免驱"],
       summary: "Meta Quest 3 搭载骁龙 XR2 Gen 2 平台与 Pancake 光学，显示更清晰、机身更轻薄。彩色透视让混合现实体验真正可用，无需电脑即插即玩，健身、游戏、观影一体，是目前消费级 VR 综合体验的首选之一。",
       specs: [
@@ -779,6 +797,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥29999",
       price: 29999,
+      source: "curated", synthetic: false,
       tags: ["空间计算", "眼动交互", "micro-OLED", "visionOS", "旗舰"],
       summary: "Apple Vision Pro 是苹果的空间计算设备，micro-OLED 双屏呈现极高清晰度，眼动加手势的交互几乎没有学习成本。可将 Mac 屏幕虚拟化为巨幕工作区，空间视频与沉浸影音体验独一档，是空间计算时代的开创性产品。",
       specs: [
@@ -819,6 +838,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥2499",
       price: 2499,
+      source: "curated", synthetic: false,
       tags: ["VR 一体机", "Pancake", "轻薄", "国行生态", "性价比"],
       summary: "PICO 4 采用 Pancake 折叠光路，主机轻至约 295 克，前后配重平衡佩戴舒适。彩色透视、6DoF 手柄与丰富的国行内容生态，本地化服务与售后便利，是国行 VR 一体机中性价比较高的选择。",
       specs: [
@@ -867,6 +887,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1068",
       price: 1068,
+      source: "curated", synthetic: false,
       tags: ["墨水屏", "300ppi", "暖光", "防水", "长续航"],
       summary: "Kindle Paperwhite 5 换上 6.8 英寸 300ppi 墨水屏，边框更窄、翻页更快，17 级暖光调节让夜读更舒适。IPX8 防水、数周续航与 USB-C 充电，配合亚马逊书城生态，是墨水屏阅读器的经典标杆。",
       specs: [
@@ -907,6 +928,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥4799",
       price: 4799,
+      source: "curated", synthetic: false,
       tags: ["彩色墨水屏", "Kaleido 3", "快刷", "安卓开放", "手写"],
       summary: "文石 Tab10C Pro 用 Kaleido 3 彩色墨水屏兼顾护眼与彩色内容，自研快刷技术让滑动与视频接近流畅。开放安卓系统可装各类应用，支持手写笔记与 PDF 批注，兼顾阅读、办公与护眼平板需求，是墨水屏进阶旗舰。",
       specs: [
@@ -955,6 +977,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥459",
       price: 459,
+      source: "curated", synthetic: false,
       tags: ["游戏手柄", "无线", "Xbox", "PC 兼容", "人体工学"],
       summary: "Xbox Series 世代无线手柄延续经典人体工学握感，摇杆与十字键全面升级，新增分享键。支持 Xbox Wireless 与蓝牙双模连接，可玩 Xbox 主机、PC 与手机，两节 5 号电池供电灵活，是手柄领域的水桶级标杆。",
       specs: [
@@ -995,6 +1018,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥329",
       price: 329,
+      source: "curated", synthetic: false,
       tags: ["游戏手柄", "多平台", "背键", "霍尔摇杆", "性价比"],
       summary: "8BitDo Pro 2 是多平台无线手柄的性价比之选，支持 Switch、PC、安卓、苹果设备，双背键可自定义宏。摇杆扳机调校扎实，内置锂电池续航持久，配套软件可深度映射与改键，适合想要旗舰手感但预算有限的玩家。",
       specs: [
@@ -1043,6 +1067,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥199",
       price: 199,
+      source: "curated", synthetic: false,
       tags: ["电饭煲", "3L", "智能预约", "不粘内胆", "性价比"],
       summary: "米家电饭煲 3L 定位小家庭与租房党，3 升容量煮 2-4 人饭量刚好。支持 24 小时预约与多种烹饪模式，不粘内胆易清洗，接入米家 App 可远程选模式看状态，百元价位把智能小家电做进厨房。",
       specs: [

@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥3999",
       price: 3999,
+      source: "curated", synthetic: false,
       tags: ["全自动咖啡机", "意式浓缩", "内置研磨", "奶泡系统", "家用常青款"],
       summary: "德龙 Magnifica S 系列的中坚机型，一键从咖啡豆到意式浓缩、长杯咖啡，内置锥形钢磨提供 13 档研磨度，手动蒸汽奶泡系统可打发细腻奶泡。操作直观、拆洗方便、故障率低，是四千元档全自动咖啡机里的常青款，也是很多家庭的第一台全自动咖啡机。",
       specs: [
@@ -54,6 +55,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥12388",
       price: 12388,
+      source: "curated", synthetic: false,
       tags: ["料理机", "多功能一体", "引导烹饪", "精准控温", "高端厨房"],
       summary: "德国福维克旗下旗舰料理机，把称重、研磨、揉面、蒸煮、慢炖等功能集成于一台，配合 Cookidoo 云端引导菜谱，按屏幕提示投料即可完成复杂菜品。约 2.2L 主锅与精准控温让它既能当炒菜机也能当面包机，是高端料理机市场的标杆产品。",
       specs: [
@@ -94,6 +96,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥399",
       price: 399,
+      source: "curated", synthetic: false,
       tags: ["电饭煲", "智能联动", "APP 控制", "小巧", "高性价比"],
       summary: "小米生态链的经典小家电，3L 容积适合一到六人家庭，IH 电磁环绕加热配合厚釜内胆，煮出的米饭粒粒分明。支持米家 App 远程预约与智能联动，几百元的价位提供了远超预期的体验，是入门智能电饭煲的代表作之一。",
       specs: [
@@ -134,6 +137,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥2999",
       price: 2999,
+      source: "curated", synthetic: false,
       tags: ["空气炸锅", "大容量", "少油烹饪", "多功能", "家庭装"],
       summary: "飞利浦大容量空气炸锅的代表机型，约 7.3L 炸篮可整鸡入锅，高速热风循环以少油甚至无油实现酥脆口感。触控面板配多种预设菜单，煎炸烧烤烘焙一机完成，可拆卸不粘炸篮清洗方便，适合追求健康饮食的多口之家。",
       specs: [
@@ -174,6 +178,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥3680",
       price: 3680,
+      source: "curated", synthetic: false,
       tags: ["半自动咖啡机", "内置研磨", "PID 控温", "蒸汽拉花", "进阶之选"],
       summary: "铂富经典家用半自动咖啡机，内置锥形磨豆器与 54mm 冲煮头，配备压力表与 PID 控温，从磨豆到萃取一条龙完成。约 2L 活水箱与手动蒸汽棒兼顾日常口粮与拉花练习，是许多家庭咖啡爱好者的第一台进阶机。",
       specs: [
@@ -222,6 +227,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥2699",
       price: 2699,
+      source: "curated", synthetic: false,
       tags: ["洗地机", "干湿两用", "自清洁", "热风烘干", "智能感应"],
       summary: "追觅中高端无线洗地机，吸拖洗一体同步处理干湿垃圾，约 18000Pa 吸力配合双侧贴边滚刷，墙角也能一次到位。自清洁后自动热风烘干滚刷，减少异味与霉变，脏污感应自动调节吸力，是全屋硬地面清洁的高效方案。",
       specs: [
@@ -262,6 +268,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥2990",
       price: 2990,
+      source: "curated", synthetic: false,
       tags: ["洗地机", "干湿两用", "双水路", "自清洁", "美系清洁"],
       summary: "必胜 CrossWave 系列技术下放的无线洗地机，双水路设计边喷清水边吸污水，干湿垃圾同步处理。一键自清洁程序免去手洗滚刷的烦恼，操作直白、皮实耐用，是美系清洁家电里口碑积累多年的实用之选。",
       specs: [
@@ -302,6 +309,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥5490",
       price: 5490,
+      source: "curated", synthetic: false,
       tags: ["无绳吸尘器", "激光探测", "除螨", "智能显示", "旗舰"],
       summary: "戴森旗舰无绳吸尘器，约 230AW 吸力配合激光软绒滚筒照亮地面微尘，压电传感器实时统计颗粒物并自动调节吸力。LCD 屏显示清洁数据，整机 HEPA 密封过滤，从地板到床褥全面覆盖，是无绳吸尘器的标杆级产品。",
       specs: [
@@ -342,6 +350,7 @@ window.DB_CHUNKS.push({
       year: 2024,
       priceText: "约 ¥1999",
       price: 1999,
+      source: "curated", synthetic: false,
       tags: ["洗地机", "防缠绕", "可躺平", "热风烘干", "性价比"],
       summary: "石头科技切入洗地机市场的走量之作，约 17000Pa 吸力配合防缠绕梳齿滚刷，毛发不易缠绕。机身可大幅躺平深入沙发与床底，自清洁后热风烘干滚刷，以两千元档的价格给出完整体验，性价比路线清晰。",
       specs: [
@@ -382,6 +391,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥6499",
       price: 6499,
+      source: "curated", synthetic: false,
       tags: ["洗碗机", "嵌入式", "大容量", "高温除菌", "厨房升级"],
       summary: "西门子经典嵌入式洗碗机，约 13 套中式标准容量可收纳全家锅碗，高温洗涤除菌加冷凝烘干，程序覆盖日常洗、节能洗与快洗。约 46dB 运行噪音安静不扰人，是新装修厨房解放双手的高性价比之选。",
       specs: [
@@ -431,6 +441,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥6699",
       price: 6699,
+      source: "curated", synthetic: false,
       tags: ["净化风扇", "无雾加湿", "除甲醛", "整屋循环", "三合一"],
       summary: "戴森三合一旗舰环境电器，净化、加湿、循环扇集于一身，H13 HEPA 整机密封过滤配合催化分解甲醛滤网，无雾加湿经 UV 杀菌后送出。适合空调房与干燥季节，一台解决空气质量、湿度与空气循环三大问题。",
       specs: [
@@ -472,6 +483,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥3299",
       price: 3299,
+      source: "curated", synthetic: false,
       tags: ["空气净化器", "HEPASilent", "低噪", "除醛除霾", "北欧品牌"],
       summary: "布鲁雅尔 Blue Pure 系列进阶机型，HEPASilent 复合滤网兼顾颗粒物与气态污染物净化，约 400m³/h 颗粒物 CADR 覆盖中型客厅。运行安静、能耗低，织物预过滤网可水洗更换颜色，是注重静音与滤效平衡的稳妥之选。",
       specs: [
@@ -513,6 +525,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1299",
       price: 1299,
+      source: "curated", synthetic: false,
       tags: ["空气净化器", "除醛除霾", "OLED 显示", "智能联动", "高性价比"],
       summary: "小米净化器主力机型，约 500m³/h 颗粒物 CADR 配合约 200m³/h 甲醛 CADR，覆盖 35–60㎡ 空间。OLED 屏实时显示 PM2.5 与温湿度，接入米家 App 支持语音与智能家居联动，千元出头的定价让全屋净化变得触手可及。",
       specs: [
@@ -554,6 +567,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥3999",
       price: 3999,
+      source: "curated", synthetic: false,
       tags: ["变频空调", "全直流", "一级能效", "智能控制", "静音"],
       summary: "智米推出的全直流变频壁挂空调，直流压缩机加直流电机组合带来一级能效与宽频运行，App 深度集成米家生态实现远程与场景控制。极简白色机身与低噪运行适合卧室，是互联网品牌挑战传统空调的代表作。",
       specs: [
@@ -595,6 +609,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥5699",
       price: 5699,
+      source: "curated", synthetic: false,
       tags: ["暖风净化器", "无叶风扇", "除甲醛", "冷暖两用", "安全设计"],
       summary: "戴森冷暖两用净化器，冬天制热夏天循环凉风，H13 HEPA 整机密封过滤配合催化甲醛滤网持续分解甲醛。无叶设计对儿童与宠物友好，喷射与扩散双模式兼顾取暖与净化，是客厅四季常开的环境中枢。",
       specs: [
@@ -644,6 +659,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥8999",
       price: 8999,
+      source: "curated", synthetic: false,
       tags: ["洗烘套装", "热泵烘干", "直驱电机", "大容量", "除菌"],
       summary: "海尔纤美系列经典洗烘套装，10kg 洗衣机搭配 10kg 热泵烘干机，FPA 直驱电机安静稳定，双擎热泵正反转防缠绕。洗烘分开各司其职，衣物蓬松损伤小，是追求洗护品质家庭的一步到位之选。",
       specs: [
@@ -685,6 +701,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥3299",
       price: 3299,
+      source: "curated", synthetic: false,
       tags: ["洗烘一体", "水魔方", "大容量", "除菌", "高性价比"],
       summary: "小天鹅水魔方系列洗烘一体机，10kg 洗涤搭配约 7kg 烘干，冷水洗科技减少衣物缠绕与褪色，冷凝烘干应对梅雨天应急干衣。程序覆盖羊毛、羽绒与空气洗，三千元档兼顾容量与功能，是小户型的务实选择。",
       specs: [
@@ -726,6 +743,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥4299",
       price: 4299,
+      source: "curated", synthetic: false,
       tags: ["滚筒洗衣机", "BLDC 电机", "除菌洗", "德系品质", "大容量"],
       summary: "西门子中端滚筒洗衣机，约 10kg 大容量搭配 BLDC 变频电机，程序覆盖棉织物、混合、羊毛与快洗，高温除菌与洁筒程序守护健康。德系调校运行稳定安静，是追求品质与耐用性的家庭主力机型。",
       specs: [
@@ -768,6 +786,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥3999",
       price: 3999,
+      source: "curated", synthetic: false,
       tags: ["滚筒洗衣机", "除菌液洗", "快洗程序", "德系品质", "家用主力"],
       summary: "博世 4 系滚筒洗衣机，约 10kg 容量配合衣量自检智能调节水量与时间，快洗程序兼顾效率与洁净。除菌液洗与筒自洁守护洗衣健康，运行稳定噪音低，德系品控让它成为很多家庭的十年之选。",
       specs: [
@@ -810,6 +829,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥5999",
       price: 5999,
+      source: "curated", synthetic: false,
       tags: ["洗烘一体", "分子筛烘干", "低温护衣", "智能投放", "科技新锐"],
       summary: "石头科技跨界洗护的代表作，分子筛吸附式低温烘干避免高温损伤衣物，约 12kg 洗涤与约 7kg 烘干满足全家需求。毛絮过滤系统减少烘干残留，App 智能控制体验延续石头一贯的科技感，是洗烘一体机里的新势力。",
       specs: [

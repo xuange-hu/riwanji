@@ -44,8 +44,11 @@ function strLen(s) {
 }
 
 function listShards() {
+  /* P3-59：与 static-audit.js 的 77 口径统一——index.js 是演示轻索引而非 DB_CHUNKS 数据分片，
+     旧逻辑把它计入导致报 78。enrich-local.js 仍计入（其 DB_MEDIA_LOCAL 属数据，审计口径亦含）。 */
+  const NON_SHARDS = new Set(['manifest.js', 'categories.js', 'brand-alias.js', 'index.js']);
   const top = fs.readdirSync(DATA_DIR)
-    .filter((f) => f.endsWith('.js') && f !== 'manifest.js' && f !== 'brand-alias.js' && f !== 'categories.js')
+    .filter((f) => f.endsWith('.js') && !NON_SHARDS.has(f))
     .map((f) => ({ abs: path.join(DATA_DIR, f), rel: 'data/' + f }));
   const genDir = path.join(DATA_DIR, 'gen');
   const gen = fs.existsSync(genDir)

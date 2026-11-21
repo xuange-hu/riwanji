@@ -37,9 +37,15 @@ ngrok http 8123
 
 ### 2. 上传站点
 ```bash
-# 本地打包（排除缓存）
+# 本地打包（只含运行所需：源码 + data 分片 + tools；排除 4.7G 源数据、dist 真仓库与敏感文件）
 cd riwanji-site
-tar czf ../riwanji-site.tar.gz --exclude='data/enrich/_*.json' .
+tar czf ../riwanji-site.tar.gz \
+  --exclude='data/bulk' \
+  --exclude='data/enrich/_*.json' \
+  --exclude='dist' \
+  --exclude='.git' --exclude='.git.broken-*' --exclude='dist/.git' \
+  --exclude='tools/tunnel-url.txt' --exclude='tools/tunnel-log.txt*' --exclude='tools/.ssh-known-hosts' \
+  --exclude='*.zip' --exclude='node_modules' --exclude='.DS_Store' --exclude='*.tmp' .
 
 # 传到服务器
 scp ../riwanji-site.tar.gz root@<服务器IP>:/opt/
@@ -47,10 +53,13 @@ ssh root@<服务器IP>
 mkdir -p /opt/riwanji-site && tar xzf /opt/riwanji-site.tar.gz -C /opt/riwanji-site
 ```
 
+> 关于「root 源码 / `dist/` 真仓库 / `data/bulk/` 不入库」的结构说明与从零 clone 后的重建方式，
+> 见 README「仓库结构说明」章节。路线 B 只上传运行所需文件，不含 4.7 GB bulk 与任何 `.git` 元数据。
+
 ### 3. 安装 Node 并启动
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt install -y nodejs          # node ≥ 18
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs          # node ≥ 20（CI 用 20）
 cd /opt/riwanji-site
 
 # 前台验证
@@ -113,15 +122,15 @@ node tools/build-index.js                                        # 重建演示�
 node tools/build-dist.js                                         # 重建部署包
 ```
 
-> **部署到非官方地址（Gitee / 自有域名）先设 `SITE_URL`**：预渲染的 sitemap / RSS /
-> canonical / OG / robots 绝对地址默认指向 `https://xuange-hu.github.io/riwanji/`，
-> 设 `SITE_URL` 后统一改写为目标地址再发布：
+> **部署到非官方地址（Gitee / 自有域名）先在构建前设 `SITE_URL`**：`build-dist.js` 已内联预渲染，
+> sitemap / RSS / canonical / OG / robots 绝对地址默认指向 `https://xuange-hu.github.io/riwanji/`，
+> 须在同一 shell 设 `SITE_URL` 后再构建，才会统一改写为目标地址（不要重复单独执行 `prerender.js`）：
 >
 > ```powershell
-> # PowerShell
-> $env:SITE_URL = "https://<你的用户名>.gitee.io/riwanji/"; node tools/prerender.js
+> # PowerShell（先设，再构建）
+> $env:SITE_URL = "https://<你的用户名>.gitee.io/riwanji/"; node tools/build-dist.js
 > # bash
-> SITE_URL=https://<你的用户名>.gitee.io/riwanji/ node tools/prerender.js
+> SITE_URL=https://<你的用户名>.gitee.io/riwanji/ node tools/build-dist.js
 > ```
 
 **推送 Gitee 三步**（Gitee 网页先建空仓库，如 `riwanji`）：
@@ -135,9 +144,20 @@ git push -u origin master
 然后 Gitee 仓库页 →「服务」→「Gitee Pages」→ 启动（分支 `master`，目录 `/`）→
 得到永久固定地址 `https://<你的用户名>.gitee.io/riwanji/`。
 
+**Gitee Pages 免费版不会自动发布**：首次启动后，每次向 `dist` 仓库 push 新产物，都必须再到
+仓库页「服务」→「Gitee Pages」手动点一次「更新」，线上才会刷新；GitHub Pages 随 push 自动发布。
+
+### 双远程发布与 SEO 归属
+
+`dist/` 仓库同时配置了 GitHub（`github`）与 Gitee（`origin`）远程，但产物内的 canonical / OG / RSS /
+robots 固化为构建时的**单一** `SITE_URL`（默认主站 `https://xuange-hu.github.io/riwanji/`）。
+这是刻意设计：Gitee 镜像站的 canonical 仍指向主站，避免搜索引擎把两个域名判为重复内容、稀释权重。
+若确实要把 Gitee 站作为**独立分站**（而非镜像）发布，请用各自的 `SITE_URL` 分别构建两套产物、
+推到各自远程目录，不要拿同一份 `dist/` 同时发布两个域名。
+
 **静态版内容**（构建时 Observed 实测）：
 - **10,346 个产品**：346 精选（真实图集 + 测评索引）+ 10,000 热门 SKU
-- 覆盖 **106 个品类 / 657 品牌**，全功能可用（搜索/筛选/品牌细分/对比/收藏/时间线/排行榜）
+- 演示样本自身覆盖 **106 个品类 / 584 个品牌**（全库合计 106 个品类 / 657 个品牌），全功能可用（搜索/筛选/品牌细分/对比/收藏/时间线/排行榜）
 - 每产品 ≥3 图（真实图优先，SVG 海报变体补足）
 - 已适配 Gitee Pages 子路径部署（全相对路径，静态审计 5/5 通过）
 - 限制：`tools/serve.js` 是开发/回归参考实现（多轮全库扫描、gzipSync 同步压缩、无请求频控），
@@ -165,7 +185,7 @@ git push -u origin master
 
 ## 公开前检查清单
 
-- [x] 安全响应头（X-Content-Type-Options / X-Frame-Options / Referrer-Policy）已加
+- [x] 安全响应头（X-Content-Type-Options / X-Frame-Options / Referrer-Policy）已在参考服务器 `tools/serve.js` 实现；纯静态托管需在 CDN / Nginx 等承载层另行注入（GitHub / Gitee Pages 不支持自定义响应头）
 - [x] 路径穿越防护（normalize + 分隔符边界 + realpath 实路径约束 + 隐藏文件拒绝，见 serve.js 静态文件处理）
 - [x] API 全只读（无写接口，无需鉴权）
 - [x] 搜索/输入全量转义（XSS 防护已过 27 项边缘用例）

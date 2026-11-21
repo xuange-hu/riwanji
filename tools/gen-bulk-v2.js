@@ -15,9 +15,12 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const GEN = path.join(ROOT, 'data', 'gen');
-
 const args = process.argv.slice(2);
+/* --out：可选输出目录（小样本验证用，默认仍为 data/gen，避免误覆盖正式分片） */
+const outIdx = args.indexOf('--out');
+const GEN = outIdx >= 0 && args[outIdx + 1]
+  ? path.resolve(args[outIdx + 1])
+  : path.join(ROOT, 'data', 'gen');
 const argNum = (name, dft) => {
   const i = args.indexOf('--' + name);
   return i >= 0 && args[i + 1] ? parseInt(args[i + 1], 10) : dft;
@@ -47,6 +50,23 @@ new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'categories.js'),
 const TREE = treeWin.DB_CATEGORY_TREE || { groups: [] };
 const BASES = [];
 for (const g of TREE.groups || []) for (const b of g.bases || []) BASES.push(b);
+
+/* P2-12：catLeaf 必须取自品类树中真实存在的叶子。
+   categories.js 的 leaf id = base.id 或 base.id + '-' + variant.slug + ['-' + cross.slug]，
+   旧实现直接拼 base.id + '-' + variant.slug（忽略 cross），造出 2,262 条树外 leaf。 */
+const leafIdsByBase = {};
+(TREE.leaves || []).forEach((l) => {
+  const bid = l.baseId || l.id;
+  (leafIdsByBase[bid] = leafIdsByBase[bid] || []).push(l.id);
+});
+function pickCatLeaf(base, variant) {
+  const pool = leafIdsByBase[base.id] || [];
+  if (!pool.length) return base.id; /* 树中无该 base 时退化为根叶子 */
+  if (!variant) return pool.indexOf(base.id) >= 0 ? base.id : pool[0];
+  const pref = base.id + '-' + variant.slug;
+  const matched = pool.filter((id) => id !== base.id && id.indexOf(pref) === 0);
+  return matched.length ? pick(matched) : (pool.indexOf(base.id) >= 0 ? base.id : pool[0]);
+}
 
 /* ---- kind 模板：specs 值生成器 + 系列词 + 卖点 + 优缺点 + 价格区间 + 评分维度 ---- */
 /* 每个 kind 的参数键固定属于本品类语义域，杜绝跨品类参数混搭 */
@@ -257,9 +277,9 @@ const KIND = {
     series: ['Master', 'Edge', 'Forge', 'Prime', 'Titan', 'Core', 'Blade', 'X', 'Pro', 'Max'],
     points: ['性能释放', '散热规模', '堆料程度', '兼容性', '灯效同步'],
     specs: [
-      ['类型', (r) => r.pick(['显卡', '处理器', '主板', '内存', '固态硬盘', '电源', '散热器', '机箱'])],
-      ['规格', (r) => r.pick(['PCIe 5.0 ×16', 'AM5 / LGA1700', 'DDR5-6000', 'Gen4 ×4', 'ATX 3.0', '360 水冷'])],
-      ['规模', (r) => r.pick(['16+2 相供电', '三风扇 3.2 槽', '双塔双风扇', '全模组 850W', '12 热管'])],
+      ['类型', (r) => r.pick(((PCPART_FIELDS[r.baseId] || {}).类型) || ['电脑配件'])],
+      ['规格', (r) => r.pick(((PCPART_FIELDS[r.baseId] || {}).规格) || ['标准规格'])],
+      ['规模', (r) => r.pick(((PCPART_FIELDS[r.baseId] || {}).规模) || ['标准'])],
       ['灯效', (r) => r.pick(['ARGB 神光同步', 'ARGB', '无光', '单色灯'])],
       ['兼容', (r) => r.pick(['支持 E-ATX', '兼容 360 冷排', '限高 165mm', '支持 PCIe 4.0'])],
       ['质保', (r) => r.pick(['3 年质保', '5 年质保', '10 年质保', '终身质保'])]
@@ -397,6 +417,24 @@ const KIND_DEFAULT = {
     '扩展性一般', '噪音略大', '包装简陋', '学习成本高']
 };
 
+/* P2-10：pcpart 类目按 base.id 约束「类型/规格/规模」取值域。
+   旧实现 pcpart 模板随机吐显卡/主板/电源/机箱等任意配件，
+   导致「处理器 类型=主板」「U 盘 类型=机箱」等语义串味（613 条）。 */
+const PCPART_FIELDS = {
+  cpu:           { 类型: ['处理器', 'CPU'], 规格: ['AM5 / LGA1700', 'LGA1700', 'LGA1851'], 规模: ['8+4 相供电', '16+2 相供电', '64 核规格'] },
+  gpu:           { 类型: ['显卡'], 规格: ['PCIe 5.0 ×16', 'PCIe 4.0 ×16'], 规模: ['三风扇 3.2 槽', '双风扇 2 槽', '单风扇'] },
+  motherboard:   { 类型: ['主板'], 规格: ['ATX / M-ATX', 'AM5 / LGA1700', 'E-ATX'], 规模: ['16+2 相供电', '12+1 相供电', '8+2 相供电'] },
+  ram:           { 类型: ['内存'], 规格: ['DDR5-6000', 'DDR4-3200', 'DDR5-6800'], 规模: ['32GB 双通道', '16GB 双通道', '64GB 四通道'] },
+  storage:       { 类型: ['固态硬盘', '机械硬盘', 'U 盘', '移动固态硬盘'], 规格: ['Gen4 ×4', 'Gen3 ×4', 'SATA 6Gb/s'], 规模: ['1TB', '2TB', '4TB', '512GB'] },
+  psu:           { 类型: ['电源'], 规格: ['ATX 3.0', 'ATX 2.4'], 规模: ['全模组 850W', '半模组 650W', '1U 400W'] },
+  'pc-case':     { 类型: ['机箱'], 规格: ['支持 E-ATX', '兼容 360 冷排', 'ITX 规格'], 规模: ['中塔', '全塔', 'ITX 小箱'] },
+  cooler:        { 类型: ['散热器'], 规格: ['360 水冷', '240 水冷'], 规模: ['双塔双风扇', '12 热管', '单塔 4 热管'] },
+  expansion:     { 类型: ['扩展卡', '声卡', '网卡', '采集卡'], 规格: ['PCIe 4.0 ×1', 'PCIe 3.0 ×4'], 规模: ['万兆双口', '7.1 声道', '4K 采集'] },
+  'case-fan':    { 类型: ['机箱风扇', '散热风扇'], 规格: ['PWM 温控', 'DC 调速'], 规模: ['12cm', '14cm', '积木风扇'] },
+  'cable-sleeve':{ 类型: ['模组线', '延长线', '线材'], 规格: ['18AWG 镀银线', '24pin 供电'], 规模: ['全模组定制', '硅胶软线'] },
+  thermal:       { 类型: ['导热硅脂', '导热垫片', '液态金属', '相变片'], 规格: ['12.5W/mK', '8.5W/mK'], 规模: ['2g', '4g', '30×30mm'] }
+};
+
 /* ---- 年份加权分布：1954–2024，各年代都有 ---- */
 function genYear() {
   const r = rng();
@@ -405,6 +443,42 @@ function genYear() {
   if (r < 0.42) return ri(2000, 2009);
   if (r < 0.72) return ri(2010, 2019);
   return ri(2020, 2024);
+}
+
+/* P1-5：年代—规格一致性。
+   旧实现 genYear() 与 specPool 抽取完全独立，产出「1954 年手机配 USB-C / 骁龙8」「2007 年 8K 电视」。
+   修复：先定 year，规格值生成后立即按「token 最早可用年份」做年代化替换，
+   genYear 与规格抽取共享同一个 year（不再先抽规格再抽年份）。 */
+const YEAR_GATES = [
+  { re: /\bUSB-C\b|Type-C/gi,            year: 2015, to: (y) => (y < 2005 ? '串口 / USB 1.1' : 'Micro-USB') },
+  { re: /雷电\s*4|Thunderbolt\s*4/gi,    year: 2020, to: () => 'USB 3.0' },
+  { re: /蓝牙\s*5(?:\.\d)?|\bBT\s*5/gi,  year: 2016, to: () => '蓝牙 4.2' },
+  { re: /QD-OLED|Micro-OLED|AMOLED|LTPO|OLED/gi, year: 2017, to: () => 'IPS LCD' },
+  { re: /8K(?=\s|$)/g,                   year: 2018, to: () => '4K' },
+  { re: /HDMI\s*2\.1/gi,                 year: 2018, to: () => 'HDMI 1.4' },
+  { re: /Wi-Fi\s*6E?\b[^·]*/gi,          year: 2019, to: () => '802.11ac' },
+  { re: /Wi-Fi\s*7\b[^·]*/gi,            year: 2019, to: () => '802.11ac' },
+  { re: /5G(?![0-9])/g,                  year: 2019, to: () => '4G' },
+  { re: /骁龙\s*8\s*系|天玑\s*9000\s*系|酷睿\s*i9|锐龙\s*9|至强移动版|M\s*系列/gi, year: 2015, to: () => '酷睿2 双核 / 骁龙 600 系' },
+  { re: /LPDDR5/gi,                      year: 2015, to: () => 'DDR3' },
+  { re: /1\.08\s*亿主摄/g,               year: 2015, to: () => '800 万主摄' },
+  { re: /NVMe\s*SSD/gi,                  year: 2015, to: () => '机械硬盘' },
+  { re: /RTX\s*40\d0/gi,                 year: 2015, to: () => '集成显卡' },
+  { re: /120Hz|144Hz|165Hz|240Hz/g,      year: 2015, to: () => '60Hz' }
+];
+function fitToYear(value, year) {
+  let v = String(value);
+  YEAR_GATES.forEach((g) => { if (year < g.year) v = v.replace(g.re, g.to(year)); });
+  return v;
+}
+/* 变体名同样受年代约束（如「5G 手机 / 8K 电视 / OLED 显示器」变体不可用于早年） */
+function yearAllowsVariant(v, year) {
+  if (!v) return true;
+  const label = String(v.label || '');
+  if (/\b5G\b/i.test(label) && year < 2019) return false;
+  if (/\b8K\b/i.test(label) && year < 2018) return false;
+  if (/OLED/i.test(label) && year < 2017) return false;
+  return true;
 }
 
 /* ---- 型号命名：品牌 + 系列 + 型号码（杜绝品类词当产品名）---- */
@@ -460,9 +534,11 @@ const consPoolOf = (k) => Array.from(new Set((k.cons || []).concat(KIND_DEFAULT.
 function genProduct(base, seq) {
   const k = KIND[base.kind] || KIND_DEFAULT;
   const brand = pick(base.brands && base.brands.length ? base.brands : ['小米', '索尼', '三星']);
-  const variant = (base.variants && base.variants.length && rng() < 0.4) ? pick(base.variants) : null;
-  const name = genName(brand, k, variant ? variant.label : '');
+  /* P1-5：先定年份，再据此过滤变体与规格，二者共享同一个 year */
   const year = genYear();
+  const variantPool = (base.variants || []).filter((v) => yearAllowsVariant(v, year));
+  const variant = (variantPool.length && rng() < 0.4) ? pick(variantPool) : null;
+  const name = genName(brand, k, variant ? variant.label : '');
   /* 价格随年份衰减 + kind 区间约束（老产品便宜、新品贵），杜绝「工业打印机 ¥1,570」式错位 */
   const age = Math.max(0, 2024 - year);
   const [pLo, pHi] = k.price;
@@ -473,7 +549,8 @@ function genProduct(base, seq) {
   for (let i = 0; i < specN && specPool.length; i++) {
     const idx = Math.floor(rng() * specPool.length);
     const [key, gen] = specPool.splice(idx, 1)[0];
-    specs.push([key, gen({ ri, rf, pick })]);
+    /* P1-5 年代化 + P2-10 按 base.id 取值域（gen 内用 r.baseId 约束 pcpart） */
+    specs.push([key, fitToYear(gen({ ri, rf, pick, baseId: base.id }), year)]);
   }
   const scores = k.dims.map((d) => [d, ri(60, 96)]);
   const score = +(scores.reduce((n, s) => n + s[1], 0) / scores.length / 10).toFixed(1);
@@ -487,7 +564,7 @@ function genProduct(base, seq) {
     brand: brand,
     category: base.id,
     subcat: base.name,
-    catLeaf: variant ? base.id + '-' + variant.slug : base.id,
+    catLeaf: pickCatLeaf(base, variant),
     catName: base.name,
     year: year,
     priceText: '¥' + price.toLocaleString('en-US'),
@@ -538,14 +615,34 @@ function main() {
   /* ---- 自检 ---- */
   const nameSet = new Set(), idSet = new Set();
   let brandBrand = 0, salad = 0, catWordName = 0, yearRecent = 0;
+  let yearSpecConflict = 0, leafOutside = 0, pcTypeMismatch = 0, nameEra = 0;
+  const baseById = new Map(BASES.map((b) => [b.id, b]));
+  const hitsGate = (g, val) => { g.re.lastIndex = 0; return g.re.test(String(val)); };
   products.forEach((p) => {
     nameSet.add(p.name); idSet.add(p.id);
     if (p.summary.indexOf(p.brand + ' ' + p.brand) !== -1) brandBrand++;
     if (p.name.trim() === p.catName) catWordName++;
     if (p.year >= 2020) yearRecent++;
     /* 参数沙拉检测：specs 键必须全部来自本 kind 模板 */
-    const allowed = new Set(((KIND[(BASES.find((b) => b.id === p.category) || {}).kind] || KIND_DEFAULT).specs).map((s) => s[0]));
+    const allowed = new Set(((KIND[(baseById.get(p.category) || {}).kind] || KIND_DEFAULT).specs).map((s) => s[0]));
     p.specs.forEach((s) => { if (!allowed.has(s[0])) salad++; });
+    /* P1-5：规格值不得含晚于其年份的现代 token */
+    p.specs.forEach(([, val]) => {
+      if (YEAR_GATES.some((g) => p.year < g.year && hitsGate(g, val))) yearSpecConflict++;
+    });
+    /* P1-5：产品名（变体标签）同样不得含晚于其年份的现代 token */
+    if ((p.year < 2019 && /\b5G\b/i.test(p.name)) ||
+        (p.year < 2018 && /\b8K\b/i.test(p.name)) ||
+        (p.year < 2017 && /OLED/i.test(p.name))) nameEra++;
+    /* P2-12：catLeaf 必须 100% 落在真实品类树中 */
+    if (!TREE.leafById[p.catLeaf]) leafOutside++;
+    /* P2-10：pcpart 的「类型」必须属于该 base 的值域 */
+    const b = baseById.get(p.category);
+    if (b && b.kind === 'pcpart') {
+      const types = (PCPART_FIELDS[b.id] || {}).类型 || [];
+      const t = (p.specs.find((s) => s[0] === '类型') || [])[1];
+      if (t && types.length && types.indexOf(t) === -1) pcTypeMismatch++;
+    }
     if (!p.synthetic || p.source !== 'bulk') throw new Error('provenance missing: ' + p.id);
   });
   if (nameSet.size !== products.length) throw new Error('name duplicate: ' + (products.length - nameSet.size));
@@ -560,6 +657,10 @@ function main() {
   if (prosDup > 0) throw new Error('pros duplicate: ' + prosDup);
   if (brandBrand > 0 || salad > 0 || catWordName > 0) {
     throw new Error('quality check failed: brandBrand=' + brandBrand + ' salad=' + salad + ' catWord=' + catWordName);
+  }
+  if (yearSpecConflict > 0 || leafOutside > 0 || pcTypeMismatch > 0 || nameEra > 0) {
+    throw new Error('semantic check failed: yearSpec=' + yearSpecConflict +
+      ' leafOutside=' + leafOutside + ' pcTypeMismatch=' + pcTypeMismatch + ' nameEra=' + nameEra);
   }
 
   /* ---- 输出分片 ---- */
@@ -585,7 +686,7 @@ function main() {
       '（gen-bulk-v2 生成 · seed=' + SEED + ' · synthetic:true） */\n' +
       'window.DB_CHUNKS = window.DB_CHUNKS || [];\n' +
       /* provenance（问题 45）：每个分片记录生成器/种子/schema，下游可追溯 */
-      parts.map((c) => 'window.DB_CHUNKS.push(' + JSON.stringify(Object.assign({ provenance: { generator: 'gen-bulk-v2', seed: 20261112, schema: 'rlwj-bulk@2' } }, c)) + ');').join('\n') + '\n';
+      parts.map((c) => 'window.DB_CHUNKS.push(' + JSON.stringify(Object.assign({ provenance: { generator: 'gen-bulk-v2', seed: SEED, schema: 'rlwj-bulk@2' } }, c)) + ');').join('\n') + '\n';
     fs.writeFileSync(path.join(GEN, fn), body);
   }
 
@@ -599,6 +700,8 @@ function main() {
     '  (2020s 占比 ' + Math.round(yearRecent / products.length * 100) + '%)');
   console.log('  price    : ¥' + Math.min.apply(null, prices) + '–¥' + Math.max.apply(null, prices));
   console.log('  quality  : brandBrand=0 salad=0 catWord=0 dupName=0 provenance=OK');
+  console.log('  semantic : yearSpec=' + yearSpecConflict + ' nameEra=' + nameEra +
+    ' leafOutside=' + leafOutside + ' pcTypeMismatch=' + pcTypeMismatch + ' seed=' + SEED);
 }
 
 main();

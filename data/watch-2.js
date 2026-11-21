@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 1983,
       priceText: "约 ¥790（参考价）",
       price: 790,
+      source: "curated", synthetic: false,
       tags: ["电子表", "耐用", "经典", "户外"],
       summary: "方形防震经典，四十年不变的可靠工具表。",
       specs: [
@@ -45,6 +46,7 @@ window.DB_CHUNKS.push({
       year: 1991,
       priceText: "约 ¥129（参考价）",
       price: 129,
+      source: "curated", synthetic: false,
       tags: ["电子表", "经典", "轻便", "学生"],
       summary: "百元内经典之作，全球销量数亿的国民电子表。",
       specs: [
@@ -77,6 +79,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥4480（参考价）",
       price: 4480,
+      source: "curated", synthetic: false,
       tags: ["运动户外", "GPS", "专业", "旗舰"],
       summary: "户外旗舰全能表，太阳能加持的硬核探险装备。",
       specs: [
@@ -109,6 +112,7 @@ window.DB_CHUNKS.push({
       year: 2015,
       priceText: "约 ¥1680（参考价）",
       price: 1680,
+      source: "curated", synthetic: false,
       tags: ["跑步", "GPS", "运动", "经典"],
       summary: "带光学心率的跑步经典，一代跑者的入坑之选。",
       specs: [
@@ -141,6 +145,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1799（参考价）",
       price: 1799,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "Wear OS", "健康", "安卓"],
       summary: "Wear OS 阵营代表作，体脂检测腕上首发。",
       specs: [
@@ -173,6 +178,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥999（参考价）",
       price: 999,
+      source: "curated", synthetic: false,
       tags: ["长续航", "智能手表", "运动", "性价比"],
       summary: "24 天续航的千元圆表，续航焦虑的解药。",
       specs: [
@@ -205,6 +211,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥1799（参考价）",
       price: 1799,
+      source: "curated", synthetic: false,
       tags: ["双屏", "Wear OS", "长续航", "智能手表"],
       summary: "双层屏黑科技，智能模式与持久模式自由切换。",
       specs: [
@@ -237,6 +244,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥3990（参考价）",
       price: 3990,
+      source: "curated", synthetic: false,
       tags: ["运动户外", "GPS", "越野", "专业"],
       summary: "芬兰血统越野旗舰，超长 GPS 续航硬刚百公里。",
       specs: [
@@ -269,6 +277,7 @@ window.DB_CHUNKS.push({
       year: 2018,
       priceText: "约 ¥2180（参考价）",
       price: 2180,
+      source: "curated", synthetic: false,
       tags: ["运动户外", "军规", "耐用", "GPS"],
       summary: "军规三防户外表，千元价位的硬汉之选。",
       specs: [
@@ -301,6 +310,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥5680（参考价）",
       price: 5680,
+      source: "curated", synthetic: false,
       tags: ["运动户外", "超长续航", "越野", "太阳能"],
       summary: "为超马而生的续航怪兽，太阳能加持跑遍天涯。",
       specs: [
@@ -333,6 +343,7 @@ window.DB_CHUNKS.push({
       year: 2017,
       priceText: "约 ¥1280（参考价）",
       price: 1280,
+      source: "curated", synthetic: false,
       tags: ["混合手表", "健康", "小众", "续航"],
       summary: "指针加小窗的法式优雅，续航一个月的健康表。",
       specs: [
@@ -365,6 +376,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥1299（参考价）",
       price: 1299,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "经典", "安卓 Wear", "小众"],
       summary: "安卓 Wear 元老，方屏时代的小众遗珠。",
       specs: [
@@ -397,6 +409,7 @@ window.DB_CHUNKS.push({
       year: 2014,
       priceText: "约 ¥1499（参考价）",
       price: 1499,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "经典", "圆形屏", "安卓 Wear"],
       summary: "圆形屏智能表鼻祖，开启腕表美学新时代。",
       specs: [
@@ -429,6 +442,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥2199（参考价）",
       price: 2199,
+      source: "curated", synthetic: false,
       tags: ["智能手表", "旋转表圈", "Tizen", "经典"],
       summary: "旋转表圈交互经典，Tizen 时代的硬朗旗舰。",
       specs: [
@@ -461,6 +475,7 @@ window.DB_CHUNKS.push({
       year: 2016,
       priceText: "约 ¥3299（参考价）",
       price: 3299,
+      source: "curated", synthetic: false,
       tags: ["小众", "运动户外", "冲浪滑雪", "防水"],
       summary: "冲浪滑雪玩家的硬核三防表，极限运动血统。",
       specs: [

@@ -8,8 +8,16 @@ const state = {
   favorites: store.get('favorites', []),
   compare: store.get('compare', []),
   reviews: store.get('reviews', {}),
-  /* 默认跟随系统主题（问题 28）；手动切换后写 themeAuto=false 不再跟随 */
-  theme: store.get('theme', (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark'),
+  /* 默认跟随系统主题（问题 28）；手动切换后写 themeAuto=false 不再跟随。
+     问题 P2-1：themeAuto=true 时以系统当前值为准，不用上次写盘的 theme 快照
+     （否则刷新后跟随系统失效）；同时做类型校验（P3-1）。 */
+  theme: (function () {
+    const auto = store.get('themeAuto', true);
+    const sys = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    const saved = store.get('theme', null);
+    if (auto === true) return sys;
+    return (saved === 'light' || saved === 'dark') ? saved : sys;
+  }()),
   showDemo: store.get('showDemo', false), /* 演示（合成）数据默认隐藏 */
   tlOpen: new Set(),  /* 时间线年份展开态（瞬态） */
   cmpDiff: false      /* 对比「只看差异」开关（瞬态） */

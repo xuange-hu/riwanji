@@ -12,8 +12,9 @@ const path = require('path');
 const readline = require('readline');
 
 const ROOT = path.join(__dirname, '..');
-const BULK = path.join(ROOT, 'data', 'bulk');
-const GEN = path.join(ROOT, 'data', 'gen');
+const DATA = path.join(ROOT, 'data');
+const BULK = path.join(DATA, 'bulk');
+const GEN = path.join(DATA, 'gen');
 
 const args = process.argv.slice(2);
 const argNum = (name, dft) => {
@@ -115,47 +116,83 @@ async function main() {
   }
   console.log('已选取：' + selected.length.toLocaleString() + ' 条（目标 ' + COUNT.toLocaleString() + '）');
 
-  /* ---- 4. 写 data/gen/bulk-static-N.js ---- */
-  fs.mkdirSync(GEN, { recursive: true });
-  for (const f of fs.readdirSync(GEN)) if (f.endsWith('.js')) fs.unlinkSync(path.join(GEN, f));
-  /* 按类目分组写区块 */
-  const byCat = new Map();
-  for (const p of selected) {
-    const k = p.category || 'other';
-    if (!byCat.has(k)) byCat.set(k, []);
-    byCat.get(k).push(p);
-  }
-  let shard = 0, written = 0, files = 0;
-  let buf = [];
-  const flush = () => {
-    if (!buf.length) return;
-    shard++;
-    const code = '/* 静态托管扩充分片 ' + shard + '（热门 SKU · 由 tools/export-static-bulk.js 生成） */\n' +
-      'window.DB_CHUNKS = window.DB_CHUNKS || [];\n' +
-      buf.map((c) => 'window.DB_CHUNKS.push(' + JSON.stringify(c) + ');').join('\n') + '\n';
-    fs.writeFileSync(path.join(GEN, 'bulk-static-' + String(shard).padStart(2, '0') + '.js'), code);
-    files++;
-    buf = [];
-  };
-  for (const c of cats) {
-    const list = byCat.get(c) || [];
-    if (!list.length) continue;
-    const meta = catMeta[c] || { categoryName: list[0].catName || c, icon: '📦', description: '' };
-    for (let i = 0; i < list.length; i += PER_SHARD) {
-      buf.push({
-        category: c,
-        categoryName: meta.categoryName,
-        icon: meta.icon,
-        description: meta.description,
-        products: list.slice(i, i + PER_SHARD)
-      });
-      written += Math.min(PER_SHARD, list.length - i);
-      if (buf.length >= 6) flush(); /* 每文件 6 个区块 ≈ 1200 条 */
+  /* ---- 4. 原子导出（P1-9）：先写临时目录，校验非空且条数达标后原子替换 data/gen/ ----
+     原实现先 fs.unlinkSync 删光 data/gen/*.js 再写分片，中途异常即 10000 条演示数据全丢且无回滚。
+     现在临时目录与 gen 同级（data/.gen-tmp-xxx），避免临时目录位于 gen 内导致 rename 自嵌套。 */
+  const TMP = path.join(DATA, '.gen-tmp-' + process.pid + '-' + Date.now());
+  const safeRm = (p) => { try { fs.rmSync(p, { recursive: true, force: true }); } catch (_) { /* noop */ } };
+  let backup = null;
+  try {
+    fs.mkdirSync(TMP, { recursive: true });
+    /* 按类目分组写区块 */
+    const byCat = new Map();
+    for (const p of selected) {
+      const k = p.category || 'other';
+      if (!byCat.has(k)) byCat.set(k, []);
+      byCat.get(k).push(p);
+    }
+    let shard = 0, written = 0, files = 0;
+    let buf = [];
+    const flush = () => {
+      if (!buf.length) return;
+      shard++;
+      const code = '/* 静态托管扩充分片 ' + shard + '（热门 SKU · 由 tools/export-static-bulk.js 生成） */\n' +
+        'window.DB_CHUNKS = window.DB_CHUNKS || [];\n' +
+        buf.map((c) => 'window.DB_CHUNKS.push(' + JSON.stringify(c) + ');').join('\n') + '\n';
+      fs.writeFileSync(path.join(TMP, 'bulk-static-' + String(shard).padStart(2, '0') + '.js'), code);
+      files++;
+      buf = [];
+    };
+    for (const c of cats) {
+      const list = byCat.get(c) || [];
+      if (!list.length) continue;
+      const meta = catMeta[c] || { categoryName: list[0].catName || c, icon: '📦', description: '' };
+      for (let i = 0; i < list.length; i += PER_SHARD) {
+        buf.push({
+          category: c,
+          categoryName: meta.categoryName,
+          icon: meta.icon,
+          description: meta.description,
+          products: list.slice(i, i + PER_SHARD)
+        });
+        written += Math.min(PER_SHARD, list.length - i);
+        if (buf.length >= 6) flush(); /* 每文件 6 个区块 ≈ 1200 条 */
+      }
+      flush();
     }
     flush();
+
+    /* 校验：分片非空、数量与条数达标（默认 ≥90% COUNT）；不满足则中止且完全不动原 data/gen/ */
+    const tmpFiles = fs.readdirSync(TMP).filter((f) => f.endsWith('.js'));
+    if (!tmpFiles.length || written < Math.floor(COUNT * 0.9)) {
+      throw new Error('导出校验失败：分片 ' + files + ' 个 / ' + written + ' 条（目标 ' + COUNT + '）');
+    }
+    for (const f of tmpFiles) {
+      if (fs.statSync(path.join(TMP, f)).size <= 0) throw new Error('空分片：' + f);
+    }
+
+    /* 原子替换：rename 原 gen → 备份；rename 临时 → gen；成功删备份，任一步失败回滚 */
+    if (fs.existsSync(GEN)) {
+      backup = GEN + '.bak-' + Date.now();
+      fs.renameSync(GEN, backup);
+    }
+    try {
+      fs.renameSync(TMP, GEN);
+    } catch (e) {
+      if (backup && !fs.existsSync(GEN) && fs.existsSync(backup)) fs.renameSync(backup, GEN);
+      throw e;
+    }
+    if (backup) safeRm(backup);
+    console.log('输出：data/gen/ 共 ' + files + ' 个分片 / ' + written.toLocaleString() + ' 条（原子替换完成）');
+  } catch (e) {
+    /* 异常时保留/回滚原数据：只清理临时目录，备份若存在则 rename 回来，绝不删除原 gen */
+    if (backup && !fs.existsSync(GEN) && fs.existsSync(backup)) {
+      try { fs.renameSync(backup, GEN); } catch (_) { /* noop */ }
+    }
+    safeRm(TMP);
+    console.error('导出失败，已保留原 data/gen/：' + (e && e.message));
+    process.exit(1);
   }
-  flush();
-  console.log('输出：data/gen/ 共 ' + files + ' 个分片 / ' + written.toLocaleString() + ' 条');
   /* 问题 58：导出后必须重建清单 + 演示轻索引（漏掉任一步都会造成
      「分片条目数 ≠ 索引条目数 ≠ 页面运行数」的数据漂移） */
   console.log('下一步：node tools/build-manifest.js && node tools/build-index.js');

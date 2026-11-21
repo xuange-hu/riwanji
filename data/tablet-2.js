@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2007,
       priceText: "约 ¥3100（2007 年海外发售价约 $399）",
       price: 3100,
+      source: "curated", synthetic: false,
       tags: ["小众", "海外", "非主流阵营", "掌上电脑"],
       summary: "滑盖全键盘的 Maemo 掌上互联网平板，智能手机前夜的极客实验。",
       specs: [
@@ -47,6 +48,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥1200（2011 年上市价 $199）",
       price: 1200,
+      source: "curated", synthetic: false,
       tags: ["内容生态", "低价", "海外", "开创性"],
       summary: "199 美元的 7 英寸内容平板，用硬件补贴开启安卓低价时代。",
       specs: [
@@ -80,6 +82,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥3800（2011 年上市价 $499 起，16GB）",
       price: 3800,
+      source: "curated", synthetic: false,
       tags: ["非主流阵营", "webOS", "海外", "短命"],
       summary: "webOS 优雅交互的绝唱，上市 49 天即停产的悲情平板。",
       specs: [
@@ -113,6 +116,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥3100（2011 年海外上市价 $399 起，16GB）",
       price: 3100,
+      source: "curated", synthetic: false,
       tags: ["二合一", "可插拔键盘", "海外", "开创性"],
       summary: "可插拔键盘底座的开山之作，把安卓平板变成小笔记本。",
       specs: [
@@ -145,6 +149,7 @@ window.DB_CHUNKS.push({
       year: 2011,
       priceText: "约 ¥3800（2011 年上市价，16GB Wi-Fi 版约 $499）",
       price: 3800,
+      source: "curated", synthetic: false,
       tags: ["海外", "轻薄", "安卓旗舰", "初代系列"],
       summary: "8.6 毫米轻薄机身开启三星平板王朝，安卓阵营的初代标杆。",
       specs: [
@@ -177,6 +182,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥3700（2012 年上市价，16GB Wi-Fi 版）",
       price: 3700,
+      source: "curated", synthetic: false,
       tags: ["海外", "手写笔", "分屏多任务", "生产力"],
       summary: "S Pen 加持的 10.1 英寸平板，确立三星笔电融合路线。",
       specs: [
@@ -211,6 +217,7 @@ window.DB_CHUNKS.push({
       year: 2012,
       priceText: "约 ¥4500（2012 年日本市场价约 7 万日元）",
       price: 4500,
+      source: "curated", synthetic: false,
       tags: ["小众", "日系", "4G 上网", "防水"],
       summary: "内置 LTE 与防水的日系运营商平板，小众市场的移动上网先锋。",
       specs: [
@@ -245,6 +252,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥6600（2013 年上市价 $899 起，64GB）",
       price: 6600,
+      source: "curated", synthetic: false,
       tags: ["海外", "二合一", "Windows", "开创性"],
       summary: "完整 Windows 8 的 10.6 英寸平板，二合一品类的开山之作。",
       specs: [
@@ -279,6 +287,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥4300（2013 年国行上市价）",
       price: 4300,
+      source: "curated", synthetic: false,
       tags: ["海外", "防水", "轻薄", "设计感"],
       summary: "6.9 毫米防水机身，把索尼式浪漫塞进 10 英寸平板。",
       specs: [
@@ -313,6 +322,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥7200（2013 年上市价 $999 起，i5 版）",
       price: 7200,
+      source: "curated", synthetic: false,
       tags: ["游戏平板", "海外", "高性能", "小众"],
       summary: "独显加持的 Windows 游戏平板，性能与便携硬碰硬的先驱。",
       specs: [
@@ -345,6 +355,7 @@ window.DB_CHUNKS.push({
       year: 2013,
       priceText: "约 ¥1900（2013 年国行上市价）",
       price: 1900,
+      source: "curated", synthetic: false,
       tags: ["长续航", "创新形态", "支架", "差异化"],
       summary: "卷轴式圆柱电池与三种支架姿态，续航长达 18 小时。",
       specs: [
@@ -378,6 +389,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥2000（2021 年上市价 1999 元起，6+128GB）",
       price: 2000,
+      source: "curated", synthetic: false,
       tags: ["性价比", "高刷屏", "影音", "国产"],
       summary: "2000 元档高刷旗舰芯平板，小米平板线的强势回归之作。",
       specs: [
@@ -412,6 +424,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥1800（2021 年海外上市价约 $249）",
       price: 1800,
+      source: "curated", synthetic: false,
       tags: ["护眼", "类纸屏", "小众", "海外"],
       summary: "类纸护眼屏平板，低蓝光无频闪，为长时间阅读而生。",
       specs: [
@@ -445,6 +458,7 @@ window.DB_CHUNKS.push({
       year: 2022,
       priceText: "约 ¥1900（2022 年上市价 1899 元，4+64GB）",
       price: 1900,
+      source: "curated", synthetic: false,
       tags: ["墨水屏", "手写", "国产", "护眼"],
       summary: "10.3 英寸墨水屏鸿蒙平板，能装 App 的大号电子阅读器。",
       specs: [
@@ -478,6 +492,7 @@ window.DB_CHUNKS.push({
       year: 2023,
       priceText: "约 ¥3100（2023 年上市价 $499 起，128GB 含底座）",
       price: 3100,
+      source: "curated", synthetic: false,
       tags: ["海外", "智能家居", "原生安卓", "底座创新"],
       summary: "磁吸充电底座变身智能音箱，谷歌亲儿子的家庭中枢平板。",
       specs: [

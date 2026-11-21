@@ -5,12 +5,14 @@
    架构：精选数据全内存；海量 SKU 用「轻量索引常驻内存 +
    完整详情按需从 bulk-detail.jsonl 随机读取」的检索参考实现。
 
-   ★ 规模声明（问题 57）：这是开发/回归级服务器，不是生产网关——
+   ★ 规模声明（问题 57 / P2-16）：这是开发/回归级服务器，不是生产网关——
      搜索/建议为多轮全库扫描、排行榜按排序键缓存多份全量数组、
-     大响应 gzipSync 同步压缩、无请求频率限制。当前千级数据毫无压力，
-     但不能把这套实现直接等同于「可承受百万级 SKU 公网流量」；
-     真正百万级部署前需补索引化检索、异步压缩、限流与水平扩展
+     大响应 gzipSync 同步压缩。当前千级数据毫无压力，但不能把这套实现
+     等同于「可承受百万级 SKU 公网流量」。默认只听 127.0.0.1；
+     若确需对外，必须置于 Nginx 反代之后并开启限流（RATE_LIMIT，见下）/异步压缩/水平扩展
      （见 README「规模化路径」与 DEPLOY.md「路线 B」）。
+     本实现内置一个可选的按 IP 固定窗口令牌桶（RATE_LIMIT=N 表示每 60 秒最多 N 次，
+     默认关闭），仅供内网参考，不能替代专业网关的限流/防 CC。
 
    启动： node tools/serve.js [--port 8123]   （默认只听 127.0.0.1；
           对外暴露用 HOST=0.0.0.0 显式开启，公网部署建议 Nginx 反代）
@@ -51,8 +53,35 @@ const MIME = {
 };
 
 /* 静态资源白名单（问题 27/11）：只暴露站点资产，.git/tools/日志等一律不可达 */
-const STATIC_ROOT_FILES = new Set(['index.html', '404.html', 'sitemap.xml', 'feed.xml', 'robots.txt', 'LICENSE', '.nojekyll']);
+const STATIC_ROOT_FILES = new Set(['index.html', '404.html', 'sitemap.xml', 'feed.xml', 'robots.txt', 'LICENSE', '.nojekyll', '_headers']);
 const STATIC_DIRS = new Set(['js', 'css', 'data', 'img', 'p', 'fonts']);
+
+/* ---- P2-16：可选限流（按 IP 固定窗口，仅供内网参考） ----
+   RATE_LIMIT 未设置/0 = 关闭（默认，兼容本地开发/回归脚本）；
+   RATE_LIMIT=N = 每个 IP 每 60 秒最多 N 次请求，超出返回 429 + Retry-After。
+   注意：这是单进程内存计数，重启即清零、多实例不共享，无法替代专业网关限流。 */
+const RATE_LIMIT = Math.max(0, parseInt(process.env.RATE_LIMIT, 10) || 0);
+const RATE_WINDOW_MS = 60000;
+const RATE_BUCKETS = new Map(); /* ip → { count, resetAt } */
+function rateLimited(ip) {
+  if (!RATE_LIMIT) return false;
+  const now = Date.now();
+  let b = RATE_BUCKETS.get(ip);
+  if (!b || now >= b.resetAt) {
+    b = { count: 0, resetAt: now + RATE_WINDOW_MS };
+    RATE_BUCKETS.set(ip, b);
+  }
+  b.count++;
+  return b.count > RATE_LIMIT;
+}
+/* 定期清理过期桶，防长期运行内存增长 */
+if (RATE_LIMIT) {
+  const timer = setInterval(() => {
+    const now = Date.now();
+    for (const [ip, b] of RATE_BUCKETS) if (now >= b.resetAt) RATE_BUCKETS.delete(ip);
+  }, RATE_WINDOW_MS);
+  timer.unref();
+}
 
 /* ---------- 参数 ---------- */
 function parseArgs() {
@@ -475,6 +504,9 @@ const SORTERS = {
   priceAsc: (a, b) => (a.price || 0) - (b.price || 0),
   name: (a, b) => String(a.name).localeCompare(String(b.name), 'zh-CN')
 };
+/* P2-17：ranking（带 dir）直接把 sort 当字段名，合法值须与前端 js/data.js 字段一致；
+   非法值回退 score，杜绝 cache miss + 全库重复排序（DoS 面）。 */
+const RANK_SORT_KEYS = new Set(['score', 'userScore', 'year', 'price', 'name', 'brand']);
 
 /* 演示可见性（问题 42）：demo=1 才含演示样本，检索/计数与前端演示开关同步 */
 const withDemo = (q) => String(q.get('demo')) === '1';
@@ -594,17 +626,36 @@ function timelinePayload(incDemo) {
 
 /* ---------- HTTP ---------- */
 const zlib = require('zlib');
+
+/* 公网安全响应头（P1-3 / P3-18 / P3-19 / P3-20）：所有响应统一附加。
+   CSP 取舍说明：
+   - style-src 去掉 'unsafe-inline'（P3-18）：index.html 无内联 <style>（仅 style="" 属性），
+     而 style 属性由 style-src-attr 管辖，此处显式放行，故主应用样式不受影响；
+     404.html / dist/p/*.html 仍含内联 <style>，由部署侧 meta CSP 兜底（主代理负责）。
+   - frame-ancestors 'none' 比 X-Frame-Options 更强，防点击劫持；
+   - upgrade-insecure-requests 强制升级混合内容；
+   - base-uri 'none' 杜绝 <base> 劫持相对 URL。
+   ⚠ 此 CSP 须与 tools/build-dist.js 生成的 dist/_headers 保持一致。 */
+const CSP = "default-src 'self'; img-src 'self' data:; style-src 'self'; style-src-attr 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
+const SEC = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Content-Security-Policy': CSP
+};
+
 /* 协商压缩：大 JSON 响应（搜索结果/首页）用 gzip，省带宽提速
    cache：分层缓存策略 —— 变化极少的端点（meta/categories/brands）可缓存，
-   搜索/详情等查询类仍 no-cache 保证实时性 */
+   搜索/详情等查询类仍 no-cache 保证实时性
+   P2-16：gzipSync 为同步压缩，大响应会阻塞事件循环，仅供内网/参考实现，
+   公网部署应交给反代（Nginx gzip）或改成异步压缩 + 流式输出。 */
 function sendJSON(res, obj, status, cache) {
   const body = JSON.stringify(obj);
-  const headers = {
+  const headers = Object.assign({
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': cache || 'no-cache',
-    'Vary': 'Accept-Encoding',
-    'X-Content-Type-Options': 'nosniff'
-  };
+    'Vary': 'Accept-Encoding'
+  }, SEC); /* P3-20：JSON 响应同样带完整 SEC，不再只有 nosniff */
   const ae = String(res.req && res.req.headers['accept-encoding'] || '');
   if (body.length > 1024 && /\bgzip\b/.test(ae)) {
     const gz = zlib.gzipSync(Buffer.from(body, 'utf8'));
@@ -617,15 +668,27 @@ function sendJSON(res, obj, status, cache) {
   res.end(body);
 }
 
-/* 公网安全响应头：防 MIME 嗅探 / 点击劫持 / 限制 Referrer / CSP 纵深（问题 79） */
-const SEC = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'SAMEORIGIN',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  /* 问题 79：严格 CSP——源码已无内联脚本/内联 onerror（外联 theme-init/boot-config +
-     document 级 error 委托），script-src 不再需要 'unsafe-inline' */
-  'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
-};
+/* P3-24：统一错误体——400 不回显内部异常信息，避免畸形编码泄露堆栈/路径。
+   同时作为畸形 decodeURIComponent 的安全解码helper（失败返回 null）。 */
+function badRequest(res) { return sendJSON(res, { error: 'bad request' }, 400); }
+function safeDecode(s) { try { return decodeURIComponent(s); } catch (e) { return null; } }
+
+/* P2-18：图片 302 目标白名单——只允许 https + 已知图床域名，
+   否则回退本地 SVG 海报，杜绝以图片 URL 作开放重定向跳任意第三方。 */
+const IMG_REDIRECT_HOSTS = new Set([
+  'gips0.baidu.com', 'gips1.baidu.com', 'gips2.baidu.com', 'gips3.baidu.com',
+  'img0.baidu.com', 'img1.baidu.com', 'img2.baidu.com', 'b0.bdstatic.com', 'pic.rmb.bdstatic.com',
+  'ci.xiaohongshu.com', 'sns-img-bd.xhscdn.com', 'sns-img-hw.xhscdn.com', 'sns-img-qc.xhscdn.com',
+  'a.smzdm.com', 'am.smzdm.com', 'qna.smzdm.com', 'qnam.smzdm.com', 'a.zdmimg.com', 'am.zdmimg.com',
+  '2c.zol-img.com.cn', 'article-fd.zol-img.com.cn', 'doc-fd.zol-img.com.cn', 'newbbs-fd.zol-img.com.cn',
+  'fdn2.gsmarena.com', 'img.pconline.com.cn', 'img2.pconline.com.cn', 'img4.pconline.com.cn', 'pic.nximg.cn'
+]);
+function safeImageRedirect(u) {
+  try {
+    const x = new URL(u);
+    return x.protocol === 'https:' && IMG_REDIRECT_HOSTS.has(x.hostname.toLowerCase());
+  } catch (e) { return false; }
+}
 
 /* 静态资源缓存策略：图片等指纹型资产长缓存；html/js/css/数据文件无指纹名 → no-cache 走 ETag 协商（问题 46） */
 function serveStatic(req, res, urlPath) {
@@ -724,38 +787,54 @@ function handleAPI(req, res, url) {
 
   let m;
   if ((m = p.match(/^\/api\/product\/([^/]+)$/))) {
-    const item = hydrate(BY_ID.get(decodeURIComponent(m[1])));
+    const id = safeDecode(m[1]); /* P3-24：畸形编码 → 400，不当 500 泄露 */
+    if (id == null) return badRequest(res);
+    const item = hydrate(BY_ID.get(id));
     if (item) item.images = galleryFor(item, item);
     return item ? sendJSON(res, item, 200, 'public, max-age=300') : sendJSON(res, { error: 'not found' }, 404);
   }
 
-  /* 产品海报图：有真实图片返回真实图（302），否则生成 SVG 海报（?v=0/1/2 视觉变体） */
+  /* 产品海报图：有真实图片且域名可信时 302（P2-18 白名单），否则生成 SVG 海报（?v=0/1/2 视觉变体） */
   if ((m = p.match(/^\/api\/image\/([^/]+)$/))) {
-    const rec = BY_ID.get(decodeURIComponent(m[1]));
-    if (!rec) { res.writeHead(404); res.end('Not Found'); return; }
+    const id = safeDecode(m[1]); /* P3-24 */
+    if (id == null) return badRequest(res);
+    const rec = BY_ID.get(id);
+    if (!rec) { res.writeHead(404, SEC); res.end('Not Found'); return; }
     const variant = ((parseInt(q.get('v') || '0', 10) || 0) % 3 + 3) % 3; /* 规范化到 0-2，负数/超界不崩 */
     const full = (rec.off != null && DETAIL_FDS.length) ? hydrate(rec) : rec;
     const realImg = (full.images && full.images[variant]) || full.image;
-    if (realImg && variant === 0) {
-      res.writeHead(302, { 'Location': realImg, 'Cache-Control': 'public, max-age=86400' });
+    if (realImg && variant === 0 && safeImageRedirect(realImg)) {
+      /* P2-18：仅 https + 已知图床域名才跳转；Referrer-Policy 收紧为 no-referrer 减隐私泄露 */
+      res.writeHead(302, Object.assign({}, SEC, {
+        'Location': realImg, 'Cache-Control': 'public, max-age=86400', 'Referrer-Policy': 'no-referrer'
+      }));
       res.end();
       return;
     }
     const svg = posterSVG(full, variant);
-    res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8', 'Cache-Control': 'public, max-age=86400' });
+    /* P3-20：SVG 200 响应带完整 SEC；作为顶层文档时用 sandbox CSP 禁止脚本执行 */
+    res.writeHead(200, Object.assign({}, SEC, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=86400',
+      'Content-Security-Policy': "default-src 'none'; sandbox"
+    }));
     res.end(svg);
     return;
   }
 
   if (p === '/api/products') {
-    const ids = String(q.get('ids') || '').split(',').filter(Boolean).slice(0, 50);
+    const rawIds = String(q.get('ids') || '').split(',').filter(Boolean);
+    if (rawIds.some((id) => id.length > 128)) return badRequest(res); /* P3-27：单 id 长度上限 */
+    const ids = rawIds.slice(0, 50);
     const items = ids.map((id) => hydrate(BY_ID.get(id))).filter(Boolean).map((it) => { it.images = galleryFor(it, it); return it; });
     return sendJSON(res, { items: items }, 200, 'public, max-age=300');
   }
 
   if (p === '/api/ranking') {
     const cat = q.get('cat');
-    const sort = q.get('sort') || 'score';
+    /* P2-17：sort 键白名单，非法值回退 score（防 cache miss + 全库排序） */
+    const rawSort = q.get('sort') || 'score';
+    const sort = RANK_SORT_KEYS.has(rawSort) ? rawSort : 'score';
     const dir = parseInt(q.get('dir') || '-1', 10);
     const cacheKey = (cat || '') + '|' + sort + '|' + dir + '|' + withDemo(q);
     let sorted = RANK_CACHE.get(cacheKey);
@@ -812,7 +891,8 @@ function handleAPI(req, res, url) {
 
   /* 品牌详情：该品牌产品（分页 + 品类分布 + 年代跨度） */
   if ((m = p.match(/^\/api\/brand\/([^/]+)$/))) {
-    const name = decodeURIComponent(m[1]);
+    const name = safeDecode(m[1]); /* P3-24 */
+    if (name == null) return badRequest(res);
     const list = demoPool(withDemo(q)).filter((x) => x.brand === name); /* 问题 42 */
     if (!list.length) return sendJSON(res, { error: 'not found' }, 404);
     const catMap = {};
@@ -888,10 +968,22 @@ async function main() {
   }, 0);
 
   const server = http.createServer((req, res) => {
+    /* P2-16：可选按 IP 限流（默认关闭，仅供内网参考；公网请走反代限流） */
+    if (RATE_LIMIT && rateLimited(req.socket.remoteAddress || 'unknown')) {
+      res.writeHead(429, Object.assign({}, SEC, {
+        'Content-Type': 'application/json; charset=utf-8', 'Retry-After': '60'
+      }));
+      res.end(JSON.stringify({ error: 'too many requests' }));
+      return;
+    }
     let url;
-    try { url = new URL(req.url, 'http://localhost'); } catch (e) { res.writeHead(400); res.end(); return; }
+    try { url = new URL(req.url, 'http://localhost'); } catch (e) { res.writeHead(400, SEC); res.end(); return; }
     if (url.pathname.startsWith('/api/')) {
-      try { handleAPI(req, res, url); } catch (e) { sendJSON(res, { error: e.message }, 500); }
+      /* P3-24：catch 不回显 e.message，统一错误体；headersSent 防重复写头二次抛错 */
+      try { handleAPI(req, res, url); } catch (e) {
+        console.error('api error: ' + (e && e.message));
+        if (!res.headersSent) sendJSON(res, { error: 'internal error' }, 500); else res.end();
+      }
     } else {
       serveStatic(req, res, url.pathname);
     }

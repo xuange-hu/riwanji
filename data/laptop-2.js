@@ -13,6 +13,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥12000（日本售价折算）",
       price: 12000,
+      source: "curated", synthetic: false,
       tags: ["日系本", "超轻", "小众"],
       summary: "788 克日系轻量之作，接口续航两全的商务利器。",
       specs: [
@@ -45,6 +46,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥11000（日本售价折算）",
       price: 11000,
+      source: "curated", synthetic: false,
       tags: ["日系本", "翻转本", "小众"],
       summary: "898 克翻转轻薄本，支持手写笔的日系商务旗舰。",
       specs: [
@@ -77,6 +79,7 @@ window.DB_CHUNKS.push({
       year: 2008,
       priceText: "约 ¥16000（2008 年上市价）",
       price: 16000,
+      source: "curated", synthetic: false,
       tags: ["日系本", "经典", "混合显卡"],
       summary: "1.3 公斤碳纤维旗舰，双显卡切换的商务经典。",
       specs: [
@@ -109,6 +112,7 @@ window.DB_CHUNKS.push({
       year: 1995,
       priceText: "约 ¥25000（1995 年上市价）",
       price: 25000,
+      source: "curated", synthetic: false,
       tags: ["经典", "机械设计", "收藏"],
       summary: "滑盖展开全尺寸键盘，机械奇迹般的 90 年代笔记本。",
       specs: [
@@ -141,6 +145,7 @@ window.DB_CHUNKS.push({
       year: 2007,
       priceText: "约 ¥2299（2007 年上市价）",
       price: 2299,
+      source: "curated", synthetic: false,
       tags: ["上网本", "轻便", "时代标志"],
       summary: "2299 元开启上网本时代的 7 英寸小笔电。",
       specs: [
@@ -173,6 +178,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥8000（起售价折算）",
       price: 8000,
+      source: "curated", synthetic: false,
       tags: ["模块化", "可维修", "开源精神"],
       summary: "接口自由拼装、主板可升级的模块化笔记本先锋。",
       specs: [
@@ -205,6 +211,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥18000（2021 年上市价）",
       price: 18000,
+      source: "curated", synthetic: false,
       tags: ["游戏本", "超轻薄", "小众旗舰"],
       summary: "1.78 公斤塞进 RTX 3070 的轻薄性能猛兽。",
       specs: [
@@ -237,6 +244,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥9500（2021 年上市价）",
       price: 9500,
+      source: "curated", synthetic: false,
       tags: ["超轻", "大屏", "海外小众"],
       summary: "16 英寸仅 1.19 公斤，长续航大屏轻薄本异类。",
       specs: [
@@ -269,6 +277,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥12000（2020 年上市价）",
       price: 12000,
+      source: "curated", synthetic: false,
       tags: ["创作本", "窄边框", "海外热销"],
       summary: "四边窄边框 16:10 大屏，全能创作本的标杆之作。",
       specs: [
@@ -301,6 +310,7 @@ window.DB_CHUNKS.push({
       year: 2020,
       priceText: "约 ¥18000（2020 年上市价）",
       price: 18000,
+      source: "curated", synthetic: false,
       tags: ["工作站", "ISV 认证", "专业创作"],
       summary: "1.8 公斤的移动工作站，DreamColor 屏专业之选。",
       specs: [
@@ -333,6 +343,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥18999（2019 年上市价）",
       price: 18999,
+      source: "curated", synthetic: false,
       tags: ["创作本", "生产力", "经典"],
       summary: "16 英寸旗舰，剪刀脚键盘回归的 Intel 时代绝唱。",
       specs: [
@@ -365,6 +376,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥9800（2021 年上市价）",
       price: 9800,
+      source: "curated", synthetic: false,
       tags: ["轻薄本", "触控", "设计感"],
       summary: "3:2 触控屏与 Alcantara 键盘的优雅轻薄本。",
       specs: [
@@ -397,6 +409,7 @@ window.DB_CHUNKS.push({
       year: 2010,
       priceText: "约 ¥9000（2010 年上市价）",
       price: 9000,
+      source: "curated", synthetic: false,
       tags: ["日系本", "超轻", "内置光驱"],
       summary: "1.3 公斤塞进光驱与全接口的 2010 年轻薄传奇。",
       specs: [
@@ -429,6 +442,7 @@ window.DB_CHUNKS.push({
       year: 2019,
       priceText: "约 ¥35000（2019 年上市价）",
       price: 35000,
+      source: "curated", synthetic: false,
       tags: ["游戏本", "可升级", "桌面替代"],
       summary: "桌面级 CPU 与可换显卡的 17 英寸性能怪兽。",
       specs: [
@@ -461,6 +475,7 @@ window.DB_CHUNKS.push({
       year: 2021,
       priceText: "约 ¥8500（1099 美元起）",
       price: 8500,
+      source: "curated", synthetic: false,
       tags: ["Linux 本", "开源", "海外小众"],
       summary: "1 公斤 Linux 原生机，开源爱好者的轻薄信仰。",
       specs: [

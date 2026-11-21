@@ -1,7 +1,12 @@
-/* static-audit.js — 静态托管就绪度审计：绝对路径 / 体积 / 分片格式 */
+/* static-audit.js — 静态托管就绪度审计：绝对路径 / 体积 / 分片格式
+   P2-37：默认审计 root 源码；`node tools/static-audit.js --dist` 审计构建产物 dist/。
+   注意：root 四件套全绿不代表产物正确——dist/index.html 多注入 boot-config.js，
+   sitemap.xml/feed.xml/p/*.html 由 prerender.js 重写；必须 build-dist 后在 dist 再跑一遍
+   （npm run audit:dist 口径由主代理在文档中补齐）。 */
 const fs = require('fs');
 const path = require('path');
-const R = path.join(__dirname, '..');
+const USE_DIST = process.argv.includes('--dist');
+const R = USE_DIST ? path.join(__dirname, '..', 'dist') : path.join(__dirname, '..');
 const issues = [];
 const ok = [];
 
@@ -67,7 +72,7 @@ for (const f of fs.readdirSync(genDir).filter((x) => /^bulk-.*\.js$/.test(x))) {
 if (IDX.length !== genCount) issues.push('index.js 轻索引 ' + IDX.length + ' 条 ≠ gen 分片 ' + genCount + ' 条');
 else ok.push('index 轻索引与 gen 分片交叉一致（' + IDX.length + ' 条）');
 
-console.log('════ 静态托管审计 ════');
+console.log('════ 静态托管审计（目标：' + (USE_DIST ? 'dist 产物' : 'root 源码') + '）════');
 ok.forEach((x) => console.log('  ✓ ' + x));
 if (issues.length) { console.log('—— 问题 ——'); issues.forEach((x) => console.log('  ✗ ' + x)); process.exitCode = 1; }
 else console.log('全部通过');
