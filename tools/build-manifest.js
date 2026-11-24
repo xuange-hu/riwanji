@@ -22,7 +22,7 @@ function loadChunk(file) {
 
 function listShards() {
   const top = fs.readdirSync(DATA_DIR)
-    .filter((f) => f.endsWith('.js') && f !== 'manifest.js' && f !== 'brand-alias.js' && f !== 'categories.js' && f !== 'index.js')
+    .filter((f) => f.endsWith('.js') && f !== 'manifest.js' && f !== 'brand-alias.js' && f !== 'categories.js' && f !== 'index.js' && f !== 'enrich-local.js' && f !== 'img-meta.js')
     .map((f) => ({ abs: path.join(DATA_DIR, f), rel: 'data/' + f }));
   const genDir = path.join(DATA_DIR, 'gen');
   const gen = fs.existsSync(genDir)

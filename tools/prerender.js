@@ -84,6 +84,16 @@ const IMG_LOCAL = (function () {
   try { new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'enrich-local.js'), 'utf8'))(w); } catch (e) { /* 占位缺失忽略 */ }
   return w.DB_MEDIA_LOCAL || {};
 })();
+const catalogWindow = {};
+new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'img-meta.js'), 'utf8'))(catalogWindow);
+const byImageUrl = new Map(Object.values(catalogWindow.DB_IMG_META).map(m => [SITE + m.src, m]));
+function heroImage(url, name) {
+  const m = byImageUrl.get(url);
+  const attrs = m ? ` width="${m.w}" height="${m.h}"` : '';
+  const fallback = m ? '../' + m.src : url;
+  const image = '<img class="hero-img" src="' + esc(fallback) + '" alt="' + esc(name) + '"' + attrs + ' />';
+  return m ? '<picture><source type="image/webp" media="(max-width: 400px)" srcset="../' + esc(m.thumbWebp) + '" /><source type="image/webp" srcset="../' + esc(m.webp) + '" />' + image + '</picture>' : image;
+}
 function imgSrcOf(u) {
   if (!u) return '';
   return IMG_LOCAL[u] ? SITE + IMG_LOCAL[u] : u;
@@ -211,6 +221,8 @@ function main() {
 
     const html = '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n' +
       '  <meta charset="utf-8" />\n' +
+      `  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'self'" />\n` +
+      '  <meta property="og:locale" content="zh_CN" />\n' +
       '  <meta name="viewport" content="width=device-width, initial-scale=1" />\n' +
       '  <title>' + esc(p.name) + ' —— 日理万机</title>\n' +
       '  <meta name="description" content="' + esc(desc) + '" />\n' +
@@ -241,7 +253,7 @@ function main() {
       (typeof p.score === 'number' ? ' · 编辑评分 ' + esc(p.score) + '/10' : '') +
       /* 问题 52：用户评分如实标注来源（口碑整理值，非本站用户打分） */
       (typeof p.userScore === 'number' ? ' · 用户评分 ' + esc(p.userScore) + '/10（公开口碑整理值，非本站打分）' : '') + '</p>\n' +
-      (img ? '  <img class="hero-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" />\n' : '') +
+      (img ? '  ' + heroImage(img, p.name) + '\n' : '') +
       (summary ? '  <p>' + esc(summary) + '</p>\n' : '') +
       (reviewObj ? '  <h2>客观评测</h2>\n  <p>' + esc(reviewSummary) + '</p>\n' : '') +
       (p.review && p.review.subjective

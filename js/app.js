@@ -196,6 +196,7 @@ window.__imgFail = function (img) {
   if (!p) return;
   /* P2-3：若当前 src 已是海报仍失败，直接停止，避免 data: URI 反复触发死循环。
      不再永久摘除 data-pid（旧实现摘标后图集切换主图二次失败就无兜底）。 */
+  if (img.hasAttribute('srcset')) { img.removeAttribute('srcset'); return; }
   if (img.getAttribute('data-fallback') === '1') return;
   if (window.__rlwjDiag) window.__rlwjDiag.imgFail++;
   img.setAttribute('data-fallback', '1');

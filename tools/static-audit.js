@@ -41,13 +41,21 @@ const MAN = w.DB_MANIFEST;
 const files = (MAN.shards || []).map((s) => s.file)
   .concat((MAN.bulk || []).map((s) => s.file))
   .concat(MAN.index ? [MAN.index] : []);
-const loose = fs.readdirSync(path.join(R, 'data')).filter((f) => f.endsWith('.js') && !['manifest.js', 'categories.js', 'brand-alias.js', 'enrich-local.js'].includes(f));
+const loose = fs.readdirSync(path.join(R, 'data')).filter((f) => f.endsWith('.js') && !['manifest.js', 'categories.js', 'brand-alias.js', 'enrich-local.js', 'img-meta.js'].includes(f));
 const uncovered = loose.filter((f) => !files.includes('data/' + f));
 if (uncovered.length) issues.push('manifest 未收录: ' + uncovered.join(', '));
 else ok.push('manifest 覆盖全部 ' + files.length + ' 个数据条目（精选+bulk+索引）');
 
 /* 5. index.html DOM 断言（N7）：转义引号 / 单 footer / skip-link / aria */
 const html = fs.readFileSync(path.join(R, 'index.html'), 'utf8');
+const metaWin = {};
+try {
+  new Function('window', fs.readFileSync(path.join(R,'data','img-meta.js'),'utf8'))(metaWin);
+  const entries = Object.values(metaWin.DB_IMG_META || {});
+  const imgRoot = fs.existsSync(path.join(R,'img')) ? R : path.join(R,'dist');
+  if (!html.includes('src="data/img-meta.js"') || !entries.length || entries.some(m => !(m.w > 0 && m.h > 0) || [m.src,m.webp,m.thumb,m.thumbWebp].some(f => !/^img\/[\w.-]+$/.test(f) || !size(path.join(imgRoot,f))))) throw Error('入口、尺寸或图片资源不完整');
+  ok.push('图片元数据及其引用有效：' + entries.length + ' 组');
+} catch(e) { issues.push('图片元数据：' + e.message); }
 if (html.includes('\\"')) issues.push('index.html 含字面转义引号 \\"');
 else ok.push('index.html 无字面转义引号');
 const footers = (html.match(/<footer[\s>]/g) || []).length;

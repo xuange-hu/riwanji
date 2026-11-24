@@ -115,7 +115,7 @@ async function main() {
   /* 本地图片覆盖表（N17）与浏览器一致先于模块加载 */
   new Function('window', fs.readFileSync(path.join(ROOT, 'data', 'enrich-local.js'), 'utf8'))(windowStub);
   new Function('window', 'document', 'location', 'localStorage', 'alert', 'console',
-    appCode)(windowStub, documentStub, locationStub, localStorageStub,
+    appCode + '\nwindow.testHooks = {state, DATA, Q, renderCompare, renderFavorites, productImg};')(windowStub, documentStub, locationStub, localStorageStub,
     (m) => { throw new Error('alert: ' + m); }, console);
 
   await sleep(120); // 等待分片异步加载 + boot 完成
@@ -132,6 +132,8 @@ async function main() {
   const all = [];
   chunks.forEach((c) => (c.products || []).forEach((p) => all.push(p)));
   ok(all.length > 0, '数据分片已载入（' + all.length + ' 个产品）');
+  const trail = ['sony-walkman-tps-l2','nintendo-game-boy','nokia-3310'];
+  ok(appEl.innerHTML.includes('口袋里的三台机器') && trail.every(id => all.some(p => p.id === id) && appEl.innerHTML.includes('href="#/product/' + id + '"')), '策展三站均链接到真实精选档案');
   const sample = all[0];
 
   const hashChange = (winHandlers['hashchange'] || [])[0];
@@ -161,6 +163,23 @@ async function main() {
     }
   }
 
+  const h = windowStub.testHooks, ids = all.slice(0, 50).map(p => p.id);
+  h.state.favorites = ids;
+  const orig = h.Q.byIds.bind(h.Q); let requested;
+  h.Q.byIds = (keys) => { requested = keys; return orig(keys); };
+  for (const [raw,start,end] of [['-1',0,24],['2',24,48],['999',48,50]]) {
+    const result = await h.renderFavorites(new URLSearchParams({page:raw}));
+    ok(JSON.stringify(requested) === JSON.stringify(ids.slice(start,end)) && result.includes('共 50 款'), '收藏分页 ' + raw + ' 保留总数且只加载本页');
+  }
+  h.state.compare = ids.slice(0,2);
+  for (const [prices,count] of [[[null,null],0],[[0,null],1],[[99,99],2],[[89,99],1]]) {
+    h.Q.byIds = async () => all.slice(0,2).map((p,i) => ({...p,price:prices[i]}));
+    const html = await h.renderCompare(new URLSearchParams());
+    ok(html.includes('不等于今天的购买力') && html.includes('不同品类'), '对比解释保留价格及评分适用边界');
+    const row = html.match(/上市价格<\/th>(.*?)<\/tr>/);
+    ok(row && (row[1].match(/class="best"/g)||[]).length === count, '最低价边界 ' + JSON.stringify(prices));
+  }
+  h.Q.byIds = orig;
   // 搜索加权逻辑（通过详情页产品名反查）
   locationStub.hash = '#/products?q=' + encodeURIComponent('iPhone');
   await hashChange();

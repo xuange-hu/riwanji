@@ -74,11 +74,21 @@ function galleryOf(p) {
 }
 
 /* 产品图：优先真实图片，其次 API 海报，静态模式本地海报；加载失败自动回退海报 */
-const POSTER_CACHE = {};
-const IMG_REGISTRY = {};
+const POSTER_CACHE = Object.create(null);
+const IMG_REGISTRY = Object.create(null);
+const CACHE_LIMIT = 2000;
+function boundedPut(cache, id, value) {
+  cache[id] = value;
+  const keys = Object.keys(cache);
+  if (keys.length > CACHE_LIMIT) delete cache[keys[0]];
+  return value;
+}
+function cacheProduct(id, p) {
+  boundedPut(IMG_REGISTRY, id, p);
+}
 function posterOf(p) {
   const id = String(p.id);
-  if (!POSTER_CACHE[id]) POSTER_CACHE[id] = posterURI(p);
+  if (!POSTER_CACHE[id]) return boundedPut(POSTER_CACHE, id, posterURI(p));
   return POSTER_CACHE[id];
 }
 function productImg(p, alt) {
@@ -86,16 +96,20 @@ function productImg(p, alt) {
   if (p.image) src = p.image;
   else if (DATA.online) src = 'api/image/' + encodeURIComponent(p.id);
   else src = posterURI(p);
-  IMG_REGISTRY[String(p.id)] = p;
+  cacheProduct(String(p.id), p);
   /* 问题 79：不再内联 onerror（阻碍严格 CSP），失败兜底走 document 级 error 委托（app.js） */
-  return '<img loading="lazy" width="640" height="480" src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
+  const local = /^img\/([^/]+)\.(?:jpe?g|png)$/i.exec(src);
+  const m = local && window.DB_IMG_META && window.DB_IMG_META[local[1]];
+  const responsive = m && m.src === src && m.w > 400 && m.w >= m.h
+    ? ' srcset="' + esc(m.thumb) + ' 400w, ' + esc(src) + ' ' + m.w + 'w" sizes="(max-width: 600px) 48vw, 300px"' : '';
+  return '<img loading="lazy" width="' + (m ? m.w : 640) + '" height="' + (m ? m.h : 480) + '"' + responsive + ' src="' + esc(src) + '" alt="' + esc(alt || p.name) + '" ' +
     'data-pid="' + esc(String(p.id)) + '" />';
 }
 
 /* 产品图集渲染：主图 + 缩略图条（≥3 张），点击切换主图 */
 function productGallery(p) {
   const imgs = galleryOf(p);
-  IMG_REGISTRY[String(p.id)] = p;
+  cacheProduct(String(p.id), p);
   return '<div class="gallery" data-pid="' + esc(String(p.id)) + '">' +
     '<div class="gallery-main">' +
       '<img id="gallery-main-img" loading="lazy" width="640" height="480" src="' + esc(imgs[0]) + '" alt="' + esc(p.name) + '" ' +

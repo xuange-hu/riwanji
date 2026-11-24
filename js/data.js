@@ -321,8 +321,12 @@ const Q = {
     const byYear = (a, b) => (b.year || 0) - (a.year || 0);
     const editors = curated.slice().sort(byScore).slice(0, 8);
     const popular = curated.slice().sort(byUser).slice(0, 8);
-    const topPerCat = DATA.cats.map((c) =>
-      curated.filter((p) => p.category === c.id).sort(byScore)[0]).filter(Boolean);
+    const leaders = new Map();
+    for (const p of curated) {
+      const prev = leaders.get(p.category);
+      if (!prev || byScore(p, prev) < 0) leaders.set(p.category, p);
+    }
+    const topPerCat = DATA.cats.map((c) => leaders.get(c.id)).filter(Boolean);
     const ymap = new Map();
     curated.forEach((p) => {
       const y = p.year || 0;
@@ -421,9 +425,9 @@ const Q = {
       list.forEach((p) => {
         let s = 0, all = true, nameHits = 0, brandHits = 0, strongHit = false;
         const cat = (String(p.categoryName || '') + ' ' + String(p.subcat || '') + ' ' + String(p.catName || '')).toLowerCase();
+        const name = String(p.name).toLowerCase(), brand = String(p.brand).toLowerCase();
+        const tags = (p.tags || []).join(' ').toLowerCase();
         for (const t of toks) {
-          const name = String(p.name).toLowerCase(), brand = String(p.brand).toLowerCase();
-          const tags = (p.tags || []).join(' ').toLowerCase();
           const catWord = cat.indexOf(t) !== -1; /* 品类词降权，防止通名刷榜 */
           if (name.indexOf(t) !== -1) { s += catWord ? 6 : 12; nameHits++; strongHit = true; }
           else if (brand.indexOf(t) !== -1) { s += 6; brandHits++; strongHit = true; }
@@ -433,7 +437,6 @@ const Q = {
           else { all = false; break; }
         }
         if (!all) return;
-        const name = String(p.name).toLowerCase();
         const catPhrase = cat.indexOf(phrase) !== -1;
         if (name.indexOf(phrase) !== -1) s += catPhrase ? 8 : 30;
         else if (p._hay.indexOf(phrase) !== -1) s += 8;

@@ -92,6 +92,12 @@ async function renderHome() {
     '</section>' +
 
     '<section class="section">' +
+      sectionHead('口袋里的三台机器', '听歌、玩游戏、发短信：沿着三件随身设备，看看手机接过了哪些工作。', '#/timeline', '逛时间线 →') +
+      '<ol class="tl-items"><li><a href="#/product/sony-walkman-tps-l2">1979 · Walkman TPS-L2</a>：磁带随身听怎样改变了在路上听音乐的方式？</li>' +
+      '<li><a href="#/product/nintendo-game-boy">1989 · 初代 Game Boy</a>：为什么专用掌机需要一套实体按键？</li>' +
+      '<li><a href="#/product/nokia-3310">2000 · 诺基亚 3310</a>：当短信和贪吃蛇出现在同一块屏幕上，手机还只是电话吗？</li></ol>' +
+      '<p class="muted">延伸阅读：<a href="https://www.mobilephonemuseum.com/phone-detail/nokia-3310">Mobile Phone Museum 的 3310 档案</a>（英文）</p></section>' +
+    '<section class="section">' +
       sectionHead('按品类浏览', '从这里开始探索', '#/products', '全部产品 →') +
       '<div class="grid grid-4">' + catCards + '</div>' +
     '</section>' +
@@ -481,12 +487,13 @@ async function renderCompare(query) {
     return hit ? hit[1] : null;
   };
   const best = (vals, higherBetter) => {
-    const nums = vals.filter((v) => typeof v === 'number');
+    const nums = vals.filter(Number.isFinite);
     if (!nums.length) return null;
     return higherBetter ? Math.max.apply(null, nums) : Math.min.apply(null, nums);
   };
 
   /* N16：表头产品列用 th scope=col（原 td 丢失列头语义），行首标签列 th scope=row */
+  const lowestPrice = best(list.map((p) => p.price), false);
   const headerRow = '<tr><th scope="col">产品</th>' + list.map((p) =>
     '<th scope="col"><div class="ct-name">' + esc(p.name) + (isDemo(p) ? ' <span class="badge" style="font-size:9px;padding:0 5px">演示</span>' : '') + '</div>' +
     '<div class="muted" style="font-size:11.5px">' + esc(p.brand) + ' · ' + esc(p.year) + '</div>' +
@@ -515,7 +522,7 @@ async function renderCompare(query) {
     rowObj('<tr><th scope="row">上市年份</th>' + list.map((p) => '<td>' + esc(p.year) + '</td>').join('') + '</tr>',
       uniqOf(list.map((p) => p.year))),
     rowObj('<tr><th scope="row">上市价格</th>' + list.map((p) =>
-      '<td' + (p.price === best(list.map((x) => x.price), false) ? ' class="best"' : '') + '>' +
+      '<td' + (lowestPrice !== null && p.price === lowestPrice ? ' class="best"' : '') + '>' +
       esc(p.priceText || '–') + '</td>').join('') + '</tr>',
       uniqOf(list.map((p) => p.price)))
   ].concat(
@@ -550,7 +557,7 @@ async function renderCompare(query) {
       '<button class="chip" data-action="cmp-export"><span aria-hidden="true">⬇</span> 导出 JSON</button></div>';
 
   return '' +
-    '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / ' + CONFIG.COMPARE_MAX + ' 款产品（绿色为该项最优，淡黄底色为存在差异的参数项）' +
+    '<div class="page-head"><h1>产品对比</h1><p>已选 ' + list.length + ' / ' + CONFIG.COMPARE_MAX + ' 款产品（绿色标出入选产品中的最低上市价或最高分，淡黄底色表示数值不同）。跨年代的上市价不等于今天的购买力；不同品类的评分也不代表同一种性能。' +
     (crossCat ? ' · <b style="color:var(--warn)">跨品类对比：参数取并集，缺失项显示 –</b>' : '') + '</p></div>' +
     picker + diffToggle +
     (state.cmpDiff && !shownRows.length ? '<div class="empty">所选产品参数完全一致</div>' : '') +
@@ -659,19 +666,22 @@ async function renderFavorites(query) {
     if (changed) { saveState(); refreshFavButtons(); }
     try { history.replaceState(null, '', location.pathname + location.search + '#/favorites'); } catch (e) { /* file:// 降级 */ }
   }
-  const base = await Q.byIds(state.favorites);
+  const total = state.favorites.length, size = 24;
+  const pages = Math.max(1, Math.ceil(total / size));
+  const page = Math.min(pages, Math.max(1, parseInt(query && query.get('page'), 10) || 1));
+  const base = await Q.byIds(state.favorites.slice((page - 1) * size, page * size));
   /* bulk 收藏产品懒补全详情（问题 70）：与对比页同款，保证评分维度/规格口径一致 */
   const list = DATA.online ? base : await Promise.all(base.map((p) => ensureFull(p)));
   return '' +
-    '<div class="page-head"><h1>我的收藏</h1><p>收藏保存在本机浏览器，共 ' + list.length + ' 款 · 可导出 JSON 或复制分享链接</p>' +
-    (list.length
+    '<div class="page-head"><h1>我的收藏</h1><p>收藏保存在本机浏览器，共 ' + total + ' 款 · 可导出 JSON 或复制分享链接</p>' +
+    (total
       ? '<div class="filter-bar" style="margin-top:10px">' +
           '<button class="btn btn-ghost btn-sm" data-action="fav-export"><span aria-hidden="true">⬇</span> 导出 JSON</button>' +
           '<button class="btn btn-ghost btn-sm" data-action="fav-share"><span aria-hidden="true">🔗</span> 复制收藏链接</button>' +
           '<button class="btn btn-ghost btn-sm" data-action="fav-clear-all">清空收藏</button>' +
         '</div>'
       : '') + '</div>' +
-    (list.length ? productGrid(list) :
+    (total ? (list.length ? productGrid(list) : '<div class="empty">本页收藏暂不可用。</div>') + pagination(page, pages) :
       '<div class="empty"><span class="big" aria-hidden="true">🤍</span>还没有收藏任何产品。<br />在产品卡片上点击 ♥ 按钮添加收藏。</div>');
 }
 

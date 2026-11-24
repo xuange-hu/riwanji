@@ -95,6 +95,7 @@ fs.writeFileSync(path.join(DIST, '_headers'),
 
 /* 6. 部署说明 + 仓库承诺物（P2-35：BUILD_PACK_TOOLS=0 时不打包） */
 fs.writeFileSync(path.join(DIST, '.nojekyll'), ''); /* GitHub Pages 兼容（Gitee 无害） */
+/* 图片元数据必须在组件脚本之前同步加载；构建时确保它进入静态包。 */
 if (fs.existsSync(path.join(ROOT, 'dist-README.md'))) {
   cp(path.join(ROOT, 'dist-README.md'), path.join(DIST, 'README.md')); /* Gitee 仓库首页说明 */
 }

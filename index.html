@@ -2,6 +2,7 @@
 <html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- 问题 3/4：跨域图片请求不泄露完整 Referrer（静态托管无响应头时的 meta 兜底；与 file:// 双击兼容） -->
   <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -108,6 +109,7 @@
 
   <!-- 应用逻辑 -->
   <script src="data/enrich-local.js"></script>
+  <script src="data/img-meta.js"></script>
   <script src="js/util.js"></script>
   <script src="js/data.js"></script>
   <script src="js/state.js"></script>

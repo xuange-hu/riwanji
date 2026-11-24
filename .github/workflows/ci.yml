@@ -14,6 +14,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,6 +37,7 @@ jobs:
   # P2-36：把 bug-hunt 的 27 项边缘/XSS/注入断言纳入 CI 自动回归
   bug-hunt:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

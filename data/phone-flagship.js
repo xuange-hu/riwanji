@@ -679,7 +679,7 @@ window.DB_CHUNKS.push({
         "机身发热较明显，游戏负载下表现一般"
       ],
       review: {
-        objective: "Google Pixel 8 Pro 于 2023 年 10 月发布，搭载 Tensor G3 处理器与 Titan M2 安全芯片，配备 6.7 英寸 2992×1344 分辨率 Super Actua LTPO OLED 屏，峰值亮度约 2400nit。后置 5000 万像素 GN2 主摄（f/1.68，OIS）、4800 万像素 IMX787 超广角（f/1.95）与 4800 万像素 GM5 潜望长焦（f/2.8，5 倍光学变焦）。内置 5050mAh 电池，支持约 30W 有线充电，机身重约 213 克，IP68 防护，承诺 7 年系统更新。",
+        objective: "Pixel 8 Pro 于 2023 年 10 月发布，搭载 Tensor G3 和 Titan M2，配备 6.7 英寸 LTPO OLED 屏。后置三摄包括 5000 万像素主摄、4800 万像素超广角和支持 5 倍光学变焦的长焦。机身重约 213 克，内置 5050mAh 电池，支持 IP68 防护。Google 承诺提供七年系统更新。",
         subjective: "Pixel 8 Pro 是一台计算摄影的教科书。它硬件不是最强，但成片的 HDR 与色彩总能在第一时间就让人满意，夜景纯净度尤其出色，5 倍长焦拍人像自然。原生 Android 干净流畅，AI 消除、通话摘要这些功能真正能用上。缺点也真实：Tensor 芯片发热明显，充电慢，国内用户还得折腾网络与售后。适合喜欢原生体验与拍照的玩家，不适合参数党。"
       },
       image: "https://fdn2.gsmarena.com/vv/bigpic/google-pixel-8-pro.jpg"
